@@ -20,9 +20,23 @@ export default class GetAllCategoriesController extends BaseController
     protected async executeImpl(req: Request, res: Response): Promise<any> {
         
 
-                try {
-                       const categoriesName =      await this.usecase.execute()  ;
+       const { ids } = req.query; // هنا نجلب الـ query param
 
+       console.log("idsss ",ids)
+      
+       let filterIds: number[] | undefined;
+       if (ids) {
+         filterIds = (ids as string).split(',').map(Number);
+       }
+                try {
+                       const categoriesName =      await this.usecase.execute(filterIds)  ;
+
+
+                               if(filterIds)
+                               {
+                                console.log("777777777777777777777777777777777777777777777")
+                                return this.resultValue(res," category with success ",categoriesName) ;
+                               }
                        if(categoriesName.length === 0)
                        {
                         return this.notFound(res,"empty catygories ") ;

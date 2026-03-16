@@ -17,7 +17,7 @@ const  getProductByCategoryUseCase  = new GetProductByCategoryUseCase(productrep
 const  getProductByCategoryController =  new GetProductByCategoryController(getProductByCategoryUseCase)
 
 //categories/5/products
-router.get("/categories/:categoryid/products",verifyToken,(req:Request,res:Response) => {
+router.get("/products/:categoryid/categories",verifyToken,(req:Request,res:Response) => {
 
     getProductByCategoryController.execute(req,res) ;
 

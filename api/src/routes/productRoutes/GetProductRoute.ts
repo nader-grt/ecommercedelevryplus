@@ -16,7 +16,7 @@ const getProductRoute  =  new GetProductController(gettProductUsCase) ;
 
 
 
-router.get("/product/:productid",verifyToken,(req:Request,res:Response) => {
+router.get("/products/:productid",verifyToken,(req:Request,res:Response) => {
        console.log("step num 1 route ")
     getProductRoute.execute(req,res) ;
 })

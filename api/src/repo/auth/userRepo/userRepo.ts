@@ -165,6 +165,8 @@ export class userRepo extends IUserRepoInterface {
 
   public async updateUserByAdmin(user: any, userid?: number): Promise<any> {
     try {
+
+      console.log("userrrrrrrrrr ",user , "ccccccuserid     ",userid)
       const u: any = await User.update(
         {
           firstName: user.firstName,

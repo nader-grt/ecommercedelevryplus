@@ -10,29 +10,29 @@ import createProductController from "../../controllers/products/CreateProductCon
 
 const router = Router();
 
- const categoryRepo  = new CategoryRepo()
-  const  supplierRepo = new SupplierRepo()
-const productRepo = new ProductRepo()  ;
-export    const fileHandlerCreate = new FileHandler( folderPath);
+const categoryRepo = new CategoryRepo();
+const supplierRepo = new SupplierRepo();
+const productRepo = new ProductRepo();
+export const fileHandlerCreate = new FileHandler(folderPath);
 //fileHandlerCreate
-const createProductUseCase  =  new CreateProductUseCase(fileHandlerCreate,productRepo,categoryRepo,supplierRepo)  ;
-const createProductRoute  =  new createProductController(createProductUseCase)
-
-
-
+const createProductUseCase = new CreateProductUseCase(
+  fileHandlerCreate,
+  productRepo,
+  categoryRepo,
+  supplierRepo
+);
+const createProductRoute = new createProductController(createProductUseCase);
 
 //folderPath
 
+router.post(
+  "/products",
+  verifyToken,
+  fileHandlerCreate.uploadMiddlewareImage("imageName"),
+  (req: Request, res: Response) => {
+    console.log(" create productttttt   route  1");
+    createProductRoute.execute(req, res);
+  }
+);
 
-
-
-
-router.post("/create/product",verifyToken, fileHandlerCreate.uploadMiddlewareImage("imageName") ,(req:Request,res:Response) => {
-   
-    console.log(" create productttttt   route  1")
-    createProductRoute.execute(req,res)
-})
-
-
-
-export default router
+export default router;

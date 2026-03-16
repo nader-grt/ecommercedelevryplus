@@ -15,11 +15,11 @@ export default class GetAllCategoriesUseCase
          }
 
 
-         async execute():Promise<any>
+         async execute(filterIds?: number[]):Promise<any>
          {
 
               try {
-                const categoriesName =      await this.usecaseRepo.GetAllCategories()  ;
+                const categoriesName =      await this.usecaseRepo.GetAllCategories(filterIds)  ;
               console.log("categoriesName categoriesName ",categoriesName)
                 return categoriesName ;
               } catch (error) {

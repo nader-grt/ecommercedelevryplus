@@ -25,7 +25,7 @@ const updateProductRoute = new updateProductController(updateProductUseCase);
 
 
 router.put(
-  "/updateproduct/:id",
+  "/products/:id",
   verifyToken,
   fileHandler.uploadMiddlewareImage("imageName"),
   (req: Request, res: Response) => {

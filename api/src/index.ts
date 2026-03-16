@@ -21,8 +21,11 @@ import createProductRoute from "./routes/productRoutes/createProductRoute.js";
 import updateProductRoute from "./routes/productRoutes/updateProductRoute.js";
 import getProductRandomRoute from "./routes/productRoutes/GetProductRandomRoute.js";
 import getProductByCategoryRoute from "./routes/productRoutes/GetProductByCategoryRoute.js";
-
 import getProductRoute from "./routes/productRoutes/GetProductRoute.js";
+import getAllProductByCategoryIdRoute from "./routes/productRoutes/GetAllProductsFiltredByCategoryIdRoute.js";
+
+
+//category
 import createCategoryRoute from "./routes//categoryRoute/createCategoryRoute.js";
 import deleteCategoryRoute from "./routes//categoryRoute/DeleteCategoryRoute.js";
 import updateCategoryRoute from "./routes//categoryRoute/UpdateCategoryRoute.js";
@@ -120,6 +123,7 @@ app.use("/api",updateProductRoute)  ;
 app.use("/api",getProductRandomRoute)  ;
 app.use("/api",getProductByCategoryRoute)  ;
 app.use("/api",getProductRoute)  ;
+app.use("/api",getAllProductByCategoryIdRoute) ;
 
 
 

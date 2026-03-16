@@ -1,15 +1,31 @@
 // config/config-cli.cjs
-module.exports = {
-    development: {
-      username: "root",
-      password: "",
-      database: "ecommercedelevry",
-      host: "127.0.0.1",
-      port: 3307,
-      dialect: "mysql"    
-    }
-  };
+// module.exports = {
+//     development: {
+//       username: "root",
+//       password: "",
+//       database: "ecommercedelevry",
+//       host: "127.0.0.1",
+//       port: 3307,
+//       dialect: "mysql"    
+//     }
+//   };
   
+
+// config/config-cli.cjs
+import dotenv from "dotenv";
+dotenv.config();
+
+module.exports = {
+  development: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: "mysql",
+  },
+
+};
 
   /**
    * 
@@ -157,6 +173,16 @@ open  maria db
 sudo /opt/lampp/bin/mysql -u root -p
 
 
+NODE_OPTIONS="--max-old-space-size=4096" npm install --network-timeout=1000000
+
+
+npm install --ignore-scripts
+
+killall -9 node
+rm -rf node_modules package-lock.json
+
+rm -rf node_modules package-lock.json
+npm cache clean --force
 or  
 
 
@@ -172,5 +198,28 @@ or
         type: Sequelize.DATE,
         defaultValue: Sequelize.fn("NOW"),
       },
+
+
+
+
+
+
+
+        test: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME + "_test",
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: "mysql",
+  },
+  production: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME + "_prod",
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: "mysql",
+  },
 
    */

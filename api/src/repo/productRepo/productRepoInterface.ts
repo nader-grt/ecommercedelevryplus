@@ -12,7 +12,7 @@ export default abstract class productRepoInterface
     
        protected abstract getProductByCategoryId(categoryId:number):Promise<any> ;
 
-
+  protected abstract getAllProductsFiltred(cleanQuery:any,notFiltred:any):Promise<any>;
       //  static  IsExistProduct():Promise<void> ;
 
 }

@@ -44,11 +44,13 @@ export default class updateUserByAdminUseCase
                                 }
                          
                                 const updateUserByAdmin = new userDomain()  ;
-
+                                  
                                 updateUserByAdmin.updateByAdmin(dto)
 
-                                console.log("updateUserByAdmin   ",updateUserByAdmin  ,"endddddddddddddd  ")
-                                     const userUpdated =      await this._updateuserByAdmincaseUserRepo.updateUserByAdmin(updateUserByAdmin ,Number(dto.custmerId))
+                            //    console.log("updateUserByAdmin   ",updateUserByAdmin  ,"endddddddddddddd  ")
+         const userUpdated =      await this._updateuserByAdmincaseUserRepo.updateUserByAdmin({...updateUserByAdmin,
+          role:user.role
+         } ,Number(dto.custmerId))
                          
 
 

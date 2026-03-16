@@ -84,7 +84,7 @@ export default class CategoryRepo extends categoryRepoInterface {
       console.log(error);
     }
   }
-  public async GetAllCategories(): Promise<any> {
+  public async GetAllCategories(filterIds?:any): Promise<any> {
     try {
       const allCategories = await Category.findAll({
         raw: true,
@@ -93,6 +93,26 @@ export default class CategoryRepo extends categoryRepoInterface {
 
       const categories = new CategoryDomain();
 
+      console.log( filterIds?.length > 0, "aaaaaaaaaaaaaaaaaannnnnnnnnny ",filterIds)
+      if (filterIds?.length > 0) {
+        const result = await Category.findAll({
+          where: { id: filterIds[0] } ,raw :true
+        });
+      //  console.log("rrrrrresult ",result)
+        /**
+          id: 1,
+    name: 'Electronics',
+         */
+        const resultCategory :any = {
+          id:result[0].id,
+          name:result[0].name
+        }
+        console.log(" 123 ",resultCategory)
+        return result[0]
+        // return await Category.findAll({
+        //   where: { id: filterIds[0] } 
+        // });
+      }
       return categories.GetAllCategoriesByName(allCategories);
     } catch (error) {
       console.log(error);
