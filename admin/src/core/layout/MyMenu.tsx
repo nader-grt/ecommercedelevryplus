@@ -5,11 +5,11 @@ const MyMenu = () => (
     <Menu.Item to="/" primaryText="Dashboard" />
     <Menu.Item to="/users" primaryText="Users" />
 
-    <Menu.Item to="/products" primaryText="products" />
-    <Menu.Item to="/orders" primaryText="orders" />
-    {/* <Menu.ResourceItem  name=""    /> */}
-    <Menu.Item to="/categories" primaryText="Category" />
-    <Menu.Item to="/days" primaryText="daysofWeek" />
+    <Menu.Item to="/products" primaryText="ProductsByCategory" />
+    <Menu.Item to="/orders" primaryText="Orders" />
+   
+    <Menu.Item to="/categories" primaryText="Categories" />
+    <Menu.Item to="/days" primaryText="DaysInWeek" />
   </Menu>
 );
 

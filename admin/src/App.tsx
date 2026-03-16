@@ -14,6 +14,7 @@ import dataProvider from "./core/providers/dataProvider";
 import { EditCategorie, ListCategories } from "./modules/categories";
 import { CreateUser, EditUser, ListUsers } from "./modules/users";
 import { ListWeekDays, CreateWeekDay } from "./modules/weekDay";
+import { ListProducts } from "./modules/products";
 
 
 
@@ -61,6 +62,11 @@ const App = () => {
      create={CreateWeekDay}
     
   />  
+
+  <Resource  name="products"
+
+  list={ListProducts}
+  />
               <Resource name="dashboard"  />
             </Admin>
           }

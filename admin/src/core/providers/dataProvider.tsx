@@ -1,71 +1,83 @@
-import  { adaptList, adaptObject } from "../../Api/configApi/apiAdapter";
+import { adaptList, adaptListProductByCategory, adaptListProducts, adaptObject } from "../../apiAdapter";
 import { httpclientService } from "../../auth/httpclientService/httpclientService";
 
 const apiUrl = "http://localhost:4000/api";
 
 const dataProvider: any = {
   getList: async (resource:any, params:any) => {
-   
 
-//
+    console.log(resource,"params",params)
+    
+    const { page = 1, perPage = 10 } = params.pagination || {};
+  const { field = "id", order = "ASC" } = params.sort || {};
+  const filter = params.filter || {};
+
+  let url = "";
+  const categoryId = filter.categoryId;
+  if (resource === "products") {
 
 
-const { page, perPage } = params.pagination;
-const { field, order } = params.sort;
+    if (categoryId) {
+      url = `${apiUrl}/products/${categoryId}/categories`;
+    } else {
+      url = `${apiUrl}/products`;
+    }
+  } else {
+    const query = {
+      page,
+      perPage,
+      sort: field,
+      order,
+      filter: JSON.stringify(filter),
+    };
+    url = `${apiUrl}/${resource}?${new URLSearchParams(query).toString()}`;
+  }
 
+  const { json } = await httpclientService(url);
 
+  if (resource === "products") {
 
-const query = {
-  page,
-  perPage,
-  sort: field,
-  order,
-  filter: JSON.stringify(params.filter),
-};
+    if (categoryId) {
 
-const queryString = new URLSearchParams(query).toString();
+     // console.log("******** by category")
+    return adaptListProductByCategory(json);
+    } else {
+      return adaptListProducts(json);
+    }
+    
+  }
 
-const { json } = await httpclientService(
-  `${apiUrl}/${resource}`
-);
+  return adaptList(json);
+    },
+
+  getOne: async (resource: any, params: any) => {
+    const { json } = await httpclientService(
+      `${apiUrl}/${resource}/${params.id}`
+    );
  
 
-
-return adaptList(json);
-
-
-
+    return adaptObject(json);
   },
 
-  getOne: async (resource:any, params:any) => {
-    const { json } = await httpclientService(`${apiUrl}/${resource}/${params.id}`);
-    const record = json.data ?? json;
-
-    // return {
-    //   data: {
-    //     id: record.id ?? record.categoryId, // React Admin needs 'id'
-    //     ...record,
-    //   },
-    // };
-
-   return adaptObject(json);
-  },
-
-  getMany: async (resource:any, params:any) => {
+  getMany: async (resource: any, params: any) => {
     const { json } = await httpclientService(
       `${apiUrl}/${resource}?ids=${params.ids.join(",")}`
     );
-    return { data: json };
+  //  return { data: json };
+
+    return {
+      data: [json.data]   //
+    };
   },
 
-  getManyReference: async (resource:any, params:any) => {
+  getManyReference: async (resource: any, params: any) => {
     const { json } = await httpclientService(
       `${apiUrl}/${resource}?${params.target}=${params.id}`
     );
     return { data: json.data, total: json.total };
   },
 
-  create: async (resource:any, params:any) => {
+  create: async (resource: any, params: any) => {
     const { json } = await httpclientService(`${apiUrl}/${resource}`, {
       method: "POST",
       body: JSON.stringify(params.data),
@@ -75,18 +87,21 @@ return adaptList(json);
     //return { data: json };
   },
 
-  update: async (resource:any, params:any) => {
-    console.log("rrrrrrrrrrrr  ",resource ,params ,params.id)
-    const { json } = await httpclientService(`${apiUrl}/${resource}/${params.id}`, {
-      method: "PUT",
-      body: JSON.stringify(params.data),
-    });
+  update: async (resource: any, params: any) => {
+    console.log(  `${apiUrl}/${resource}/${params.id}`,  "gggggggggggggghhhhhhrrrrrrrrrrrr  ", resource, params, params.id);
+    const { json } = await httpclientService(
+      `${apiUrl}/${resource}/${params.id}`,
+      {
+        method: "PUT",
+        body: JSON.stringify(params.data),
+      }
+    );
 
     return adaptObject(json);
-   // return { data: json };
+    // return { data: json };
   },
 
-  updateMany: async (resource:any, params:any) => {
+  updateMany: async (resource: any, params: any) => {
     const { json } = await httpclientService(`${apiUrl}/${resource}`, {
       method: "PUT",
       body: JSON.stringify(params.ids),
@@ -94,14 +109,17 @@ return adaptList(json);
     return { data: json }; // array
   },
 
-  delete: async (resource:any, params:any) => {
-    const { json } = await httpclientService(`${apiUrl}/${resource}/${params.id}`, {
-      method: "DELETE",
-    });
+  delete: async (resource: any, params: any) => {
+    const { json } = await httpclientService(
+      `${apiUrl}/${resource}/${params.id}`,
+      {
+        method: "DELETE",
+      }
+    );
     return adaptObject(json);
   },
 
-  deleteMany: async (resource:any, params:any) => {
+  deleteMany: async (resource: any, params: any) => {
     const { json } = await httpclientService(`${apiUrl}/${resource}`, {
       method: "DELETE",
       body: JSON.stringify(params.ids),

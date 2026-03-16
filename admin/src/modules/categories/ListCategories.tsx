@@ -1,7 +1,9 @@
 import { List, Datagrid, TextField, EmailField, EditButton } from "react-admin";
 
 export const ListCategories = () => (
-  <List>
+  <List
+  
+  exporter={false}>
     <Datagrid>
       <TextField source="id"
       sx={{
