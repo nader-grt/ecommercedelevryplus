@@ -155,10 +155,20 @@ SKUstable
 npx sequelize-cli migration:generate --name create-tableSkus
 
 
+removunique address fror user 
+npx sequelize-cli migration:generate --name remove-unique-from-userId-address
+
+
+Fix 
+npx sequelize-cli migration:generate --name fix-user-address-relation
+
+fixed userAddress 
+npx sequelize-cli migration:generate --name add-city-country-to-userAddresses
+
+
+
+
 sudo /opt/lampp/lampp start
-
-
-
 Starting XAMPP for Linux...
 XAMPP: Starting Apache...
 XAMPP: Starting MySQL...

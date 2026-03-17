@@ -7,7 +7,7 @@ const router = Router();
 
 router.delete( "/users/:id", verifyToken, (req: Request, res: Response) => 
   {
-    UserControllerFactory.DeleteUserrController().execute(req, res);
+    UserControllerFactory.DeleteUserByAdminController().execute(req, res);
   }
 );
 

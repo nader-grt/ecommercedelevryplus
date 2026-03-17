@@ -43,7 +43,19 @@ export const Warehouse  = WarehouseModel(sequelize)
 User.hasMany(RefreshToken, { foreignKey: "userId", as: "users" });
 RefreshToken.belongsTo(User, { foreignKey: "userId", as: "tokens" });
 
+/* =========================
+   User - userAddress (1 : N)
+========================= */
 
+// User.hasMany(UserAddress, {
+//    foreignKey: "userId",
+//    as: "addresses",
+//  });
+
+//  UserAddress.belongsTo(User, {
+//    foreignKey: "userId",
+//    as: "user",
+//  });
 
 /* =========================
    Category - Product (1 : N)

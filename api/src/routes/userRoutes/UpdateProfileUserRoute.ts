@@ -8,7 +8,7 @@ const router = Router();
 
 
 
-router.put("/update/user/", verifyToken, (req: Request, res: Response) => {
+router.put("/users/me", verifyToken, (req: Request, res: Response) => {
     UserControllerFactory.UpdateProfileUserrController().execute(req, res);
 });
 

@@ -6,12 +6,12 @@ import GetAllUserUseCase from "../../useCases/userUseCase/GetAllUserUseCase";
 
 const userepo = new userRepo();
 const getAllUserUsecase = new GetAllUserUseCase(userepo);
-const getAllUserIsRoleUserRoute = new GetAllUserCOntroller(getAllUserUsecase);
+const getListUsersRoute = new GetAllUserCOntroller(getAllUserUsecase);
 
 const router = Router();
 
 router.get("/users/", verifyToken, (req: Request, res: Response) => {
-  getAllUserIsRoleUserRoute.execute(req, res);
+  getListUsersRoute.execute(req, res);
 });
 
 export default router;

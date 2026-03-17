@@ -49,7 +49,7 @@ export class UserControllerFactory {
     return new  updateProfileUserController(useCase);
   }
 
-  static DeleteUserrController() {
+  static DeleteUserByAdminController() {
   //  const repo = new userRepo();
 
     const useCase = new DeleteUserUseCase(this.repo);

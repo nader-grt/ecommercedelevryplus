@@ -5,7 +5,7 @@ import { corsOptions } from "./corsConfig/corsConfig.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-
+//user managment
 import getUserByAdminRoutes from "./routes/userRoutes/GetUserByAdminRoute.js"
 import getProfileUserRoutes from "./routes/userRoutes/GetProfileUserRoute.js"
 import getAllUserRoutes from "./routes/userRoutes/GetAllUserByRoleRoute.js"
@@ -14,7 +14,12 @@ import updateUserByAdminRoutes from "./routes/userRoutes/UpdateUserByAdminRoute.
 import updateProfileUserRoutes from "./routes/userRoutes/UpdateProfileUserRoute.js"
 import mailRoutes from "./routes/userRoutes/sendUserMailRoute.js";
 
+// userAddress 
 
+import createUserAddressByAdminRoutes from "./routes//userAddressRoute/CreateUserAddressByAdminUserRoute.js"
+import listUserAddressRoutes from "./routes/userAddressRoute/ListUserAddressByAdminUserRoute.js"
+import deleteUserAddressRoutes from "./routes/userAddressRoute/DeleteUserAddressByAdminRoute.js"
+import updateUserAddressRoutes from "./routes/userAddressRoute/UpdateUserAddressByAdminUserRoute.js"
 
 // product  
 import createProductRoute from "./routes/productRoutes/createProductRoute.js";
@@ -113,6 +118,15 @@ app.use("/api", getAllUserRoutes);
 app.use("/api", updateUserByAdminRoutes);
 app.use("/api",updateProfileUserRoutes)
 app.use("/api", deleteUserRoutes);
+
+
+// userAddress managment
+
+
+app.use("/api", createUserAddressByAdminRoutes);
+app.use("/api", listUserAddressRoutes);
+app.use("/api", deleteUserAddressRoutes);
+app.use("/api", updateUserAddressRoutes);
 
 app.use("/apimail", mailRoutes);
 

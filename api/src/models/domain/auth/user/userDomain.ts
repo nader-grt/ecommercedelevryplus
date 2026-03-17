@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import IUser, { Role } from "../../../user";
+import  { Role } from "../../../user";
 import IUserResponse from "../../../../repo/auth/userRepo/userRepo";
 
 import { IUpdateUserProfileDTO } from "../../../../useCases/userUseCase/UpdateUserProfileUseCase";
@@ -7,9 +7,7 @@ import { UpdateByAdminData } from "../../../../useCases/userUseCase/updateUserBy
 import { ActorUserAdmin } from "../../../../dbConfig/configApp";
 
 
-// type actorRole {
 
-// }
 
 
 type actorRole =
