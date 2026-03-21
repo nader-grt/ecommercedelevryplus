@@ -7,6 +7,10 @@ import cookieParser from "cookie-parser";
 
 //user managment
 import getUserByAdminRoutes from "./routes/userRoutes/GetUserByAdminRoute.js"
+import createUserAddressByAdminRoutes from "./routes/userRoutes/CreateUserAddressByAdminUserRoute.js"
+import getUserAddressByUserRoute from "./routes/userRoutes/GetUserAddressByAdminUserRoute.js";
+import listUserAddressByAdminRoutes from "./routes/userRoutes/ListUserAddressByAdminUserRoute.js"
+import updateUserAddressByAdminUserRoute from "./routes/userRoutes/UpdateUserAddressByAdminUserRoute.js";
 import getProfileUserRoutes from "./routes/userRoutes/GetProfileUserRoute.js"
 import getAllUserRoutes from "./routes/userRoutes/GetAllUserByRoleRoute.js"
 import deleteUserRoutes from "./routes/userRoutes/DeleteUserRoute.js"
@@ -16,10 +20,10 @@ import mailRoutes from "./routes/userRoutes/sendUserMailRoute.js";
 
 // userAddress 
 
-import createUserAddressByAdminRoutes from "./routes//userAddressRoute/CreateUserAddressByAdminUserRoute.js"
-import listUserAddressRoutes from "./routes/userAddressRoute/ListUserAddressByAdminUserRoute.js"
-import deleteUserAddressRoutes from "./routes/userAddressRoute/DeleteUserAddressByAdminRoute.js"
-import updateUserAddressRoutes from "./routes/userAddressRoute/UpdateUserAddressByAdminUserRoute.js"
+import createAddressRoutes from "./routes//userAddressRoute/CreateUserAddressByAdminUserRoute.js"
+import listAddressRoutes from "./routes/userAddressRoute/ListAddressByAdminUserRoute.js"
+import deleteAddressRoutes from "./routes/userAddressRoute/DeleteUserAddressByAdminRoute.js"
+import updateAddressRoutes from "./routes/userAddressRoute/UpdateUserAddressByAdminUserRoute.js"
 
 // product  
 import createProductRoute from "./routes/productRoutes/createProductRoute.js";
@@ -112,6 +116,10 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 
 // user + profile
+app.use("/api", createUserAddressByAdminRoutes);
+app.use("/api",listUserAddressByAdminRoutes)
+app.use("/api",updateUserAddressByAdminUserRoute)
+app.use("/api",getUserAddressByUserRoute)
 app.use("/api", getUserByAdminRoutes);
 app.use("/api", getProfileUserRoutes);
 app.use("/api", getAllUserRoutes);
@@ -120,13 +128,13 @@ app.use("/api",updateProfileUserRoutes)
 app.use("/api", deleteUserRoutes);
 
 
-// userAddress managment
+// user + Address managment
 
 
-app.use("/api", createUserAddressByAdminRoutes);
-app.use("/api", listUserAddressRoutes);
-app.use("/api", deleteUserAddressRoutes);
-app.use("/api", updateUserAddressRoutes);
+app.use("/api", createAddressRoutes);
+app.use("/api", listAddressRoutes);
+app.use("/api", deleteAddressRoutes);
+app.use("/api", updateAddressRoutes);
 
 app.use("/apimail", mailRoutes);
 

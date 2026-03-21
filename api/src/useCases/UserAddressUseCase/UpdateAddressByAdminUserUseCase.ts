@@ -1,12 +1,11 @@
 import { userRepo } from "../../repo/auth/userRepo/userRepo";
 import UserAddressRepo from "../../repo/userAddressRepo/UserAddressRepo";
 
-export default class DeleteUserAddressByAdminUseCase
+export default class UpdateAddressByAdminUserUseCase
 {
-
-        private _userAddressRepo!:UserAddressRepo;
-        private _deleteuserByAdmincaseUserRepo!: userRepo;
-        constructor(userAddressRepo:UserAddressRepo,deleteuserByAdmincaseUserRepo: userRepo)
+    private _userAddressRepo!:UserAddressRepo;
+    private _updateuserByAdmincaseUserRepo!: userRepo;
+        constructor(userAddressRepo:UserAddressRepo,updateuserByAdmincaseUserRepo: userRepo)
         {
 
 

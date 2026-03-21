@@ -20,7 +20,7 @@ export interface IUserRegister {
   lastName: string;
   phone: string;
   email: string;
-  password: string;
+  password?: string;
   role?: Role;
   //city?: string;
 //  address?: string;
@@ -194,9 +194,9 @@ export class userRepo extends IUserRepoInterface {
     }
   }
 
-  public async registerUser(user: IUserRegister): Promise<any> {
+  public async registerUser(user: any): Promise<any> {
     try {
-      console.log("userrrrrrrrrrrr  ", user);
+      console.log("userrrrrrrrrrrr hereeeeeeeeeeeee   ", user);
       const createdUser = await User.create(user);
       return createdUser;
     } catch (error) {

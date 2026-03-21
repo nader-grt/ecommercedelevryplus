@@ -1,15 +1,15 @@
 import { userRepo } from "../../repo/auth/userRepo/userRepo";
 import UserAddressRepo from "../../repo/userAddressRepo/UserAddressRepo";
 
-export default class UpdateUserAddressByAdminUserUseCase
+export default class ListAddressByAdminUserUseCase
 {
     private _userAddressRepo!:UserAddressRepo;
-    private _updateuserByAdmincaseUserRepo!: userRepo;
-        constructor(userAddressRepo:UserAddressRepo,updateuserByAdmincaseUserRepo: userRepo)
-        {
+    private _listuserByAdmincaseUserRepo!: userRepo;
+constructor(userAddressRepo:UserAddressRepo,listuserByAdmincaseUserRepo: userRepo)
+{
 
 
-        }
+}
 
        async execute():Promise<any>
        {

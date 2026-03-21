@@ -17,10 +17,10 @@ type actorRole =
 
 export default class userDomain {
   protected id?: number;
-  protected firstName: string = "";
-  protected lastName: string = "";
-  protected phone: string = "";
-  protected email: string = "" ;
+  protected _firstName: string = "";
+  protected _lastName: string = "";
+  protected _phone: string = "";
+  protected _email: string = "" ;
   protected password?: string = "";
   protected role?: any = "" ;
   protected city?: string;
@@ -34,19 +34,19 @@ export default class userDomain {
   }
 
   public get getFirstName(): string {
-    return this.firstName;
+    return this._firstName;
   }
 
   public get getLastName(): string {
-    return this.lastName;
+    return this._lastName;
   }
 
   public get getPhone(): string {
-    return this.phone;
+    return this._phone;
   }
 
   public get getEmail(): string {
-    return this.email;
+    return this._email;
   }
 
   public get getPassword(): string | undefined {
@@ -68,19 +68,19 @@ export default class userDomain {
   // ======== SETTERS =========
 
   public set setFirstName(firstName: string) {
-    this.firstName = firstName;
+    this._firstName = firstName;
   }
 
   public set setLastName(lastName: string) {
-    this.lastName = lastName;
+    this._lastName = lastName;
   }
 
   public set setPhone(phone: string) {
-    this.phone = phone;
+    this._phone = phone;
   }
 
   public set setEmail(email: string) {
-    this.email = email;
+    this._email = email;
   }
 
   public async comparePassword(
@@ -143,10 +143,10 @@ export default class userDomain {
 
         public updateProfileUser(data: IUpdateUserProfileDTO): void {
           //  extends  {
-          this.firstName = data.firstName;
-          this.lastName = data.lastName;
-          this.email = data.email;
-          this.phone = data.phone;
+          this._firstName = data.firstName;
+          this._lastName = data.lastName;
+          this._email = data.email;
+          this._phone = data.phone;
         //  this.city = data.city;
           //this.address = data.address;
         }

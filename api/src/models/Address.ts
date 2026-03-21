@@ -1,14 +1,16 @@
 import { DataTypes, Model, Sequelize } from "sequelize";
 
-export default interface IUserAddress
+export default interface IAddress
 {
 id?:number ;
 
-userId:number ;
+userId?:number ;
 zipeCode:number;
 street:string;
-delegation:string;
-addressSuplementaire:string;
+delegation?:string;
+addressSuplementaire?:string;
+city?: string;      // 
+country?: string;   // 
 
 
 }
@@ -62,7 +64,7 @@ addressSuplementaire:string;
       },
  */
 
-export class UserAddress extends Model<IUserAddress> implements IUserAddress
+export class Address extends Model<IAddress> implements IAddress
 {
    public id!:number ;
 
@@ -71,14 +73,16 @@ export class UserAddress extends Model<IUserAddress> implements IUserAddress
    public street!:string;
    public delegation!:string;
    public addressSuplementaire!:string;
+   public city!: string;
+   public country!: string;
 
 }
 
 
-export function UserAddressModel(sequelize:Sequelize)
+export function AddressModel(sequelize:Sequelize)
 {
 
-    UserAddress.init({
+  Address.init({
         id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
 
         userId:{type: DataTypes.INTEGER ,allowNull: false}  ,
@@ -86,9 +90,18 @@ export function UserAddressModel(sequelize:Sequelize)
         street:{type: DataTypes.STRING,allowNull: false} ,
         delegation:{type: DataTypes.STRING,allowNull: false} ,
         addressSuplementaire:{type: DataTypes.STRING,allowNull: false} ,
+        city: {
+          type: DataTypes.STRING,
+          allowNull: false,
+        },
+        country: {
+          type: DataTypes.STRING,
+          allowNull: false,
+          defaultValue: "Tunis",
+        },
         
 
     },{sequelize,tableName:"userAddresses",timestamps:true})
 
-    return UserAddress ;
+    return Address ;
 }

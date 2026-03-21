@@ -18,6 +18,7 @@ import { RefreshTokenModel } from "./RefreshTokenModel";
 import { VariantModel } from "./Variant";
 import { InventorieModel } from "./Inventorie";
 import { WarehouseModel } from "./Warehouse";
+import { AddressModel } from "./Address";
 
 // Initialize models
 export const User = UserModel(sequelize);
@@ -36,7 +37,8 @@ export const RefreshToken = RefreshTokenModel(sequelize)
 
 export const Variant = VariantModel(sequelize)
 export const Inventorie  = InventorieModel(sequelize)
-export const Warehouse  = WarehouseModel(sequelize)
+export const Warehouse  = WarehouseModel(sequelize) ;
+export const Address  = AddressModel(sequelize)
 /* =========================
    User - RefreshToken (1 : N)
 ========================= */
@@ -47,15 +49,15 @@ RefreshToken.belongsTo(User, { foreignKey: "userId", as: "tokens" });
    User - userAddress (1 : N)
 ========================= */
 
-// User.hasMany(UserAddress, {
-//    foreignKey: "userId",
-//    as: "addresses",
-//  });
+User.hasMany(Address, {
+   foreignKey: "userId",
+   as: "addresses",
+ });
 
-//  UserAddress.belongsTo(User, {
-//    foreignKey: "userId",
-//    as: "user",
-//  });
+ Address.belongsTo(User, {
+   foreignKey: "userId",
+   as: "user",
+ });
 
 /* =========================
    Category - Product (1 : N)

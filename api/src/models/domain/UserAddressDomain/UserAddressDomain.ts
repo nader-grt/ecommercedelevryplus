@@ -19,40 +19,65 @@ street:string;
 delegation:string;
 addressSuplementaire:string;
  */
+type UserDataDTO = {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phone?: string;
+  city?: string;
+};
+
 
 export default class UserAddressDomain extends userDomain {
   private addresses: Address[] = [];
 
-  constructor(userData?: Partial<userDomain>, addressesData?: Address[]) {
+  constructor(userData?:UserDataDTO, addressesData?: any) {
     super();
     if (userData) {
-      this.setOptionalUserData(userData);
+      console.log("constructorrrrrrrr  ",userData,"connnnnn")
+     this.setOptionalUserData(userData);
     }
     if (addressesData && addressesData.length > 0) {
-      this.addresses = addressesData.map(addr => ({ ...addr }));
+      this.addresses = addressesData.map((addr:any) => ({ ...addr }));
     }
   }
 
   // ================= Optional fields handling =================
-  private setOptionalUserData(data: Partial<userDomain>) {
-    if (data.getFirstName) this.setFirstName = data.getFirstName;
-    if (data.getLastName) this.setLastName = data.getLastName;
-    if (data.getEmail) this.setEmail = data.getEmail;
-    if (data.getPhone) this.setPhone = data.getPhone;
-    if (data.getCity) this.setCity = data.getCity;
+  private setOptionalUserData(data:UserDataDTO) {
+    console.log("dddddddddddddddddddddddddd fn  ",data ,"fn insiiiiiiide   ",data)
+    if (data.firstName !== undefined)
+      this.setFirstName = data.firstName;
+  
+    if (data.lastName !== undefined)
+      this.setLastName = data.lastName;
+  
+    if (data.email !== undefined)
+      this.setEmail = data.email;
+  
+    if (data.phone !== undefined)
+      this.setPhone = data.phone;
+  
+    if (data.city !== undefined)
+      this.setCity = data.city;
+  
+    // default role
+    this.setRole = "USER";
   }
 
   // ================= Addresses management =================
-  public getAddresses(): Address[] {
-    return this.addresses;
+  public addAddress(address: Address) {
+    if (!address.street) throw new Error("Street is required");
+    if (!address.city) throw new Error("City is required");
+
+    if (!address.country) address.country = "Tunis"; // default
+
+    this.addresses.push(address);
   }
 
-  public addAddress(address: Address) {
-    if (!address.street) {
-      throw new Error("Address must have a street field");
-    }
-    address.userId = this.getId;
-    this.addresses.push(address);
+
+
+  public getAddresses() {
+    return this.addresses;
   }
 
   public removeAddress(addressId: number) {
@@ -81,7 +106,7 @@ export default class UserAddressDomain extends userDomain {
       email: this.getEmail,
       phone: this.getPhone,
       city: this.getCity,
-      role: this.getRole,
+      role: this.getRole || "USER",
     };
   }
 }

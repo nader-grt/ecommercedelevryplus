@@ -1,24 +1,18 @@
-import { Request, Response, Router } from "express";
-import UserAddressRepo from "../../repo/userAddressRepo/UserAddressRepo";
-import { userRepo } from "../../repo/auth/userRepo/userRepo";
-import CreateUserAddressByAdminUserUseCase from "../../useCases/UserAddressUseCase/CreateUserAddressByAdminUserUseCase";
-import CreateUserAddressByAdminUserController from "../../controllers/UserAddress/CreateUserAddressByAdminUserController";
+ import { Request, Response, Router } from "express";
+
 import { verifyToken } from "../../middleware/verifyToken";
+import UserAddressRepo from "../../repo/userAddressRepo/UserAddressRepo";
+import CreateAddressByAdminUserController from "../../controllers/UserAddress/CreateAddressByAdminUserController";
+import CreateAddressByAdminUserUseCase from "../../useCases/UserAddressUseCase/CreateAddressByAdminUserUseCase";
 
+const router = Router();
 
+const userAddressRepo = new UserAddressRepo();
+const createUserAddressUseCase = new CreateAddressByAdminUserUseCase(userAddressRepo);
+const createAddressRoute = new CreateAddressByAdminUserController(createUserAddressUseCase);
 
-const router = Router() ;
+router.post("/addresses", verifyToken,  (req: Request, res: Response) => {
+    createAddressRoute.execute(req, res);
+});
 
-
-const  userAddressRepo  = new UserAddressRepo();
-const  createuserByAdmincaseUserRepo =  new  userRepo();
-const createUserAddressByAdminUserUseCase = new CreateUserAddressByAdminUserUseCase(userAddressRepo,createuserByAdmincaseUserRepo)
-
- const createUserAddressByAdminUserRoute = new CreateUserAddressByAdminUserController(createUserAddressByAdminUserUseCase)
-
-router.post("/users/:userId/addresses",verifyToken,(req:Request,res:Response) => {
-    createUserAddressByAdminUserRoute.execute
-
-})
-
-export default router
+export default router;
