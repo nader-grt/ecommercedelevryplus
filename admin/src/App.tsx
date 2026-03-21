@@ -15,6 +15,7 @@ import { EditCategorie, ListCategories } from "./modules/categories";
 import { CreateUser, EditUser, ListUsers } from "./modules/users";
 import { ListWeekDays, CreateWeekDay } from "./modules/weekDay";
 import { ListProducts } from "./modules/products";
+import { CreateUserAddress, EditUserAddress, ListUserAddress, ShowUserAddress } from "./modules/userAddress";
 
 
 
@@ -47,6 +48,15 @@ const App = () => {
    // show={showUser}
   />
 
+<Resource
+    name="usersAddress"
+    list={ListUserAddress}
+   create={CreateUserAddress}
+   show={ShowUserAddress}
+   edit={EditUserAddress}
+  
+   // show={showUser}
+  />
  <Resource
     name="categories" 
     //categories

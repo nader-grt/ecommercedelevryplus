@@ -5,6 +5,9 @@ const MyMenu = () => (
     <Menu.Item to="/" primaryText="Dashboard" />
     <Menu.Item to="/users" primaryText="Users" />
 
+    <Menu.Item to="/usersAddress" primaryText="usersWithAddress" />
+    
+
     <Menu.Item to="/products" primaryText="ProductsByCategory" />
     <Menu.Item to="/orders" primaryText="Orders" />
    

@@ -1,4 +1,4 @@
-import { adaptList, adaptListProductByCategory, adaptListProducts, adaptObject } from "../../apiAdapter";
+import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptGetOneUserAddress, adaptList, adaptListProductByCategory, adaptListProducts, adaptObject,adaptUserAddresses } from "../../apiAdapter";
 import { httpclientService } from "../../auth/httpclientService/httpclientService";
 
 const apiUrl = "http://localhost:4000/api";
@@ -46,11 +46,31 @@ const dataProvider: any = {
     }
     
   }
+   
+      if(resource === "usersAddress")
+      {
+        const { json } = await httpclientService(
+          `${apiUrl}/${resource}`
+        );
 
+        console.log("jsssssson ",json)
+        return adaptUserAddresses(json)
+
+      }
   return adaptList(json);
     },
 
   getOne: async (resource: any, params: any) => {
+
+    // if (resource === "usersAddress") {
+    //   //addresses
+    //   const url = `${apiUrl}/usersAddress/${params.id}`;
+  
+    //   console.log("object urllllllll  ",url)
+    //   const { json } = await httpclientService(url);
+  
+    //   return adaptGetOneUserAddress(json);
+    // }
     const { json } = await httpclientService(
       `${apiUrl}/${resource}/${params.id}`
     );
@@ -71,6 +91,20 @@ const dataProvider: any = {
   },
 
   getManyReference: async (resource: any, params: any) => {
+
+    if (resource === "usersAddress") {
+      //addresses
+      const url = `${apiUrl}/usersAddress/${params.id}`;
+  
+      const { json } = await httpclientService(url);
+  
+      // return {
+      //   data: json.data || json,
+      //   total: (json.data || json).length,
+      // };
+
+      return adaptGetManyUserAddresses(json)
+    }
     const { json } = await httpclientService(
       `${apiUrl}/${resource}?${params.target}=${params.id}`
     );
@@ -78,17 +112,63 @@ const dataProvider: any = {
   },
 
   create: async (resource: any, params: any) => {
+
+    console.log("createeeeee ")
+
+    if (resource.toLowerCase().includes("useraddress")) {
+      const url = `${apiUrl}/usersAddress`;
+  
+     
+  
+      const { json } = await httpclientService(url, {
+        method: "POST",
+        body: JSON.stringify(params.data),
+      });
+  
+    
+
+      const adapted = adaptCreateUserAddress(json);
+  
+     
+      const addr = json?.data?.addresses?.[0];
+
+    return {
+      data: {
+        id: addr?.id, 
+        userId: addr?.userId,
+        street: addr?.street,
+        city: addr?.city,
+        country: addr?.country,
+        zipCode: addr?.zipCode,
+      },
+    };
+      //return adapted; //
+    }
+  
+    // default
     const { json } = await httpclientService(`${apiUrl}/${resource}`, {
       method: "POST",
       body: JSON.stringify(params.data),
     });
-
+  
     return adaptObject(json);
     //return { data: json };
   },
 
   update: async (resource: any, params: any) => {
     console.log(  `${apiUrl}/${resource}/${params.id}`,  "gggggggggggggghhhhhhrrrrrrrrrrrr  ", resource, params, params.id);
+
+    if (resource === "userAddresses") {
+      const url = `${apiUrl}/usersAddress/${params.id}`;
+  
+      const { json } = await httpclientService(url, {
+        method: "PUT",
+        body: JSON.stringify(params.data),
+      });
+  
+      return adaptCreateUserAddress(json);
+    }
+
     const { json } = await httpclientService(
       `${apiUrl}/${resource}/${params.id}`,
       {

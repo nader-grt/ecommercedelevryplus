@@ -1,23 +1,15 @@
+export default function normalizeRecords(records: any[]): any[] {
+  return records.map((record) => {
+    const id =
+      record.id ?? //   id
+      record.categoryId ?? // categories
+      record.orderId ?? // orders
+      record.email ?? // users without id
+      Object.values(record)[0]; // :
 
-
-
-
-
- export default function normalizeRecords(records: any[]): any[] {
-    return records.map(record => {
-      const id =
-        record.id ??          //   id
-        record.categoryId ??  // categories
-        record.orderId ??     // orders
-        record.email ??       // users without id
-        Object.values(record)[0]; // : 
-  
-      return { ...record, id };
-    });
-  }
-
-
-  
+    return { ...record, id };
+  });
+}
 
 export const extractData = (json: any) => {
   if (json && json.data !== undefined) {
@@ -39,7 +31,6 @@ export const adaptListProducts = (json: any) => {
   // حماية من undefined
   const products = json?.data?.data || [];
 
-  // إذا لا يوجد منتجات → ترجع data فارغة بدون crash
   const records = products.map((p: any, index: number) => ({
     id: index + 1,
     name: p.nameProduct || "",
@@ -55,11 +46,80 @@ export const adaptListProducts = (json: any) => {
   };
 };
 
-export const adaptListProductByCategory = (json: any) => {
+export const adaptUserAddresses = (json: any) => {
+  const users = json?.data || [];
 
+  const records = users.flatMap((user: any) =>
+    user.addresses.map((addr: any, index: number) => ({
+      // id: `${user.id}-${index}`, // id
+      id: `${user.id}`,
+      // userId: user.id,
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || "",
+      phone: user.phone || "",
+
+      street: addr.street || "",
+      city: addr.city || "",
+      country: addr.country || "",
+      zipCode: addr.zipeCode || 0,
+    }))
+  );
+
+  return {
+    data: records,
+    total: records.length,
+  };
+};
+export const adaptCreateUserAddress = (json: any) => {
+  const addr = json?.data?.addresses?.[0];
+
+  if (!addr) {
+    throw new Error("No address returned from API");
+  }
+
+  return {
+    data: {
+      id: addr.id,
+      userId: addr.userId,
+      street: addr.street,
+      city: addr.city,
+      country: addr.country,
+      zipCode: addr.zipCode,
+    },
+  };
+};
+
+export const adaptGetOneUserAddress = (json: any) => {
+  const user = json?.data || json;
+
+  return {
+    data: {
+      id: user.id, //
+
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      phone: user.phone,
+
+      addresses: (user.addresses || []).map((addr: any) => ({
+        id: addr.id,
+        street: addr.street,
+        city: addr.city,
+        country: addr.country,
+
+        //
+        zipCode: addr.zipCode || addr.zipeCode,
+
+        userId: addr.userId,
+      })),
+    },
+  };
+};
+
+export const adaptListProductByCategory = (json: any) => {
   const products = json?.data?.products || [];
 
- 
   const records = products.map((p: any, index: number) => ({
     id: index + 1,
     name: p.nameProduct || "",
@@ -80,5 +140,27 @@ export const adaptObject = (json: any) => {
 
   return {
     data: record,
+  };
+};
+
+export const adaptGetManyUserAddresses = (json: any) => {
+  const user = json?.data;
+
+  const addresses = user?.addresses || [];
+
+  return {
+    data: addresses.map((addr: any) => ({
+      id: addr.id, //
+      userId: user.id,
+
+      street: addr.street,
+      city: addr.city,
+      country: addr.country,
+      delegation: addr.delegation,
+      addressSuplementaire: addr.addressSuplementaire,
+      zipCode: addr.zipCode || addr.zipeCode,
+    })),
+
+    total: addresses.length,
   };
 };
