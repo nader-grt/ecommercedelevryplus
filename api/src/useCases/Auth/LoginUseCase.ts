@@ -23,7 +23,7 @@ export default class LoginUseCase {
       console.log("dtoooooooo login ", dto);
 
       const user = await this._loginUserRepo.FindUserByEmailLogin(dto.email);
-      // console.log("uuuuuuuuuuuu  ",user)
+       console.log("uuuuuuuuuuuu  ",user)
 
       if (!user) {
         return { success: false, message: "user not found  " };
@@ -31,6 +31,8 @@ export default class LoginUseCase {
 
       //  console.log("this._userDomain  ",this._userDomain)
 
+      console.log("aaaaaa  ", dto.password,
+        user.password)
       const isMatch = await this._userDomain.comparePassword(
         dto.password,
         user.password

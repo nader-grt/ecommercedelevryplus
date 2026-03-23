@@ -2,14 +2,17 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
-  
-    
+  async up(queryInterface) {
 
-     await queryInterface.sequelize.query(`
-      CREATE OR REPLACE VIEW view_deliverer_work_days AS
+    // 🛡️ always safe drop first
+    await queryInterface.sequelize.query(`
+      DROP VIEW IF EXISTS view_deliverer_work_days;
+    `);
+
+    await queryInterface.sequelize.query(`
+      CREATE VIEW view_deliverer_work_days AS
       SELECT    
-        deliverer_dayWorks.id AS 'TDelDayWorksMiddleId', 
+        deliverer_dayWorks.id AS TDelDayWorksMiddleId, 
         Users.id AS TusersId,
         CONCAT(Users.firstName, ' ', Users.lastName) AS FullName,
         Users.role AS UserIsRole,
@@ -20,7 +23,7 @@ module.exports = {
         deliverers.carType AS TdelcarType
       FROM dayWorks
       LEFT JOIN deliverer_dayWorks 
-        ON dayWorks.ID = deliverer_dayWorks.dayWorkid
+        ON dayWorks.id = deliverer_dayWorks.dayWorkid
       LEFT JOIN deliverers 
         ON deliverers.id = deliverer_dayWorks.delivererid
       LEFT JOIN Employees    
@@ -29,14 +32,14 @@ module.exports = {
         ON Users.id = Employees.userId
         AND Users.role = 'deliverer';
     `);
-     
+
   },
 
-  async down (queryInterface, Sequelize) {
+  async down(queryInterface) {
 
     await queryInterface.sequelize.query(`
       DROP VIEW IF EXISTS view_deliverer_work_days;
     `);
-     
+
   }
 };

@@ -3,10 +3,10 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
    
-    await queryInterface.addColumn('OrderItems', 'productName', {
-      type: Sequelize.STRING,
-      allowNull: false,
-    });
+    // await queryInterface.addColumn('OrderItems', 'productName', {
+    //   type: Sequelize.STRING,
+    //   allowNull: false,
+    // });
 
    
     // await queryInterface.addColumn('OrderItems', 'totalPrice', {
@@ -26,6 +26,6 @@ module.exports = {
   
     await queryInterface.removeIndex('OrderItems', 'order_product_unique');
   //  await queryInterface.removeColumn('OrderItems', 'totalPrice');
-    await queryInterface.removeColumn('OrderItems', 'productName');
+   // await queryInterface.removeColumn('OrderItems', 'productName');
   },
 };

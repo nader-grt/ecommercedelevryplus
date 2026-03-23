@@ -66,6 +66,14 @@ import getSupplierRoute from  "./routes/SupplierRoute/GetSupplierRoute.js"
 
 //Secretary
 
+//company 
+
+import createCompanyRoute from  "./routes/CompanyRoute/CreateCompanyRoute.js"
+import updateCompanyRoute from  "./routes/CompanyRoute/UpdateCompanyRoute.js"
+import deleteCompanyRoute from  "./routes/CompanyRoute/DeleteCompanyRoute.js"
+import listCompanyRoute from  "./routes/CompanyRoute/ListCompanyRoute.js"
+import getCompanyRoute from  "./routes/CompanyRoute/GetCompanyRoute.js"
+
 
 import createSecretaryRoute from  "./routes/SecretaryRoute/CreateSecretaryRoute.js"
 import updateSecretaryRoute from  "./routes/SecretaryRoute/UpdateSecretaryRoute.js"
@@ -114,6 +122,23 @@ app.use(express.json());
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
+
+
+//company
+
+/**
+ import  from  "./routes/CompanyRoute/UpdateCompanyRoute.js"
+import  from  "./routes/CompanyRoute/DeleteCompanyRoute.js"
+import listCompanyRoute from  "./routes/CompanyRoute/ListCompanyRoute.js"
+import  from  "./routes/CompanyRoute/GetCompanyRoute.js"
+ */
+
+app.use("/api", listCompanyRoute);
+app.use("/api", getCompanyRoute);
+app.use("/api", updateCompanyRoute);
+app.use("/api", deleteCompanyRoute);
+app.use("/api",createCompanyRoute);
+
 
 // user + profile
 app.use("/api", createUserAddressByAdminRoutes);

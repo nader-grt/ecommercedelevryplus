@@ -11,6 +11,7 @@ user:{
   lastName?: string;
   email?: string;
   phone?: string;
+  role:string;
 },
   userAddress: {
  
@@ -32,8 +33,9 @@ export default class UpdateUserAddressByAdminUserUseCase {
 
   async execute(data: IUpdateUserAddressDTO): Promise<any> {
 
-    const { actor, userAddress } = data;
+    const { actor, userAddress,user } = data;
 
+    console.log("dataaaaa usecase ",data)
     let userId: number | undefined;
 
     try {
@@ -62,30 +64,18 @@ export default class UpdateUserAddressByAdminUserUseCase {
       }
 
    
-      const result = await this._userAddressRepo.replaceUserAddresses(
-        userId,
-       userAddress
-      );
+      //console.log("uuuusecase s ", userId,  data?.user?.userId, userAddress,"  usecase end  ")
+        const result:any =  await this._userAddressRepo.updatedUserAddresses(Number(data?.user.userId), data.user, userAddress)
+    
 
-      const formatted = result.map((addr: any) => {
-        const data = addr.dataValues ? addr.dataValues : addr;
-      
-        return {
-          id: data.id,
-          street: data.street,
-          city: data.city,
-          country: data.country,
-          zipCode: data.zipeCode,
-          userId: data.userId,
-        };
-      });
-      
-      console.log("usecase result:", formatted);
-      
-      return {
-        userId,
-        addresses: formatted,
-      };
+      //console.log("rrrrrrrrrr22222222222222 ",result)
+
+// 
+
+
+  return {success:true,data:result.data
+   
+  }
      
    
 

@@ -12,32 +12,26 @@ export default class UpdateUserAddressByAdminUserController extends BaseControll
   }
 
   
-  private formatAddresses(addresses: any) {
-    if (Array.isArray(addresses)) {
-      return addresses.map((addr: any) => this.mapAddress(addr));
-    }
-
-    if (addresses?.data && Array.isArray(addresses.data)) {
-      return addresses.data.map((addr: any) => this.mapAddress(addr));
-    }
-
-    return [];
-  }
-
-  private mapAddress(addr: any) {
-    const data = addr?.dataValues ? addr.dataValues : addr;
-
+  private   formatUserResponse = (data: any) => {
     return {
       id: data.id,
-      street: data.street,
-      city: data.city,
-      country: data.country,
-      zipCode: data.zipCode || data.zipeCode,
-      delegation: data.delegation,
-      addressSuplementaire: data.addressSuplementaire,
-      userId: data.userId,
+      firstName: data.firstName,
+      lastName: data.lastName,
+      phone: data.phone,
+      role: data.role,
+  
+      addresses: (data.addresses || []).map((addr: any) => ({
+        id: addr.id,
+        street: addr.street,
+        city: addr.city,
+        country: addr.country,
+        zipCode: addr.zipeCode, // mapping
+        delegation: addr.delegation,
+        addressSuplementaire: addr.addressSuplementaire,
+      })),
     };
-  }
+  };
+
 
   protected async executeImpl(req: RequestAuth, res: Response): Promise<any> {
     try {
@@ -49,11 +43,10 @@ export default class UpdateUserAddressByAdminUserController extends BaseControll
       };
 
   
-     // const userAddress = req.body.addresses;
  
       const body = req.body;
 
-  
+ 
       const { addresses, userId, ...userData } = body;
 
 
@@ -71,17 +64,14 @@ export default class UpdateUserAddressByAdminUserController extends BaseControll
         
       }; 
 
-   //   console.log("ddddddddddddddd ",dto)
   
-       const result = await this._useCase.execute(dto);
+        const result = await this._useCase.execute(dto);
 
-       console.log("rrrrrrrrrrr  ",result)
-      const formatted = {
-        id: result.userId,
-        addresses: this.formatAddresses(result.addresses),
-      };
+  //  console.log("rrrrrrrrrrr  ",result)
+     
+    const dataResult :any = this.formatUserResponse(result.data)
 
-      return this.resultValue(res, "user address updated successfully", formatted);
+       return this.resultValue(res, "user address updated successfully", dataResult);
 
     } catch (error: any) {
       console.error("UpdateUserAddress Error:", error);

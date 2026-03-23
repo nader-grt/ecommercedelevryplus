@@ -1,10 +1,14 @@
 'use strict';
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up (queryInterface, Sequelize) {
- 
-   
+  async up(queryInterface) {
+
+    // 🛡️ safe drop before create
+    await queryInterface.sequelize.query(`
+      DROP VIEW IF EXISTS vw_deliverer_dayworks;
+    `);
+
+    // create view safely
     await queryInterface.sequelize.query(`
       CREATE VIEW vw_deliverer_dayworks AS
       SELECT
@@ -20,15 +24,14 @@ module.exports = {
       JOIN deliverer_dayWorks ddw ON ddw.delivererid = d.id
       JOIN dayWorks dw ON ddw.dayWorkid = dw.id;
     `);
-     
+
   },
 
-  async down (queryInterface, Sequelize) {
-
+  async down(queryInterface) {
 
     await queryInterface.sequelize.query(`
       DROP VIEW IF EXISTS vw_deliverer_dayworks;
     `);
-     
+
   }
 };

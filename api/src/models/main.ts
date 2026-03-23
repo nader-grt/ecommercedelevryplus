@@ -19,6 +19,7 @@ import { VariantModel } from "./Variant";
 import { InventorieModel } from "./Inventorie";
 import { WarehouseModel } from "./Warehouse";
 import { AddressModel } from "./Address";
+import { CompanyModel } from "./Company";
 
 // Initialize models
 export const User = UserModel(sequelize);
@@ -39,6 +40,77 @@ export const Variant = VariantModel(sequelize)
 export const Inventorie  = InventorieModel(sequelize)
 export const Warehouse  = WarehouseModel(sequelize) ;
 export const Address  = AddressModel(sequelize)
+export const Company = CompanyModel(sequelize);
+
+
+
+
+
+
+
+/* =========================
+  User - Company (N : 1
+========================= */
+Company.hasMany(User, {
+   foreignKey: "companyId",
+   as: "users",
+ });
+ 
+ User.belongsTo(Company, {
+   foreignKey: "companyId",
+   as: "company",
+ });
+
+ /* =========================
+   Company - Warehouse (1 : N)
+========================= */
+
+Company.hasMany(Warehouse, {
+   foreignKey: "companyId",
+   as: "warehouses",
+ });
+ 
+ Warehouse.belongsTo(Company, {
+   foreignKey: "companyId",
+   as: "company",
+ });
+
+
+
+
+ Company.hasMany(Order, {
+   foreignKey: "companyId",
+   as: "orders",
+ });
+ 
+ Order.belongsTo(Company, {
+   foreignKey: "companyId",
+   as: "company",
+ });
+
+
+
+ Company.hasMany(Order, {
+   foreignKey: "buyerCompanyId",
+   as: "buyerOrders",
+ });
+ 
+ Order.belongsTo(Company, {
+   foreignKey: "buyerCompanyId",
+   as: "buyerCompany",
+ });
+
+ Company.hasMany(Order, {
+   foreignKey: "supplierCompanyId",
+   as: "supplierOrders",
+ });
+ 
+ Order.belongsTo(Company, {
+   foreignKey: "supplierCompanyId",
+   as: "supplierCompany",
+ });
+
+
 /* =========================
    User - RefreshToken (1 : N)
 ========================= */

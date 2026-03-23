@@ -39,7 +39,16 @@ module.exports = {
    All 
   
   npx sequelize-cli db:migrate:undo:all
+  companies
+  npx sequelize-cli migration:generate --name create-companies
 
+  npx sequelize-cli migration:generate --name add-companyid-to-users
+
+  npx sequelize-cli migration:generate --name add-companyid-to-warehouses
+
+  npx sequelize-cli migration:generate --name add-companyid-to-retailshops
+
+  npx sequelize-cli migration:generate --name add-fields-to-orders
 
 npx sequelize-cli migration:generate --name create-Products
 
@@ -100,6 +109,9 @@ variants
 npx sequelize-cli migration:generate --name create-Variants
 
 
+npx sequelize-cli migration:generate --name add-users-email-unique-constraint
+
+
 
 Warehouses
 
@@ -144,6 +156,14 @@ npx sequelize-cli migration:generate --name add-constrain_unique_order_product-f
 npx sequelize-cli migration:generate --name add-champ_DeliverieOrders-timesstamp
 
 npx sequelize-cli migration:generate --name create-deliverieswithorder-table
+
+
+ Retail Shops
+npx sequelize-cli migration:generate --name create-RetailShops
+ Shop ↔ Warehouses (Pivot Table)
+npx sequelize-cli migration:generate --name create-ShopWarehouses
+ Inventory Reservations
+npx sequelize-cli migration:generate --name create-InventoryReservations
 run  xampp  
 
 add cascade 
@@ -165,6 +185,8 @@ npx sequelize-cli migration:generate --name fix-user-address-relation
 fixed userAddress 
 npx sequelize-cli migration:generate --name add-city-country-to-userAddresses
 
+fix Setting 
+npx sequelize-cli migration:generate --name add-settings-missing-fields
 
 
 

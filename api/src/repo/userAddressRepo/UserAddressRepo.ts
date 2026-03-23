@@ -119,12 +119,15 @@ export default class UserAddressRepo extends IUserAddressRepo
 
   const t = await sequelize.transaction();
 
+
+  console.log("replaceeee  repo   ",userId,addresses ,"  end repoooooooooo  ")
   try {
     const user = await User.findOne({
       where: { id: userId },
       transaction: t,
     });
 
+    console.log("userrrrrr  repooooooo ",user)
     if (!user) {
       throw new Error("User not found");
     }
@@ -156,6 +159,73 @@ export default class UserAddressRepo extends IUserAddressRepo
     throw error;
   }
 }
+
+public async updatedUserAddresses(
+  userId: number,
+  userInfo: any,
+  addresses: any[]
+): Promise<any> {
+  const t = await sequelize.transaction();
+
+  console.log("object updated ", userId, "aaa", userInfo, "bb", addresses);
+
+  try {
+    // ================= UPDATE USER =================
+    await User.update(userInfo, {
+      where: { id: userId },
+      transaction: t,
+    });
+
+    // ================= DELETE OLD ADDRESSES =================
+    await Address.destroy({
+      where: { userId },
+      transaction: t,
+    });
+
+    // // ================= CREATE NEW ADDRESSES =================
+    const newAddresses = addresses.map((addr) => ({
+      userId,
+      street: addr.street,
+      city: addr.city,
+      country: addr.country,
+      delegation: addr.delegation || "",
+      addressSuplementaire: addr.addressSuplementaire || "",
+      zipeCode: addr.zipCode || 1000,  
+    }));
+
+     await Address.bulkCreate(newAddresses, { transaction: t });
+
+    // ================= GET UPDATED DATA =================
+    const updatedUser = await User.findByPk(userId, {
+      include: [
+        {
+          model: Address,
+          as: "addresses",
+        },
+      ],
+      transaction: t,
+      // raw:true,
+      // nest: true,
+    });
+
+
+    const cleanData = updatedUser?.get({ plain: true });
+
+
+    await t.commit();
+
+    return {
+      message: "user address updated successfully",
+      data: cleanData,
+    };
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
+}
+
+
+
  public async GetUsersWithAddressByAdmin(userId?: number): Promise<any> {
   try {
     const whereClause = userId ? { id: userId } : undefined;

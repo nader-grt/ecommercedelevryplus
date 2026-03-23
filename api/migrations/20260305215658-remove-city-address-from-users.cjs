@@ -1,22 +1,35 @@
 "use strict";
 
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.removeColumn("Users", "city");
 
-    await queryInterface.removeColumn("Users", "address");
+    const table = await queryInterface.describeTable("Users");
+
+    if (table.city) {
+      await queryInterface.removeColumn("Users", "city");
+    }
+
+    if (table.address) {
+      await queryInterface.removeColumn("Users", "address");
+    }
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.addColumn("Users", "city", {
-      type: Sequelize.STRING,
-      allowNull: false,
-    });
 
-    await queryInterface.addColumn("Users", "address", {
-      type: Sequelize.STRING,
-      allowNull: false,
-    });
+    const table = await queryInterface.describeTable("Users");
+
+    if (!table.city) {
+      await queryInterface.addColumn("Users", "city", {
+        type: Sequelize.STRING,
+        allowNull: false,
+      });
+    }
+
+    if (!table.address) {
+      await queryInterface.addColumn("Users", "address", {
+        type: Sequelize.STRING,
+        allowNull: false,
+      });
+    }
   },
 };

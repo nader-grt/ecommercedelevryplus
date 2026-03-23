@@ -39,18 +39,18 @@ export default class CreateUserAddressByAdminUserUseCase
                     const { actor, userAddress } = data;
                      
                            
-                   // console.log("dddddddddddddddddd ",data ,"11123 123   ",{ actor, userAddress } )
+                    console.log("dddddddddddddddddd ",data ,"11123 123   ",{ actor, userAddress } )
                     let userId: number | undefined;
                     let isCreatingUser = false;
 
            try {
             
-            if (actor.actorRole === "USER") {
+            if (actor.actorRole === "user") {
                 userId = actor.actorId;
               }
           
               // ================= ADMIN =================
-              else if (actor.actorRole === "ADMIN") {
+              else if (actor.actorRole === "admin") {
           
                 if (userAddress.userId) {
                   userId = userAddress.userId;
