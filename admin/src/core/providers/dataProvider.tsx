@@ -1,5 +1,6 @@
-import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptGetOneUserAddress, adaptList, adaptListProductByCategory, adaptListProducts, adaptObject,adaptUserAddresses } from "../../apiAdapter";
+import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptGetOneUserAddress, adaptList, adaptListCompanies, adaptListProductByCategory, adaptListProducts, adaptObject,adaptOneCompany,adaptUpdateUserAddress,adaptUserAddresses } from "../../apiAdapter";
 import { httpclientService } from "../../auth/httpclientService/httpclientService";
+
 
 const apiUrl = "http://localhost:4000/api";
 
@@ -35,6 +36,11 @@ const dataProvider: any = {
 
   const { json } = await httpclientService(url);
 
+
+  if (resource === "companies") {
+    return adaptListCompanies(json);
+  }
+
   if (resource === "products") {
 
     if (categoryId) {
@@ -62,19 +68,19 @@ const dataProvider: any = {
 
   getOne: async (resource: any, params: any) => {
 
-    // if (resource === "usersAddress") {
-    //   //addresses
-    //   const url = `${apiUrl}/usersAddress/${params.id}`;
-  
-    //   console.log("object urllllllll  ",url)
-    //   const { json } = await httpclientService(url);
-  
-    //   return adaptGetOneUserAddress(json);
-    // }
+ 
     const { json } = await httpclientService(
       `${apiUrl}/${resource}/${params.id}`
     );
  
+    if (resource === "companies") {
+        
+      console.log("*****  ", `${apiUrl}/${resource}/${params.id}`)
+      const { json } = await httpclientService(
+        `${apiUrl}/${resource}/${params.id}`
+      );
+      return adaptOneCompany(json);
+    }
 
     return adaptObject(json);
   },
@@ -159,14 +165,17 @@ const dataProvider: any = {
     console.log(  `${apiUrl}/${resource}/${params.id}`,  "gggggggggggggghhhhhhrrrrrrrrrrrr  ", resource, params, params.id);
 
     if (resource === "userAddresses") {
+      console.log("fffffffffff ",params.data)
       const url = `${apiUrl}/usersAddress/${params.id}`;
   
+      console.log("usrllllllllllllll   ",url)
       const { json } = await httpclientService(url, {
         method: "PUT",
         body: JSON.stringify(params.data),
       });
   
-      return adaptCreateUserAddress(json);
+      console.log("jjjjjjjjjjjjjjjjjjjjjjj  ",json)
+      return adaptUpdateUserAddress(json);
     }
 
     const { json } = await httpclientService(

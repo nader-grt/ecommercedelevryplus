@@ -1,4 +1,4 @@
-import { List, Datagrid, TextField, ShowButton } from "react-admin";
+import { List, Datagrid, TextField } from "react-admin";
 
 export const ListWeekDays = () => (
   <List
@@ -28,7 +28,7 @@ export const ListWeekDays = () => (
       />
 
     
-      <ShowButton />
+      {/* <ShowButton /> */}
     </Datagrid>
   </List>
 );

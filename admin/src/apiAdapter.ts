@@ -27,6 +27,23 @@ export const adaptList = (json: any) => {
   };
 };
 
+export const adaptCompany = (item: any) => ({
+  ...item,
+  id: item.id,
+  isActive: Boolean(item.isActive),
+});
+
+export const adaptListCompanies = (json: any) => ({
+  data: json.data.map(adaptCompany),
+  total: json.data.length, //  until backend pagination
+});
+
+export const adaptOneCompany = (json: any) => ({
+
+  
+  data: adaptCompany(json.data),
+});
+
 export const adaptListProducts = (json: any) => {
   // حماية من undefined
   const products = json?.data?.data || [];
@@ -87,6 +104,25 @@ export const adaptCreateUserAddress = (json: any) => {
       country: addr.country,
       zipCode: addr.zipCode,
     },
+  };
+};
+
+// userAddressAdapter.ts
+
+export const adaptUpdateUserAddress = (json: any) => {
+  const data = json.data;
+
+  return {
+    id: data.id,
+    addresses: data.addresses?.map((addr: any) => ({
+      id: addr.id,
+      street: addr.street,
+      city: addr.city,
+      country: addr.country,
+      zipCode: addr.zipCode,
+      delegation: addr.delegation || "",
+      addressSuplementaire: addr.addressSuplementaire || "",
+    })) || [],
   };
 };
 

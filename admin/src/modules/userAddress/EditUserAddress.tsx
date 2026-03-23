@@ -21,7 +21,7 @@ import {
       <SimpleForm    toolbar={<CustomToolbar />}>
         <TextInput source="firstName" validate={required()} />
         <TextInput source="lastName" validate={required()} />
-        <TextInput source="email" type="email" validate={required()} />
+        {/* <TextInput source="email" type="email" validate={required()} /> */}
         <TextInput source="phone" validate={required()} />
         <TextInput source="role" />
   
