@@ -6,14 +6,30 @@ const API_REFRESH = "http://localhost:4000/api/refresh-token";
 /**
  * Build fetch options
  */
+// function buildOptions(options: RequestInit, token?: string | null): RequestInit {
+//   const accessToken = token ?? authProvider.getAccessToken();
+
+//   return {
+//     ...options,
+//     credentials: "include",
+//     headers: {
+//       "Content-Type": "application/json",
+//       ...(options.headers || {}),
+//       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+//     },
+//   };
+// }
+
 function buildOptions(options: RequestInit, token?: string | null): RequestInit {
   const accessToken = token ?? authProvider.getAccessToken();
+
+  const isFormData = options.body instanceof FormData;
 
   return {
     ...options,
     credentials: "include",
     headers: {
-      "Content-Type": "application/json",
+      ...(isFormData ? {} : { "Content-Type": "application/json" }),
       ...(options.headers || {}),
       ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
     },

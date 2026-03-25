@@ -14,7 +14,7 @@ import dataProvider from "./core/providers/dataProvider";
 import { EditCategorie, ListCategories } from "./modules/categories";
 import { CreateUser, EditUser, ListUsers } from "./modules/users";
 import { ListWeekDays, CreateWeekDay } from "./modules/weekDay";
-import { ListProducts } from "./modules/products";
+import { CreateProduct, ListProducts } from "./modules/products";
 import { CreateUserAddress, EditUserAddress, ListUserAddress, ShowUserAddress } from "./modules/userAddress";
 import { CreateCompany, EditCompany, ListCompany, ShowCompany } from "./modules/company";
 
@@ -82,7 +82,7 @@ const App = () => {
   />  
 
   <Resource  name="products"
-
+    create={CreateProduct}
   list={ListProducts}
   />
               <Resource name="dashboard"  />

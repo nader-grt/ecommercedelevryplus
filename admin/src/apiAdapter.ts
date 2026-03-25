@@ -43,6 +43,34 @@ export const adaptOneCompany = (json: any) => ({
   
   data: adaptCompany(json.data),
 });
+// products 
+ export const buildProductFormData = (data: any) => {
+  const formData = new FormData();
+
+
+  console.log("dddddddddddata  ",data)
+  formData.append("name", data.name);
+  formData.append("type", data.type);
+  formData.append("categoryId", String(data.categoryId));
+
+  if (data.type === "SIMPLE") {
+    formData.append("price", String(data.price));
+  }
+
+  if (data.type === "VARIABLE") {
+    formData.append(
+      "variants",
+      JSON.stringify(data.variants || [])
+    );
+    formData.append("price", String(data.price));
+  }
+
+  if (data.image?.rawFile) {
+    formData.append("imageName", data.image.rawFile);
+  }
+
+  return formData;
+};
 
 export const adaptListProducts = (json: any) => {
   // حماية من undefined

@@ -1,4 +1,4 @@
-import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptGetOneUserAddress, adaptList, adaptListCompanies, adaptListProductByCategory, adaptListProducts, adaptObject,adaptOneCompany,adaptUpdateUserAddress,adaptUserAddresses } from "../../apiAdapter";
+import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptGetOneUserAddress, adaptList, adaptListCompanies, adaptListProductByCategory, adaptListProducts, adaptObject,adaptOneCompany,adaptUpdateUserAddress,adaptUserAddresses, buildProductFormData } from "../../apiAdapter";
 import { httpclientService } from "../../auth/httpclientService/httpclientService";
 
 
@@ -120,7 +120,22 @@ const dataProvider: any = {
   create: async (resource: any, params: any) => {
 
     console.log("createeeeee ")
-
+       
+    if(resource === "products")
+    {
+      const url = `${apiUrl}/products`;
+  
+     let  body :any = buildProductFormData(params.data);
+       console.log(params.data ,  "   bodyyyyyyyyyy",body)
+     const isFormData = body instanceof FormData;
+      const { json } = await httpclientService(url, {
+        method: "POST",
+        body:  isFormData ? body : JSON.stringify(params.data),
+      });
+      return {
+        data: json.data,
+      };
+    }
     if (resource.toLowerCase().includes("useraddress")) {
       const url = `${apiUrl}/usersAddress`;
   
