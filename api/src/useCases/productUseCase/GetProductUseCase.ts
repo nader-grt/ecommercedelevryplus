@@ -35,14 +35,15 @@ export default class GetProductUseCase
                               console.log("step 3 usecase ",productId)
                          const product =         await this._productRepoUseCase.GetProductById(productId) ;
 
-                         console.log("prooo  ",product)
+                         const product2 =         await this._productRepoUseCase.GetProductWithVariantsById(productId) ;
+                         console.log("prooo  ",product2)
 
                          if(!product)
                          {
                             return {success :false ,message : "product not found "}
                          }
 
-                         return {success :true ,product : product}  ;
+                         return {success :true ,product : product2}  ;
                           
                              } catch (error) {
                                 console.log(error)

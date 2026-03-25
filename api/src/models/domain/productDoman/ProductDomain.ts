@@ -2,13 +2,21 @@ import VariantDomain from "../VariantDomain/VariantDomain";
 
 export default class ProductDomain {
 
-  private id!: number
-  private name: string = ""
-  private price: number = 0
+  // private id!: number
+  // private name: string = ""
+  // private price: number = 0
+  // private nameImage!: string
+  // private categoryId!: number
+  // private supplierId!: number
+  // private variants: VariantDomain[] = []
+
+  private name!: string
+  private price!: number | any ;
   private nameImage!: string
   private categoryId!: number
-  private supplierId!: number
+  private supplierId!: number | any
   private variants: VariantDomain[] = []
+  private type: "SIMPLE" | "VARIABLE" = "SIMPLE"
 
   constructor(props?: {
     name: string
@@ -17,7 +25,7 @@ export default class ProductDomain {
     categoryId: number
   }) {
 
-    this.id = Date.now()
+   // this.id = Date.now()
 
     if (props) {
       this.price = props.price
@@ -30,12 +38,15 @@ export default class ProductDomain {
 
   public addVariant(color: string, size: string, price: number) {
 
-    const variant = new VariantDomain(this.id, color, size, price)
+    if (this.type === "SIMPLE") {
+      this.type = "VARIABLE"
+    }
+
+    const variant = new VariantDomain(color, size, price)
 
     this.variants.push(variant)
 
     return variant
-
   }
 
   public get getName(): string {
@@ -75,8 +86,13 @@ export default class ProductDomain {
     return this.supplierId
   }
 
-  public  getVariants() {
-    return this.variants;
+  public getType() {
+    return this.type
   }
+
+  public getVariants() {
+    return this.variants
+  }
+ 
 
 }

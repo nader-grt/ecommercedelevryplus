@@ -28,8 +28,9 @@ export default class GetAllProductsFiltredByCategoryIdUseCase
                  //   console.log({ page, perPage, sort, order, filter } ,"dtooooooooo  ",dto)
                     
 
-                   const result =         await this._useCaseproductRepo.getAllProductsFiltred(dto,notfiltred)
+                 //  const result =         await this._useCaseproductRepo.getAllProductsFiltred(dto,notfiltred)
 
+                   const result =         await this._useCaseproductRepo.getAllProductVariantsFiltred(dto,notfiltred)
                //    console.log("rrrrrrrrrrrr  ",result)
                    if (result.data.length === 0) {
 

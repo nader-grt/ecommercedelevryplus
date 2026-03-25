@@ -185,7 +185,7 @@ OrderItem.belongsTo(Product, { foreignKey: "productId", as: "product" });
 
 Product.hasMany(Variant ,{ foreignKey: "productId", as: "variants",  onDelete: "CASCADE",
    onUpdate: "CASCADE" })
-Variant.belongsTo(Product ,{ foreignKey: "productId", as: "products" })
+Variant.belongsTo(Product ,{ foreignKey: "productId", as: "product" })
 
 
 

@@ -8,25 +8,7 @@
   "http://127.0.0.1:5173",
   ];
 
-//  export const corsOptions: CorsOptions = {
-//     origin: (origin, callback) => {
-      
-//       if (!origin) return callback(null, true);
-  
-//       if (allowedOrigins.includes(origin)) {
-//         callback(null, true);
-//       } else {
-//         callback(new Error("CORS: Origin not allowed"));
-//       }
-//     },
-  
-//     methods: ["GET", "POST", "PUT", "DELETE"],
-//     allowedHeaders: [
-//       "Content-Type",
-//       "Authorization"
-//     ],
-//     credentials: true
-//   };
+
 
 
 export const corsOptions = {
@@ -38,8 +20,18 @@ export const corsOptions = {
       callback(new Error("CORS: Origin not allowed"));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true, // ✅ هذا السطر مهم للسماح بإرسال cookies
+
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Accept",
+    "Origin",
+  ],
+
+  credentials: true,
+
+  optionsSuccessStatus: 200,
 };
     

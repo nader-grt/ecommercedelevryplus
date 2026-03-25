@@ -116,13 +116,21 @@ import { folderPath } from "./filesystem/fileHandle.js";
 const app = express();
 
 // Middleware
-app.use(express.json());
+// app.use(express.json());
 
 
+
+// app.use(cors(corsOptions));
+// app.use(cookieParser());
 
 app.use(cors(corsOptions));
+
+// 2. Cookie parser
 app.use(cookieParser());
 
+// 3. JSON only for JSON requests
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 //company
 

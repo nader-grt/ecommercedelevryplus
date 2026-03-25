@@ -1,6 +1,6 @@
 import { InferAttributes, Op } from "sequelize";
 import ProductDomain from "../../models/domain/productDoman/ProductDomain";
-import { Product, sequelize } from "../../models/main";
+import { Product, sequelize, Variant } from "../../models/main";
 import productRepoInterface from "./productRepoInterface";
 import QueryBuilder from "../../util/QuiryBuilder";
 
@@ -63,7 +63,7 @@ export default class ProductRepo extends productRepoInterface {
           nameImage: product.getImageProduct,
           categoryId: categoryId,
           supplierId: supplierId,
-        },
+          type:product.getType,        },
         { transaction: t }
       );
       await t.commit();
@@ -203,6 +203,114 @@ export default class ProductRepo extends productRepoInterface {
       console.error(error);
       throw error;
   
+    }
+  }
+
+  public async GetProductWithVariantsById(id: number): Promise<any> {
+    try {
+      const product = await Product.findOne({
+        where: { id },
+        include: [
+          {
+            model: sequelize.models.Variant,
+            as: "variants",
+            required: false,
+          },
+        ],
+      });
+  
+      if (!product) {
+        return null;
+      }
+  
+      return product;
+    } catch (error) {
+      console.error("GetProductById Error:", error);
+      throw new Error("Failed to fetch product");
+    }
+  }
+
+ public async createProductWithVariants(
+    product: any,
+    variants: any[],
+    transaction?: any
+  ): Promise<any> {
+  
+    const t = transaction || await sequelize.transaction();
+  
+    try {
+  
+      // create product
+      const createdProduct = await Product.create(product, {
+        transaction: t,
+      });
+  
+      //  create variants (if exist)
+      if (variants && variants.length > 0) {
+  
+        const formattedVariants = variants.map((v) => ({
+          productId: createdProduct.id,
+          sku: v.getSKU,
+          color: v.getColor,
+          size: v.getSize,
+          price: v.getPrice,
+        }));
+  
+        await sequelize.models.Variant.bulkCreate(formattedVariants, {
+          transaction: t,
+        });
+      }
+  
+      if (!transaction) await t.commit();
+  
+      return createdProduct;
+  
+    } catch (error) {
+  
+      if (!transaction) await t.rollback();
+  
+      throw error;
+    }
+  }
+
+
+  public async getAllProductVariantsFiltred(
+    cleanQuery: any,
+    notFiltred: any
+  ): Promise<any> {
+    try {
+      const qb = new QueryBuilder(cleanQuery, Product)
+        .filter()
+        .sort()
+        .paginate();
+  
+      const options = qb.build();
+  
+      const { rows, count } = await Product.findAndCountAll({
+        ...options,
+      
+        include: [
+          {
+            model: Variant,
+            as: "variants",
+            attributes: {
+              exclude: ["createdAt", "updatedAt"]
+            }
+          },
+        ],
+      
+        distinct: true,
+        nest: true,
+        raw: true
+      });
+  
+      return {
+        data: rows,
+        total: count || 0,
+      };
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
   }
 }

@@ -5,11 +5,24 @@ import GetAllProductsFiltredByCategoryIdUseCase from "../../useCases/productUseC
 interface listProductFiltredDTO
 {
    nameProduct:string ;
-   priceProdust:number;
+   priceProduct:number;
    urlImage:string;
    categoryId: number ;
    supplierId: number ;
 }
+
+interface ProductVariantDTO {
+  id: number;
+  nameProduct: string;
+  priceProduct: number;
+  urlImage: string;
+  categoryId: number;
+  supplierId: number | null;
+  type: string;
+  variants: any[];
+}
+
+
 
 export default class GetAllProductsFiltredByCategoryIdController extends BaseController
 {
@@ -19,11 +32,28 @@ export default class GetAllProductsFiltredByCategoryIdController extends BaseCon
   //  console.log("pppppppppppppppp ",products)
    return products.map((p) => ({
        nameProduct: p.name,
-       priceProdust: p.price,
+       priceProduct: p.price,
        urlImage: `${process.env.BASE_URL}/images/${p.nameImage}`,
        categoryId: p.categoryId,
        supplierId: p.supplierId
      }));
+  }
+
+
+  private listProductVariants(products: any[]): ProductVariantDTO[] {
+
+    console.log("pppppppppppppp  ",products)
+    return products.map((p) => ({
+      id: p.id,
+      nameProduct: p.name,
+      priceProduct: p.price,
+      urlImage: `${process.env.BASE_URL}/images/${p.nameImage}`,
+      categoryId: p.categoryId,
+      supplierId: p.supplierId,
+      type: p.type,
+  
+      variants: p.variants || [],
+    }));
   }
                 private _getAllProductsFiltredByCategoryIdUseCase!:GetAllProductsFiltredByCategoryIdUseCase
                       constructor(getAllProductsFiltredByCategoryIdUseCase:GetAllProductsFiltredByCategoryIdUseCase)
@@ -77,11 +107,14 @@ export default class GetAllProductsFiltredByCategoryIdController extends BaseCon
                          }
                         return this.resultValue(res,resultFailed)
 
-                    }
-                          const resultlistProductFiltred :any = await this.listProduct(resultValue.data)
 
-                  console.log("resultlistProductFiltred  ",resultlistProductFiltred)
-                    return this.resultValue(res,result.message,{data:resultlistProductFiltred,
+                    }
+
+                        //  const resultlistProductFiltred :any = await this.listProduct(resultValue.data)
+
+                          const resultlistProductVariantsFiltred :any = await this.listProductVariants(resultValue.data)
+
+                    return this.resultValue(res,result.message,{data:resultlistProductVariantsFiltred,
                       total:result?.total
                     })
                     

@@ -1,26 +1,33 @@
 export default class VariantDomain {
 
-  private productId!: number;
-  private color!: string;
-  private size!: string;
-  private price!: number;
+  private color: string;
+  private size: string;
+  private price: number;
   private sku: string;
-  constructor(productId: number, color: string, size: string, price: number) {
-    this.productId = productId;
+
+  constructor(color: string, size: string, price: number) {
+
+    if (!color || !size) {
+      throw new Error("Color and size are required");
+    }
+
+    if (price <= 0) {
+      throw new Error("Variant price must be greater than zero");
+    }
+
     this.color = color;
     this.size = size;
     this.price = price;
+
     this.sku = this.generateSKU();
   }
 
-
-
   private generateSKU(): string {
-    const timestamp = Date.now().toString().slice(-4); //   
-    return `${this.productId}-${this.color.toUpperCase()}-${this.size.toUpperCase()}-${timestamp}`;
+    const timestamp = Date.now().toString().slice(-4);
+
+    return `${this.color.toUpperCase()}-${this.size.toUpperCase()}-${timestamp}`;
   }
 
-  // Getters
   public get getSKU(): string {
     return this.sku;
   }
@@ -36,8 +43,5 @@ export default class VariantDomain {
   public get getPrice(): number {
     return this.price;
   }
-
-
-
 
 }

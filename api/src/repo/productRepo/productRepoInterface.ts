@@ -14,5 +14,8 @@ export default abstract class productRepoInterface
 
   protected abstract getAllProductsFiltred(cleanQuery:any,notFiltred:any):Promise<any>;
       //  static  IsExistProduct():Promise<void> ;
+      protected abstract createProductWithVariants(products:any,variants:any):Promise<any>;
+      protected abstract GetProductWithVariantsById(id:number):Promise<void> ;
+      protected abstract getAllProductVariantsFiltred(cleanQuery:any,notFiltred:any):Promise<any>;
 
 }

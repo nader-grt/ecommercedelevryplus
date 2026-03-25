@@ -49,7 +49,12 @@ export default class FileHandler {
       },
     });
 
-    this.upload = multer({ storage });
+    this.upload = multer({
+      storage,
+      limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB
+      }
+    });
   }
 
   // Middleware for routes

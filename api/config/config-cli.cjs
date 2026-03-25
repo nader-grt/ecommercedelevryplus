@@ -38,6 +38,23 @@ module.exports = {
 
    All 
   
+
+   ALL TRIGGER 
+
+    Migration: Variant INSERT Trigger
+ npx sequelize-cli migration:generate --name create-companies
+
+ 🚀 ✅ Best Practice Migration Names
+🔵 1. Variant INSERT Trigger
+   npx sequelize-cli migration:generate --name   create-trigger-prevent-variant-insert-on-simple-product
+🔵 2. Variant UPDATE Trigger
+ npx sequelize-cli migration:generate --name   create-trigger-prevent-variant-update-on-simple-product
+🔵 3. Product UPDATE Trigger
+ npx sequelize-cli migration:generate --name  create-trigger-prevent-product-type-downgrade-to-simple
+🔵 4. Product DELETE Trigger
+  npx sequelize-cli migration:generate --name   create-trigger-prevent-product-deletion-with-variants
+
+
   npx sequelize-cli db:migrate:undo:all
   companies
   npx sequelize-cli migration:generate --name create-companies
@@ -51,6 +68,14 @@ module.exports = {
   npx sequelize-cli migration:generate --name add-fields-to-orders
 
 npx sequelize-cli migration:generate --name create-Products
+
+//VariantPriceTiers
+
+npx sequelize-cli migration:generate --name create-VariantPriceTiers
+
+// fix table Products type 
+npx sequelize-cli migration:generate --name fix-Products-Simple-Variable
+
 
 //RefreshTokens
 npx sequelize-cli migration:generate --name create-RefreshTokens

@@ -4,12 +4,20 @@ import CategoryRepo from "../../repo/categoryRepo/categoryRepo";
 import ProductRepo from "../../repo/productRepo/productRepo";
 import SupplierRepo from "../../repo/SupplierRepo/SupplierRepo";
 
+interface CreateVariantDTO {
+  sku?: string;
+  color?: string;
+  size?: string;
+  price?: number;
+}
+
 interface CreatProductDTO {
   nameProduct: string;
-  priceProduct: number;
+  priceProduct: number | any;
   categoryIdProduct: number;
   supplierIdProduct: number | null;
   imageName: string;
+  variants?: CreateVariantDTO[];
 }
 
 export default class CreateProductUseCase {
@@ -31,50 +39,110 @@ export default class CreateProductUseCase {
   }
 
   async execute(dto: CreatProductDTO): Promise<any> {
-    
     const {
       nameProduct,
       priceProduct,
       categoryIdProduct,
       supplierIdProduct,
       imageName,
+      variants = [],
     } = dto;
     try {
-      const category: any = await this._categoryRepoUseCase.GetCategoryById(
+      // =====================
+      // VALIDATION
+      // =====================
+
+      if (!nameProduct) throw new Error("Name required");
+
+      const category = await this._categoryRepoUseCase.GetCategoryById(
         Number(categoryIdProduct)
       );
-      const supplier: any = await this._supplierRepoUseCase.GetSupplierByID(
-        Number(supplierIdProduct)
-      );
+
+      if (!category) throw new Error("Category not found");
+
+      const supplier = supplierIdProduct
+        ? await this._supplierRepoUseCase.GetSupplierByID(
+            Number(supplierIdProduct)
+          )
+        : null;
+
       const supId = supplier ? supplier.id : null;
 
-      if (!category) {
-        return { success: false, message: "category not found" };
-      }
+      const isExist = await this._productRepoUseCase.IsExistProductByName(
+        nameProduct
+      );
 
-      const isFindProName: boolean =
-        await this._productRepoUseCase.IsExistProductByName(nameProduct);
+      if (isExist) throw new Error("Product exists");
 
-   
-      if (isFindProName) {
-     
-        throw new Error("Product name already exists");
-      }
+      // =====================
+      // DOMAIN
+      // =====================
 
       const product = new ProductDomain();
-      product.setName = nameProduct;
-      product.setPrice = priceProduct;
 
+      product.setName = nameProduct;
       product.setImageProduct = imageName;
 
-      await this._productRepoUseCase.createProduct(product, category.id, supId);
+      if (variants.length > 0) {
+        const unique = new Set();
+        const prices: number[] = [];
+        for (const v of variants) {
+          if (
+            !v.color ||
+            !v.size ||
+            v.price === undefined ||
+            v.price === null
+          ) {
+            throw new Error("Invalid variant");
+          }
 
-      return { success: true };
-    } catch (error) {
-      if (imageName) {
-        await this._fileHandlerUseCase.removeFile(imageName);
+          const key = `${v.color}-${v.size}`;
+
+          if (unique.has(key)) {
+            throw new Error("Duplicate variant");
+          }
+
+          unique.add(key);
+          prices.push(Number(v.price));
+          product.addVariant(v.color, v.size, v.price);
+          product.setPrice = Math.min(...prices);
+        }
+      } else {
+        const safePrice: any =
+          priceProduct !== undefined &&
+          priceProduct !== null &&
+          !isNaN(priceProduct)
+            ? Number(priceProduct)
+            : null;
+
+        product.setPrice = safePrice;
       }
-      return { success: false, message: " product name already exist " };
+
+      // =====================
+      // PERSIST
+      // =====================
+
+      console.log("product product ", product);
+      const createdProduct =
+        await this._productRepoUseCase.createProductWithVariants(
+          {
+            name: product.getName,
+            price: variants.length > 0 ? product.getPrice : product.getPrice,
+            nameImage: imageName,
+            categoryId: category.id,
+            supplierId: supId,
+            type: variants.length > 0 ? "VARIABLE" : "SIMPLE",
+          },
+          product.getVariants()
+        );
+
+      return { success: true, data: createdProduct };
+    } catch (error: any) {
+      if (dto.imageName) {
+        await this._fileHandlerUseCase.removeFile(dto.imageName);
+      }
+
+      return { success: false, message: error.message };
     }
   }
 }
