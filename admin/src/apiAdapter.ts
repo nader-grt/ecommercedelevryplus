@@ -39,30 +39,33 @@ export const adaptListCompanies = (json: any) => ({
 });
 
 export const adaptOneCompany = (json: any) => ({
-
-  
   data: adaptCompany(json.data),
 });
-// products 
- export const buildProductFormData = (data: any) => {
+// products
+export const buildProductFormData = (data: any) => {
+  console.log("dataaaaaa  ", data);
   const formData = new FormData();
 
+  const toNumber = (val: any) => {
+    if (val === null || val === undefined || val === "") return null;
+    const num = Number(val);
+    return isNaN(num) ? null : num;
+  };
 
-  console.log("dddddddddddata  ",data)
+  const price = toNumber(data.price);
+
+  if (data.type != "VARIABLE") {
+    formData.append("price", String(data.price));
+  } else {
+    formData.append("price", price !== null ? String(price) : "");
+  }
+
   formData.append("name", data.name);
   formData.append("type", data.type);
   formData.append("categoryId", String(data.categoryId));
 
-  if (data.type === "SIMPLE") {
-    formData.append("price", String(data.price));
-  }
-
   if (data.type === "VARIABLE") {
-    formData.append(
-      "variants",
-      JSON.stringify(data.variants || [])
-    );
-    formData.append("price", String(data.price));
+    formData.append("variants", JSON.stringify(data.variants || []));
   }
 
   if (data.image?.rawFile) {
@@ -71,23 +74,23 @@ export const adaptOneCompany = (json: any) => ({
 
   return formData;
 };
-
 export const adaptListProducts = (json: any) => {
-  // حماية من undefined
   const products = json?.data?.data || [];
 
-  const records = products.map((p: any, index: number) => ({
-    id: index + 1,
+  const records = products.map((p: any) => ({
+    id: p.id, //
     name: p.nameProduct || "",
-    price: p.priceProdust || 0,
+    price: p.priceProduct || 0,
     urlImage: p.urlImage || "",
-    categoryId: p.CategoryId || null,
+    categoryId: p.categoryId || null,
     supplierId: p.supplierId || null,
+    type: p.type,
+    variants: p.variants || [],
   }));
 
   return {
     data: records,
-    total: records.length,
+    total: json?.data?.total || records.length,
   };
 };
 
@@ -142,15 +145,16 @@ export const adaptUpdateUserAddress = (json: any) => {
 
   return {
     id: data.id,
-    addresses: data.addresses?.map((addr: any) => ({
-      id: addr.id,
-      street: addr.street,
-      city: addr.city,
-      country: addr.country,
-      zipCode: addr.zipCode,
-      delegation: addr.delegation || "",
-      addressSuplementaire: addr.addressSuplementaire || "",
-    })) || [],
+    addresses:
+      data.addresses?.map((addr: any) => ({
+        id: addr.id,
+        street: addr.street,
+        city: addr.city,
+        country: addr.country,
+        zipCode: addr.zipCode,
+        delegation: addr.delegation || "",
+        addressSuplementaire: addr.addressSuplementaire || "",
+      })) || [],
   };
 };
 

@@ -1,38 +1,3 @@
-// import {
-//   List,
-//   Datagrid,
-//   TextField,
-//   ReferenceInput,
-//   SelectInput,
-//   ImageField,
-// } from "react-admin";
-
-// const productFilters = [
-//   <ReferenceInput
-//     key="category-filter"
-//     label="Category"
-//     source="categoryId"        
-//     reference="categories"     
-//     alwaysOn
-//   >
-//     <SelectInput optionText="name" />  
-//   </ReferenceInput>,
-// ];
-
-// export const ListProducts = () => (
-//   <List filters={productFilters}  exporter={false}>
-//     <Datagrid>
-//       <TextField source="name" />
-//       <TextField source="price" />
-//       <ImageField
-//         source="urlImage"
-//         label="Image"
-//         sx={{ width: 100, height: 100, objectFit: "cover" }}
-//       />
-//     </Datagrid>
-//   </List>
-// );
-
 import {
   List,
   Datagrid,
@@ -55,58 +20,128 @@ const productFilters = [
     <SelectInput optionText="name" />
   </ReferenceInput>,
 ];
+export const ListProducts = () => {
+  return (
+    <List filters={productFilters} exporter={false}>
+      <Datagrid rowClick="edit">
 
-export const ListProducts = () => (
-  <List filters={productFilters} exporter={false}>
-    <Datagrid rowClick="edit">
-      {/* 🧱 BASIC */}
-      <TextField source="name" />
+        {/* BASIC */}
+        <TextField source="name" />
+        <TextField source="price"  label="base Price" />
+        <ChipField source="type" />
 
-      {/* 🔥 TYPE */}
-      <ChipField source="type" />
+        {/* NORMALIZE VARIANTS */}
+        {/* <FunctionField
+          label="Debug Variants"
+          render={(record: any) => {
+            const variants = record?.variants
+              ? Array.isArray(record.variants)
+                ? record.variants
+                : [record.variants]
+              : [];
 
-      {/* 💰 PRICE / VARIANTS LOGIC */}
-      <FunctionField
-        label="Price / Variants"
-        render={(record: any) => {
-          if (record.type === "SIMPLE") {
-            return `${record.price} TND`;
-          }
+            console.log("variants =>", variants);
+            return variants.length;
+          }}
+        /> */}
 
-          if (record.type === "VARIABLE") {
-            if (!record.variants || record.variants.length === 0) {
-              return "No variants";
+        {/* PRICE / VARIANTS */}
+        <FunctionField
+          label="Price / Variants"
+          render={(record: any) => {
+            const variants = record?.variants
+              ? Array.isArray(record.variants)
+                ? record.variants
+                : [record.variants]
+              : [];
+
+            if (record?.type === "SIMPLE") {
+              return `${record.price} TND`;
             }
 
-            return `${record.variants.length} variants`;
-          }
+            if (record?.type === "VARIABLE") {
+              if (variants.length === 0) {
+                return "No variants";
+              }
 
-          return "-";
-        }}
-      />
+              return `${variants.length} variants`;
+            }
 
-      {/* 🧠 OPTIONAL: MIN/MAX PRICE */}
-      <FunctionField
-        label="Price Range"
-        render={(record: any) => {
-          if (!record.variants || record.variants.length === 0) {
             return "-";
-          }
+          }}
+        />
 
-          const prices = record.variants.map((v: any) => v.price);
-          const min = Math.min(...prices);
-          const max = Math.max(...prices);
+        {/* PRICE RANGE */}
+        <FunctionField
+          label="Min Max Price"
+          render={(record: any) => {
+            const variants = record?.variants
+              ? Array.isArray(record.variants)
+                ? record.variants
+                : [record.variants]
+              : [];
 
-          return `${min} - ${max} TND`;
-        }}
-      />
+            if (variants.length === 0) return "-";
 
-      {/* 🖼️ IMAGE */}
-      <ImageField
-        source="urlImage"
-        label="Image"
-        sx={{ width: 80, height: 80, objectFit: "cover" }}
-      />
-    </Datagrid>
-  </List>
-);
+            const prices = variants
+              .map((v: any) => Number(v.price))
+              .filter(Boolean);
+
+            const min = Math.min(...prices);
+            const max = Math.max(...prices);
+
+            return `${min} - ${max} TND`;
+          }}
+        />
+
+        {/* IMAGE */}
+        {/* <ImageField
+          source="urlImage"
+          label="Image"
+          sx={{ width: 80, height: 80, objectFit: "cover" }}
+        /> */}
+
+<ImageField
+  source="urlImage"
+  label="Image"
+  sx={{
+    width: 64,
+    height: 64,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    "& img": {
+      width: 56,
+      height: 56,
+      borderRadius: "50%",
+      objectFit: "cover",
+      border: "3px solid #fff",
+      boxShadow: "0 6px 15px rgba(0,0,0,0.2)",
+      transition: "all 0.3s ease",
+    },
+    "& img:hover": {
+      transform: "scale(1.25)",
+      boxShadow: "0 10px 25px rgba(0,0,0,0.35)",
+    },
+  }}
+/>
+
+{/* <ImageField
+  source="urlImage"
+  label="Image"
+  sx={{
+    width: 80,
+    height: 80,
+    "& img": {
+      width: 80,
+      height: 80,
+      borderRadius: "50%",
+      objectFit: "cover",
+    },
+  }}
+/> */}
+
+      </Datagrid>
+    </List>
+  );
+};

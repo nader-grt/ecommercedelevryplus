@@ -17,18 +17,23 @@ export const CreateProduct = () => {
   return (
     <Create>
       <SimpleForm>
-        {/* BASIC */}
-        <TextInput source="name" label="Product Name" validate={[required()]} />
+        {/* NAME */}
+        <TextInput
+          source="name"
+          label="Product Name"
+          validate={[required()]}
+        />
 
-
+        {/* CATEGORY */}
         <ReferenceInput
           source="categoryId"
           reference="categories"
           label="Category"
-        //  validate={[required()]}
         >
           <SelectInput optionText="name" />
         </ReferenceInput>
+
+        {/* TYPE */}
         <SelectInput
           source="type"
           label="Product Type"
@@ -40,20 +45,24 @@ export const CreateProduct = () => {
           validate={[required()]}
         />
 
-        {/* PRICE (ONLY SIMPLE) */}
+        {/* PRICE (ALWAYS SHOWN) */}
         <FormDataConsumer>
-          {({ formData }) =>
-            formData?.type === "SIMPLE" ? (
-              <NumberInput
-                source="price"
-                label="Price"
-                validate={[required()]}
-              />
-            ) : null
-          }
+          {({ formData }) => (
+            <NumberInput
+              source="price"
+              label={
+                formData?.type === "VARIABLE"
+                  ? "Default Price (optional)"
+                  : "Price"
+              }
+              validate={
+                formData?.type === "SIMPLE" ? [required()] : []
+              }
+            />
+          )}
         </FormDataConsumer>
 
-        {/*  VARIANTS (ONLY VARIABLE) */}
+        {/* VARIANTS (VARIABLE ONLY) */}
         <FormDataConsumer>
           {({ formData }) =>
             formData?.type === "VARIABLE" ? (
@@ -68,12 +77,12 @@ export const CreateProduct = () => {
           }
         </FormDataConsumer>
 
-        {/*  IMAGE (FIXED TS ERROR) */}
+        {/* IMAGE */}
         <ImageInput
           source="image"
           label="Product Image"
-          accept={{ "image/*": [] }} //  FIX TypeScript error
-          maxSize={7 * 1024 * 1024} // 7MB
+          accept={{ "image/*": [] }}
+          maxSize={7 * 1024 * 1024}
         >
           <ImageField source="src" title="preview" />
         </ImageInput>
