@@ -63,6 +63,28 @@ Company.hasMany(User, {
 
  /* =========================
    Company - Warehouse (1 : N)
+
+
+Company.hasMany(Warehouse, {
+  foreignKey: {
+    name: "companyId",
+    allowNull: false,
+  },
+  as: "warehouses",
+
+  onUpdate: "CASCADE",
+
+  //  delete cascade ( business)
+  onDelete: "RESTRICT",
+});
+
+Warehouse.belongsTo(Company, {
+  foreignKey: {
+    name: "companyId",
+    allowNull: false,
+  },
+  as: "company",
+});
 ========================= */
 
 Company.hasMany(Warehouse, {
