@@ -74,6 +74,11 @@ import deleteCompanyRoute from  "./routes/CompanyRoute/DeleteCompanyRoute.js"
 import listCompanyRoute from  "./routes/CompanyRoute/ListCompanyRoute.js"
 import getCompanyRoute from  "./routes/CompanyRoute/GetCompanyRoute.js"
 
+//WareHouse
+
+import createWareHouseRoute from  "./routes/WareHouseRoute/CreateWareHouseRoute.js"
+import listWareHouseRoute from  "./routes/WareHouseRoute/ListWareHouseRoute.js"
+
 
 import createSecretaryRoute from  "./routes/SecretaryRoute/CreateSecretaryRoute.js"
 import updateSecretaryRoute from  "./routes/SecretaryRoute/UpdateSecretaryRoute.js"
@@ -116,12 +121,7 @@ import { folderPath } from "./filesystem/fileHandle.js";
 const app = express();
 
 // Middleware
-// app.use(express.json());
 
-
-
-// app.use(cors(corsOptions));
-// app.use(cookieParser());
 
 app.use(cors(corsOptions));
 
@@ -135,10 +135,7 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 //company
 
 /**
- import  from  "./routes/CompanyRoute/UpdateCompanyRoute.js"
-import  from  "./routes/CompanyRoute/DeleteCompanyRoute.js"
-import listCompanyRoute from  "./routes/CompanyRoute/ListCompanyRoute.js"
-import  from  "./routes/CompanyRoute/GetCompanyRoute.js"
+
  */
 
 app.use("/api", listCompanyRoute);
@@ -147,6 +144,11 @@ app.use("/api", updateCompanyRoute);
 app.use("/api", deleteCompanyRoute);
 app.use("/api",createCompanyRoute);
 
+
+//warehouse 
+
+app.use("/api", listWareHouseRoute);
+app.use("/api", createWareHouseRoute);
 
 // user + profile
 app.use("/api", createUserAddressByAdminRoutes);

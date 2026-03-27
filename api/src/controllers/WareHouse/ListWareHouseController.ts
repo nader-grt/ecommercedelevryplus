@@ -23,9 +23,13 @@ export default class ListWareHouseController extends BaseController {
         filter: filter ? JSON.parse(filter as string) : {},
       };
 
+
+      console.log('********   ',dto, req.query)
       const result = await this._useCase.execute(dto, req.query);
 
-      return this.ok(res, result);
+    
+
+      return this.resultValue(res,"list warehouses succefuly",result.data)
     } catch (error: any) {
       console.error("ListWareHouseController Error:", error);
       return this.fail(res, error.message);

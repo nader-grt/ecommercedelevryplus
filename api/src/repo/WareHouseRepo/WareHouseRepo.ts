@@ -94,8 +94,51 @@ export default class WareHouseRepo extends IWareHouseRepo {
   }
 
 
-
-
+  async findAllFiltredByName(cleanQuery: any, notcleandata: any): Promise<any> {
+    try {
+      console.log("repo cleanQuery ", cleanQuery);
+  
+      //    filter   cleanQuery
+      const qb = new QueryBuilder(
+        {
+          ...cleanQuery,
+          filter: notcleandata.filter || cleanQuery.filter || {},
+        },
+        Warehouse
+      )
+        .filter()
+        .sort()
+        .paginate();
+  
+      const options = qb.build();
+  
+      // query database
+      const { rows, count } = await Warehouse.findAndCountAll({
+        ...options,
+  
+        include: [
+          {
+            model: Company,
+            as: "company",
+            attributes: ["id", "name"],
+          },
+        ],
+  
+        distinct: true,
+        nest: true,
+        raw: true,
+      });
+  
+      // return result
+      return {
+        data: rows,
+        total: count || 0,
+      };
+    } catch (error: any) {
+      console.error("findAllFiltredByName Repo Error:", error);
+      throw new Error(error.message);
+    }
+  }
 //   async update(id: number, data: any): Promise<any | null> {
 //     const Warehouse2 = await Warehouse.findByPk(id);
 //     if (!Warehouse2) return null;
