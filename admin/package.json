@@ -16,7 +16,8 @@
     "react": "18.2.0",
     "react-admin": "^5.14.3",
     "react-dom": "18.2.0",
-    "react-router-devtools": "^6.2.0"
+    "react-router-devtools": "^6.2.0",
+    "recharts": "^3.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

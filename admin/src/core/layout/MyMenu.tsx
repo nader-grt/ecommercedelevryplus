@@ -13,6 +13,7 @@ import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import HomeIcon from "@mui/icons-material/Home";
 import ViewWeekIcon from "@mui/icons-material/ViewWeek";
 import BusinessIcon from "@mui/icons-material/Business";
+import WarehouseIcon from "@mui/icons-material/Warehouse";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
@@ -54,6 +55,12 @@ const MyMenu = () => {
         to="/companies"
         primaryText="Companies"
   leftIcon={<BusinessIcon />}
+      />
+
+<Menu.Item
+        to="/warehouses"
+        primaryText="WareHouses"
+  leftIcon={<WarehouseIcon />}
       />
       <Menu.Item
         to="/users"

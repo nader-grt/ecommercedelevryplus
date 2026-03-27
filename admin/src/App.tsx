@@ -17,6 +17,10 @@ import { ListWeekDays, CreateWeekDay } from "./modules/weekDay";
 import { CreateProduct, ListProducts } from "./modules/products";
 import { CreateUserAddress, EditUserAddress, ListUserAddress, ShowUserAddress } from "./modules/userAddress";
 import { CreateCompany, EditCompany, ListCompany, ShowCompany } from "./modules/company";
+import ListWareHouses from "./modules/WareHouses/ListWareHouses";
+import CreateWareHouse from "./modules/WareHouses/CreateWareHouse";
+import EditWareHouse from "./modules/WareHouses/EditWareHouse";
+import ShowWareHouse from "./modules/WareHouses/ShowWareHouse";
 
 
 
@@ -47,6 +51,14 @@ const App = () => {
       create={CreateCompany}
       edit={EditCompany}
       show={ShowCompany}
+    />
+
+<Resource
+      name="warehouses"
+      list={ListWareHouses}
+      create={CreateWareHouse}
+      edit={EditWareHouse}
+      show={ShowWareHouse}
     />
           <Resource
     name="users"
