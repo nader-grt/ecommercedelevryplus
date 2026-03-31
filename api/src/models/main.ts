@@ -215,8 +215,17 @@ Variant.belongsTo(Product ,{ foreignKey: "productId", as: "product" })
    Variant - Inventorie (1 : N)
 ========================= */
 
-Variant.hasMany(Inventorie)
-Inventorie.belongsTo(Variant)
+Variant.hasMany(Inventorie, {
+  foreignKey: 'variantId',   
+  as: 'inventories',         
+  onDelete: 'CASCADE',       
+  onUpdate: 'CASCADE'        
+});
+
+Inventorie.belongsTo(Variant, {
+  foreignKey: 'variantId',
+  as: 'variant'             
+});
 
 
 
@@ -224,9 +233,19 @@ Inventorie.belongsTo(Variant)
    Warehouse - Inventorie (1 : N)
 ========================= */
 
-Warehouse.hasMany(Inventorie)
-Inventorie.belongsTo(Warehouse)
 
+
+Warehouse.hasMany(Inventorie, {
+  foreignKey: 'warehouseId',   
+  as: 'inventories',           
+  onDelete: 'CASCADE',         
+  onUpdate: 'CASCADE'          
+});
+
+Inventorie.belongsTo(Warehouse, {
+  foreignKey: 'warehouseId',
+  as: 'warehouse'              //
+});
 
 /* =========================
    User - Employee (1 : 1)

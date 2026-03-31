@@ -12,7 +12,7 @@ const wareHouse = new WareHouseRepo();
 const createCompanyuseCase = new ListWareHousesUseCase(wareHouse);
 const listwarehouseRoute = new ListWareHouseController(createCompanyuseCase);
 router.get("/warehouses", verifyToken, (req: Request, res: Response) => {
-
+console.log("warehouseeeeeeeeeee  ")
   listwarehouseRoute.execute(req, res);
 });
 

@@ -44,7 +44,7 @@ module.exports = {
     Migration: Variant INSERT Trigger
  npx sequelize-cli migration:generate --name create-companies
 
- 🚀 ✅ Best Practice Migration Names
+  Best Practice Migration Names
 🔵 1. Variant INSERT Trigger
    npx sequelize-cli migration:generate --name   create-trigger-prevent-variant-insert-on-simple-product
 🔵 2. Variant UPDATE Trigger
@@ -213,7 +213,8 @@ npx sequelize-cli migration:generate --name add-city-country-to-userAddresses
 fix Setting 
 npx sequelize-cli migration:generate --name add-settings-missing-fields
 
-
+fix users add field companyId
+npx sequelize-cli migration:generate --name add-companyId-to-users
 
 sudo /opt/lampp/lampp start
 Starting XAMPP for Linux...

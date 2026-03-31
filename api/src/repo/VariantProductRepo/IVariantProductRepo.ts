@@ -3,6 +3,8 @@
 export default abstract class IVariantProductRepo
 {
 
-     public abstract addVariantIfExistInProducts():Promise<any> ;
+     protected abstract addVariantIfExistInProducts():Promise<any> ;
+     protected abstract getVariantById(variantId:number):Promise<any>;
+    protected abstract listVariantsWithProduct({ search, page, perPage }: any):Promise<any> ;
 
 }

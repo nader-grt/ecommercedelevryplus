@@ -34,6 +34,10 @@ import getProductRoute from "./routes/productRoutes/GetProductRoute.js";
 import getAllProductByCategoryIdRoute from "./routes/productRoutes/GetAllProductsFiltredByCategoryIdRoute.js";
 
 
+// Variant
+import getVariantProductRoute from "./routes/VariantProductRoute/GetVariantProductRoute.js";
+import listVariantProductRoute from "./routes/VariantProductRoute/ListVariantProductRoute.js";
+
 //category
 import createCategoryRoute from "./routes//categoryRoute/createCategoryRoute.js";
 import deleteCategoryRoute from "./routes//categoryRoute/DeleteCategoryRoute.js";
@@ -73,6 +77,13 @@ import updateCompanyRoute from  "./routes/CompanyRoute/UpdateCompanyRoute.js"
 import deleteCompanyRoute from  "./routes/CompanyRoute/DeleteCompanyRoute.js"
 import listCompanyRoute from  "./routes/CompanyRoute/ListCompanyRoute.js"
 import getCompanyRoute from  "./routes/CompanyRoute/GetCompanyRoute.js"
+
+
+//Inventorie
+
+import createInventorieRoute from  "./routes/InventorieRoute/CreateInventorieRoute.js"
+import listInventorieRoute from  "./routes/InventorieRoute/ListInventorieRoute.js"
+import getInventorieRoute from  "./routes/InventorieRoute/GetInventorieRoute.js"
 
 //WareHouse
 
@@ -132,11 +143,12 @@ app.use(cookieParser());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+
+
+
+
 //company
 
-/**
-
- */
 
 app.use("/api", listCompanyRoute);
 app.use("/api", getCompanyRoute);
@@ -150,6 +162,13 @@ app.use("/api",createCompanyRoute);
 app.use("/api", listWareHouseRoute);
 app.use("/api", createWareHouseRoute);
 
+
+
+//Inventorie
+
+app.use("/api", createInventorieRoute);
+app.use("/api", listInventorieRoute);
+app.use("/api",getInventorieRoute)
 // user + profile
 app.use("/api", createUserAddressByAdminRoutes);
 app.use("/api",listUserAddressByAdminRoutes)
@@ -182,8 +201,12 @@ app.use("/api",getProductByCategoryRoute)  ;
 app.use("/api",getProductRoute)  ;
 app.use("/api",getAllProductByCategoryIdRoute) ;
 
+//  Variant + product 
 
 
+
+app.use("/api",getVariantProductRoute)
+app.use("/api",listVariantProductRoute)
 
 
 

@@ -14,7 +14,16 @@ export default class ListCompanyController extends BaseController
      }
      protected async executeImpl(req: Request, res: Response): Promise<any> {
               try {
-               const companies = await this.listCompanyUseCase.execute();
+
+                const { ids } = req.query; // query param
+
+       console.log("idsss********************** ",ids)
+      
+       let filterIds: number[] | undefined;
+       if (ids) {
+         filterIds = (ids as string).split(',').map(Number);
+       }
+               const companies = await this.listCompanyUseCase.execute(filterIds);
 
             console.log("object")
 

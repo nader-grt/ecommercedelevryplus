@@ -10,7 +10,7 @@ export default class ListCompanyUseCase
       {
             this._listCompanyRepo = listCompanyRepo
       }
-      async execute(params?: { page: number; limit: number }): Promise<any> {
+      async execute(filterIds?: number[]): Promise<any> {
               try {
                   // if (params) {
                   //       const { page, limit } = params;

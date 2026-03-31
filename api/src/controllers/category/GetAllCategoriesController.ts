@@ -20,7 +20,7 @@ export default class GetAllCategoriesController extends BaseController
     protected async executeImpl(req: Request, res: Response): Promise<any> {
         
 
-       const { ids } = req.query; // هنا نجلب الـ query param
+       const { ids } = req.query; // query param
 
        console.log("idsss ",ids)
       

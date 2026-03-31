@@ -16,7 +16,7 @@ export  default class createCategoryController  extends  BaseController
     protected async executeImpl(req:Request,res:Response): Promise<void> {
                 const {name}  = req.body ;
 
-
+console.log("object ",name)
              try {
                 
                 if(!name || name.length ===0) {

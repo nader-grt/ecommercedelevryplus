@@ -27,7 +27,7 @@ export default class ListWareHouseController extends BaseController {
       console.log('********   ',dto, req.query)
       const result = await this._useCase.execute(dto, req.query);
 
-    
+    console.log("rrrrrrrrrrrrr  hyyyyyyyy   ",result)
 
       return this.resultValue(res,"list warehouses succefuly",result.data)
     } catch (error: any) {

@@ -7,7 +7,7 @@ export default interface ICompanyRepo {
     transaction?: Transaction
   ): Promise<ICompany>;
 
-  findAll(): Promise<ICompany[]>;
+  findAll(filterIds?:any): Promise<ICompany[]>;
 
   findById(id: number): Promise<ICompany | null>;
 

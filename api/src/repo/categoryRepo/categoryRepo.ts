@@ -9,6 +9,8 @@ export interface ICategoryRepo {
 export default class CategoryRepo extends categoryRepoInterface {
   public async createCategory(category: any): Promise<void> {
     try {
+
+      console.log("object   ",category)
       await Category.create(category);
     } catch (error) {
       console.log(error);

@@ -1,4 +1,4 @@
-import { Transaction } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import ICompanyRepo from "./ICompanyRepo";
 import { Company } from "../../models/main";
 import { ICompany, ICompanyCreation } from "../../models/Company";
@@ -14,12 +14,30 @@ export default class CompanyRepo implements ICompanyRepo {
     return company.get({ plain: true }); // 
   }
 
-  async findAll(): Promise<ICompany[]> {
-    return await Company.findAll({
+ 
+async findAll(filterIds?: any): Promise<ICompany[]> {
+  try {
+    let where: any = {};
+
+    // 
+    if (filterIds && filterIds.length > 0) {
+      where.id = {
+        [Op.in]: filterIds, //  multiple ids
+      };
+    }
+
+    const companies = await Company.findAll({
+      where,
       attributes: ["id", "name", "type", "isActive"],
       raw: true,
     });
+
+    return companies;
+  } catch (error) {
+    console.error("CompanyRepo findAll Error:", error);
+    throw error;
   }
+}
 
   async findById(id: number): Promise<ICompany | null> {
     const company = await Company.findByPk(id);

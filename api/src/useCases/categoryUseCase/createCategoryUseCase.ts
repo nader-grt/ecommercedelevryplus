@@ -12,6 +12,9 @@ export default class CreateCategoryUseCase {
              }
 
              async execute(name: string): Promise<CategoryDomain | any> {
+
+
+              console.log("object  ",name)
                 if (!name || name.trim().length === 0) {
                   throw new Error("Invalid category name");
                 }

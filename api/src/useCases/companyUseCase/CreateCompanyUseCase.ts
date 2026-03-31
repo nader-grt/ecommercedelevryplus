@@ -16,7 +16,7 @@ export default class CreateCompanyUseCase {
   async execute(dto: CreateCompanyDTO) {
     const { name, type = "SHOP", isActive = true } = dto;
 
-    // ✅ Validation
+    // Validation
     if (!name) {
       throw new Error("Company name is required");
     }
@@ -25,7 +25,7 @@ export default class CreateCompanyUseCase {
       throw new Error("Invalid company type");
     }
 
-    // 🔥 Transform for DB
+    //  Transform for DB
     const data :any = {
       name,
       type,
@@ -34,7 +34,7 @@ export default class CreateCompanyUseCase {
 
     const company = await this.companyRepo.createCompany(data);
 
-    // ✅ Return clean object (React Admin friendly)
+    // Return clean object (React Admin friendly)
     return {
       id: company.id,
       name: company.name,
