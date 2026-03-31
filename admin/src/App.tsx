@@ -21,6 +21,10 @@ import ListWareHouses from "./modules/WareHouses/ListWareHouses";
 import CreateWareHouse from "./modules/WareHouses/CreateWareHouse";
 import EditWareHouse from "./modules/WareHouses/EditWareHouse";
 import ShowWareHouse from "./modules/WareHouses/ShowWareHouse";
+import { ListInventorie } from "./modules/Inventory/ListInventorie";
+import { ShowInventorie } from "./modules/Inventory/ShowInventorie";
+import { EditInventorie } from "./modules/Inventory/EditInventorie";
+import { CreateInventorie } from "./modules/Inventory/CreateInventorie";
 
 
 
@@ -51,6 +55,14 @@ const App = () => {
       create={CreateCompany}
       edit={EditCompany}
       show={ShowCompany}
+    />
+
+<Resource
+      name="inventories"
+      list={ListInventorie}
+      create={CreateInventorie}
+      edit={EditInventorie}
+      show={ShowInventorie}
     />
 
 <Resource

@@ -14,6 +14,7 @@ import HomeIcon from "@mui/icons-material/Home";
 import ViewWeekIcon from "@mui/icons-material/ViewWeek";
 import BusinessIcon from "@mui/icons-material/Business";
 import WarehouseIcon from "@mui/icons-material/Warehouse";
+import Inventory2Icon from "@mui/icons-material/Inventory2";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
@@ -57,6 +58,12 @@ const MyMenu = () => {
   leftIcon={<BusinessIcon />}
       />
 
+
+<Menu.Item
+        to="/inventories"
+        primaryText="Inventory"
+  leftIcon={<Inventory2Icon />}
+      />
 <Menu.Item
         to="/warehouses"
         primaryText="WareHouses"

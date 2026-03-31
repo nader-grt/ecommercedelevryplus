@@ -67,11 +67,106 @@ const dataProvider: any = {
     },
 
   getOne: async (resource: any, params: any) => {
-
+    console.log("RESOURCE CALLED:", resource, params);
  
-    const { json } = await httpclientService(
-      `${apiUrl}/${resource}/${params.id}`
-    );
+    // if (resource === "inventories") {
+    //   const record = params.meta?.record;
+  
+    //   const variantId = record?.variantId;
+    //   const warehouseId = record?.warehouseId;
+  
+    //   const query = new URLSearchParams();
+  
+    //   if (variantId) query.append("variantId", variantId);
+    //   if (warehouseId) query.append("warehouseId", warehouseId);
+  
+    //   const url = `${apiUrl}/${resource}/${params.id}?${query.toString()}`;
+  
+    //   const { json } = await httpclientService(url);
+  
+
+    //   return adaptObject(json.data);
+    // }
+
+
+
+    if (resource === "inventories") {
+
+      // ✅ HERE
+      const urlParams = new URLSearchParams(window.location.search);
+  
+      const variantId = urlParams.get("variantId");
+      const warehouseId = urlParams.get("warehouseId");
+  
+      const query = new URLSearchParams();
+  
+      if (variantId) query.append("variantId", variantId);
+      if (warehouseId) query.append("warehouseId", warehouseId);
+  
+      const url = `${apiUrl}/${resource}/${params.id}?${query.toString()}`;
+  
+      const { json } = await httpclientService(url);
+  
+      return adaptObject(json.data);
+    }
+  
+
+    // if (resource === "inventories") {
+    //   const id = params.id;
+  
+    //   // IMPORTANT: fallback if meta missing
+    //   const recordFromList = params.meta?.record;
+  
+    //   const variantId = recordFromList?.variantId;
+    //   const warehouseId = recordFromList?.warehouseId;
+  
+    //   const query = new URLSearchParams();
+  
+    //   if (variantId) query.append("variantId", variantId);
+    //   if (warehouseId) query.append("warehouseId", warehouseId);
+  
+    //   const url = `${apiUrl}/${resource}/${id}?${query.toString()}`;
+  
+    //   const { json } = await httpclientService(url);
+  
+    //   return adaptObject(json.data);
+    // }
+    
+    // if (resource === "inventories") {
+    //   const variantId = params.meta?.variantId;
+    //   const warehouseId = params.meta?.warehouseId;
+    
+    //   const query = new URLSearchParams();
+    
+    //   if (variantId) query.append("variantId", variantId);
+    //   if (warehouseId) query.append("warehouseId", warehouseId);
+    
+    //   const url = `${apiUrl}/${resource}/${params.id}?${query.toString()}`;
+    
+    //   const { json } = await httpclientService(url);
+    
+    //   return adaptObject(json.data);
+    // }
+
+    // if (resource === "inventories") {
+
+    //   console.log(" aaaaaaaaaaaaaaaaeeeeeeeeeeeeeerrrrrrrrrrrrrrttttttttttttt")
+    //   const { variantId, warehouseId } = params.meta || {};
+    
+    //   console.log("***********" ,{ variantId, warehouseId } )
+    //   const query = new URLSearchParams();
+    
+    //   if (variantId) query.append("variantId", variantId);
+    //   if (warehouseId) query.append("warehouseId", warehouseId);
+    
+    //   const url = `${apiUrl}/${resource}/${params.id}?${query.toString()}`;
+    
+
+    //   console.log("uuuuuuuuuuuuuu  ",url)
+    //   const { json } = await httpclientService(url);
+    
+    //   //return adaptObject(json.data);
+    // }
  
     if (resource === "companies") {
         
@@ -82,18 +177,41 @@ const dataProvider: any = {
       return adaptOneCompany(json);
     }
 
+               
+    const { json } = await httpclientService(
+      `${apiUrl}/${resource}/${params.id}`
+    );
     return adaptObject(json);
   },
 
-  getMany: async (resource: any, params: any) => {
-    const { json } = await httpclientService(
-      `${apiUrl}/${resource}?ids=${params.ids.join(",")}`
-    );
-  //  return { data: json };
 
-    return {
-      data: [json.data]   //
-    };
+  getMany: async (resource: string, params: { ids: number[] }) => {
+    try {
+      const { json } = await httpclientService(
+        `${apiUrl}/${resource}?ids=${params.ids.join(",")}`
+      );
+
+      let dataArray: any[] = [];
+      if (Array.isArray(json.data)) {
+        dataArray = json.data;
+      } else if (json.data && typeof json.data === "object") {
+        dataArray = [json.data];
+      }
+
+      dataArray = dataArray.map((item) => {
+        if (!item.id) {
+          throw new Error(
+            `getMany: Resource "${resource}" item does not have an id key`
+          );
+        }
+        return item;
+      });
+
+      return { data: dataArray };
+    } catch (error) {
+      console.error("getMany error:", error);
+      return { data: [] }; // fallback
+    }
   },
 
   getManyReference: async (resource: any, params: any) => {
