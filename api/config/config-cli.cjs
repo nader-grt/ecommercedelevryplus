@@ -69,6 +69,18 @@ module.exports = {
 
 npx sequelize-cli migration:generate --name create-Products
 
+//  CreateInvoices
+
+npx sequelize-cli migration:generate --name  Create-Invoices
+
+//Discounts
+
+npx sequelize-cli migration:generate --name  Create-Discounts
+
+//Promotions
+npx sequelize-cli migration:generate --name  Create-Promotions
+
+
 //VariantPriceTiers
 
 npx sequelize-cli migration:generate --name create-VariantPriceTiers
@@ -223,12 +235,31 @@ XAMPP: Starting MySQL...
 XAMPP: Starting ProFTPD...
 
 
+sudo /opt/lampp/bin/mysql -u root -p
+
+// refresh network 
+sudo systemctl restart NetworkManager
+
+
+nmcli radio wifi off
+nmcli radio wifi on
+
+
+📡 3. Rescan available networks
+nmcli device wifi rescan
+nmcli device wifi list
+
+👉 Useful if your Wi-Fi network is not showing.
+
+🔌 4. Reconnect to a specific network
+nmcli connection up "YOUR_WIFI_NAME"
+
 
 
 open  maria db 
 
 
-sudo /opt/lampp/bin/mysql -u root -p
+
 
 
 NODE_OPTIONS="--max-old-space-size=4096" npm install --network-timeout=1000000

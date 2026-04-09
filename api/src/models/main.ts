@@ -20,6 +20,10 @@ import { InventorieModel } from "./Inventorie";
 import { WarehouseModel } from "./Warehouse";
 import { AddressModel } from "./Address";
 import { CompanyModel } from "./Company";
+import { VariantPriceTierModel } from "./VariantPriceTier";
+import { InvoiceModel } from "./Invoice";
+import { PromotionModel } from "./Promotion";
+import { DiscountModel } from "./Discount";
 
 // Initialize models
 export const User = UserModel(sequelize);
@@ -41,10 +45,11 @@ export const Inventorie  = InventorieModel(sequelize)
 export const Warehouse  = WarehouseModel(sequelize) ;
 export const Address  = AddressModel(sequelize)
 export const Company = CompanyModel(sequelize);
+export const VariantPriceTier = VariantPriceTierModel(sequelize)
+export const Invoice = InvoiceModel(sequelize)
 
-
-
-
+export const Discount = DiscountModel(sequelize)
+export const Promotion = PromotionModel(sequelize)
 
 
 
@@ -132,6 +137,30 @@ Company.hasMany(Warehouse, {
    as: "supplierCompany",
  });
 
+/* =========================
+   Order - Invoice (1 : N)
+========================= */
+ Order.hasOne(Invoice, {
+  foreignKey: "orderId",
+  as: "invoice",
+});
+
+Invoice.belongsTo(Order, {
+  foreignKey: "orderId",
+  as: "order",
+});
+
+
+
+Discount.hasMany(Promotion, {
+  foreignKey: "discountId",
+  as: "promotions",
+});
+
+Promotion.belongsTo(Discount, {
+  foreignKey: "discountId",
+  as: "discount",
+});
 
 /* =========================
    User - RefreshToken (1 : N)
@@ -245,6 +274,16 @@ Warehouse.hasMany(Inventorie, {
 Inventorie.belongsTo(Warehouse, {
   foreignKey: 'warehouseId',
   as: 'warehouse'              //
+});
+
+Variant.hasMany(VariantPriceTier, {
+  foreignKey: "variantId",
+  as: "priceTiers",
+});
+
+VariantPriceTier.belongsTo(Variant, {
+  foreignKey: "variantId",
+  as: "variant",
 });
 
 /* =========================

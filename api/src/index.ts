@@ -37,6 +37,8 @@ import getAllProductByCategoryIdRoute from "./routes/productRoutes/GetAllProduct
 // Variant
 import getVariantProductRoute from "./routes/VariantProductRoute/GetVariantProductRoute.js";
 import listVariantProductRoute from "./routes/VariantProductRoute/ListVariantProductRoute.js";
+import convertVariantRoute from "./routes/VariantProductRoute/ConvertProductToVariableRoute.js";
+import addVariantProductRoute from "./routes/VariantProductRoute/CreateVariantsProductRoute.js";
 
 //category
 import createCategoryRoute from "./routes//categoryRoute/createCategoryRoute.js";
@@ -207,7 +209,8 @@ app.use("/api",getAllProductByCategoryIdRoute) ;
 
 app.use("/api",getVariantProductRoute)
 app.use("/api",listVariantProductRoute)
-
+app.use("/api",convertVariantRoute)
+app.use("/api",addVariantProductRoute)
 
 
 

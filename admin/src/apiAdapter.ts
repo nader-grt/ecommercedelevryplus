@@ -94,14 +94,40 @@ export const adaptListProducts = (json: any) => {
   };
 };
 
+// export const adaptUserAddresses = (json: any) => {
+//   const users = json?.data || [];
+
+//   const records = users.flatMap((user: any) =>
+//     user.addresses.map((addr: any, index: number) => ({
+//       // id: `${user.id}-${index}`, // id
+//       id: `${user.id}`,
+//       // userId: user.id,
+//       firstName: user.firstName || "",
+//       lastName: user.lastName || "",
+//       email: user.email || "",
+//       phone: user.phone || "",
+
+//       street: addr.street || "",
+//       city: addr.city || "",
+//       country: addr.country || "",
+//       zipCode: addr.zipeCode || 0,
+//     }))
+//   );
+
+//   return {
+//     data: records,
+//     total: records.length,
+//   };
+// };
+/*
 export const adaptUserAddresses = (json: any) => {
   const users = json?.data || [];
 
   const records = users.flatMap((user: any) =>
     user.addresses.map((addr: any, index: number) => ({
-      // id: `${user.id}-${index}`, // id
-      id: `${user.id}`,
-      // userId: user.id,
+      id: `${user.id}-${index}`, // ✅ UNIQUE ID per row
+      userId: user.id, // optional but useful
+
       firstName: user.firstName || "",
       lastName: user.lastName || "",
       email: user.email || "",
@@ -113,6 +139,41 @@ export const adaptUserAddresses = (json: any) => {
       zipCode: addr.zipeCode || 0,
     }))
   );
+
+  return {
+    data: records,
+    total: records.length,
+  };
+};*/
+
+export const adaptUserAddresses = (json: any) => {
+  const users = json?.data || [];
+
+  const map = new Map();
+
+  users.forEach((user: any) => {
+    (user.addresses || []).forEach((addr: any) => {
+      // ✅ use address.id as unique key
+      if (!map.has(addr.id)) {
+        map.set(addr.id, {
+          id: addr.id, // ✅ stable unique id
+          userId: user.id,
+
+          firstName: user.firstName || "",
+          lastName: user.lastName || "",
+          email: user.email || "",
+          phone: user.phone || "",
+
+          street: addr.street || "",
+          city: addr.city || "",
+          country: addr.country || "",
+          zipCode: addr.zipeCode || 0,
+        });
+      }
+    });
+  });
+
+  const records = Array.from(map.values());
 
   return {
     data: records,

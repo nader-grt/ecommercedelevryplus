@@ -45,35 +45,26 @@ const MyMenu = () => {
 
   return (
     <Menu>
+      <Menu.Item to="/" primaryText="Dashboard" leftIcon={<DashboardIcon />} />
+
       <Menu.Item
-        to="/"
-        primaryText="Dashboard"
-        leftIcon={<DashboardIcon />}
-      />
-
-
-<Menu.Item
         to="/companies"
         primaryText="Companies"
-  leftIcon={<BusinessIcon />}
+        leftIcon={<BusinessIcon />}
       />
 
-
-<Menu.Item
-        to="/inventories"
-        primaryText="Inventory"
-  leftIcon={<Inventory2Icon />}
-      />
-<Menu.Item
+      <Menu.Item
         to="/warehouses"
         primaryText="WareHouses"
-  leftIcon={<WarehouseIcon />}
+        leftIcon={<WarehouseIcon />}
       />
       <Menu.Item
-        to="/users"
-        primaryText="Users"
-        leftIcon={<GroupIcon />}
+        to="/inventories"
+        primaryText="Inventory"
+        leftIcon={<Inventory2Icon />}
       />
+
+      <Menu.Item to="/users" primaryText="Users" leftIcon={<GroupIcon />} />
 
       {/* Employees Dropdown */}
       <ListItemButton
@@ -143,9 +134,7 @@ const MyMenu = () => {
         leftIcon={<CategoryIcon />}
       />
 
-      <Menu.Item to="/days" primaryText="Days"
-      leftIcon={<ViewWeekIcon />}
-      />
+      <Menu.Item to="/days" primaryText="Days" leftIcon={<ViewWeekIcon />} />
     </Menu>
   );
 };

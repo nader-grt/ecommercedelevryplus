@@ -68,49 +68,114 @@ export default class UserAddressRepo extends IUserAddressRepo
  public async findAddressByUserId(userId: number): Promise<any> {
   return Address.findAll({ where: { userId } });
 }
- public     async ListUsersWithAddressByAdmin():Promise<any>
- {
+//  public     async ListUsersWithAddressByAdmin():Promise<any>
+//  {
 
                 
-          try {
-            const users = await User.findAll({
-              attributes: ["id", "firstName", "lastName", "email", "phone"],
-              include: [
-                {
-                  model: Address,
-                  as: "addresses",
-                  attributes: ["zipeCode", "street", "country", "city"],
-                  required: true, // INNER JOIN ensures only users with addresses
-                },
-              ],
-            });
+//           try {
+//             const users = await User.findAll({
+//               attributes: ["id", "firstName", "lastName", "email", "phone"],
+//               include: [
+//                 {
+//                   model: Address,
+//                   as: "addresses",
+//                   attributes: ["zipeCode", "street", "country", "city"],
+//                   required: true, // INNER JOIN ensures only users with addresses
+//                 },
+//               ],
+//             });
 
-            console.log("uuuuuuuuuuuuuuu list ",users)
-            const plainUsers = users.map(user => user.get({ plain: true }));
+//             console.log("uuuuuuuuuuuuuuu list ",users)
+//             const plainUsers = users.map(user => user.get({ plain: true }));
 
-            console.log("users with addresses (plain):", plainUsers);
+//             console.log("users with addresses (plain):", plainUsers);
             
-            return plainUsers
-          //  return JSON.parse(JSON.stringify(plainUsers, null, 2));
-            /**
-             const { count, rows } = await User.findAndCountAll({
-                      attributes: ["id", "firstName", "lastName"],
-                      distinct: true, // 
+//             return plainUsers
+//           //  return JSON.parse(JSON.stringify(plainUsers, null, 2));
+//             /**
+//              const { count, rows } = await User.findAndCountAll({
+//                       attributes: ["id", "firstName", "lastName"],
+//                       distinct: true, // 
 
-                      include: [
-                        {
-                          model: Address,
-                          as: "addresses",
-                          attributes: ["zipeCode", "street", "city", "country"],
-                          required: true,
-                        },
-                      ],
-                    });
-             */
-          } catch (error) {
-             console.log(error)
-          }
- }
+//                       include: [
+//                         {
+//                           model: Address,
+//                           as: "addresses",
+//                           attributes: ["zipeCode", "street", "city", "country"],
+//                           required: true,
+//                         },
+//                       ],
+//                     });
+//              */
+//           } catch (error) {
+//              console.log(error)
+//           }
+//  }
+/*
+public async ListUsersWithAddressByAdmin(): Promise<any> {
+  try {
+    const users = await User.findAll({
+      attributes: ["id", "firstName", "lastName", "email", "phone"],
+      include: [
+        {
+          model: Address,
+          as: "addresses",
+          attributes: ["id", "zipeCode", "street", "country", "city"],
+          required: true,
+        },
+      ],
+    });
+
+    const plainUsers = users.map(user => user.get({ plain: true }));
+
+    const records = plainUsers.flatMap((user: any) =>
+      user.addresses.map((addr: any) => ({
+        id: addr.id, // ✅ unique per row
+        userId: user.id,
+
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        phone: user.phone,
+
+        street: addr.street,
+        city: addr.city,
+        country: addr.country,
+        zipCode: addr.zipeCode,
+      }))
+    );
+
+    return records;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}*/
+
+public async ListUsersWithAddressByAdmin(): Promise<any> {
+  try {
+    const users = await User.findAll({
+      attributes: ["id", "firstName", "lastName", "email", "phone"],
+      include: [
+        {
+          model: Address,
+          as: "addresses",
+          attributes: ["id", "zipeCode", "street", "country", "city"],
+          required: true,
+        },
+      ],
+    });
+
+    const plainUsers = users.map(user => user.get({ plain: true }));
+
+    return plainUsers;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+
 
  public async replaceUserAddresses(
   userId: number,

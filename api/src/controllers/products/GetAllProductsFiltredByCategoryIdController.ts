@@ -40,20 +40,54 @@ export default class GetAllProductsFiltredByCategoryIdController extends BaseCon
   }
 
 
-  private listProductVariants(products: any[]): ProductVariantDTO[] {
+  // private listProductVariants(products: any[]): ProductVariantDTO[] {
 
-    console.log("pppppppppppppp  ",products)
-    return products.map((p) => ({
-      id: p.id,
-      nameProduct: p.name,
-      priceProduct: p.price,
-      urlImage: `${process.env.BASE_URL}/images/${p.nameImage}`,
-      categoryId: p.categoryId,
-      supplierId: p.supplierId,
-      type: p.type,
+  //   console.log("pppppppppppppp  ",products)
+  //   return products.map((p) => ({
+  //     id: p.id,
+  //     nameProduct: p.name,
+  //     priceProduct: p.price,
+  //     urlImage: `${process.env.BASE_URL}/images/${p.nameImage}`,
+  //     categoryId: p.categoryId,
+  //     supplierId: p.supplierId,
+  //     type: p.type,
   
-      variants: p.variants || [],
-    }));
+  //     variants: p.variants || [],
+  //   }));
+  // }
+
+  private listProductVariants(products: any[]): ProductVariantDTO[] {
+    const map = new Map<number, ProductVariantDTO>();
+  
+    for (const p of products) {
+      //  If product not added yet
+      if (!map.has(p.id)) {
+        map.set(p.id, {
+          id: p.id,
+          nameProduct: p.name,
+          priceProduct: p.price,
+          urlImage: `${process.env.BASE_URL}/images/${p.nameImage}`,
+          categoryId: p.categoryId,
+          supplierId: p.supplierId,
+          type: p.type,
+          variants: [],
+        });
+      }
+  
+      // Add variant if exists
+      if (p.variants && p.variants.id) {
+        map.get(p.id)!.variants.push({
+          id: p.variants.id,
+          productId: p.variants.productId,
+          sku: p.variants.sku,
+          color: p.variants.color,
+          size: p.variants.size,
+          price: p.variants.price,
+        });
+      }
+    }
+  
+    return Array.from(map.values());
   }
                 private _getAllProductsFiltredByCategoryIdUseCase!:GetAllProductsFiltredByCategoryIdUseCase
                       constructor(getAllProductsFiltredByCategoryIdUseCase:GetAllProductsFiltredByCategoryIdUseCase)

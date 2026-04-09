@@ -25,6 +25,7 @@ import { ListInventorie } from "./modules/Inventory/ListInventorie";
 import { ShowInventorie } from "./modules/Inventory/ShowInventorie";
 import { EditInventorie } from "./modules/Inventory/EditInventorie";
 import { CreateInventorie } from "./modules/Inventory/CreateInventorie";
+import { CreateVariant } from './modules/variantProduct/CreateVariant';
 
 
 
@@ -97,18 +98,23 @@ const App = () => {
     
   /> 
 
- <Resource
+ {/* <Resource
     name="days" 
     //days
      list={ListWeekDays}
      create={CreateWeekDay}
     
-  />  
+  />   */}
 
   <Resource  name="products"
     create={CreateProduct}
   list={ListProducts}
   />
+
+<Resource
+  name="variants"
+  create={CreateVariant}
+/>
               <Resource name="dashboard"  />
             </Admin>
           }
