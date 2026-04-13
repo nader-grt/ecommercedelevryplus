@@ -10,11 +10,13 @@ import {
   Button,
   useNotify,
   useRefresh,
-  useRecordContext,
+  EditButton,
 } from "react-admin";
 import { useState } from "react";
 import axios from "axios";
 import { CreateVariantModal } from "../../shared/components/CreateVariantModal";
+
+import VariantExpandTwo from "./VariantExpandTwo";
 
 //
 // ===============================
@@ -50,44 +52,7 @@ const normalizeVariants = (record?: Product): Variant[] => {
     : [record.variants];
 };
 
-//
-// ===============================
-// 🔹 VARIANT EXPAND COMPONENT 🔥
-// ===============================
-//
 
-const VariantExpand = () => {
-  const record = useRecordContext<Product>();
-  if (!record) return null;
-
-  const variants = normalizeVariants(record);
-
-  if (record.type !== "VARIABLE") {
-    return <div style={{ padding: 10 }}>No variants</div>;
-  }
-
-  return (
-    <div style={{ padding: "15px 30px", background: "gray" }}>
-      <h4>Variants</h4>
-
-      {variants.length === 0 && <p>No variants</p>}
-
-      {variants.map((v, index) => (
-        <div
-          key={index}
-          style={{
-            padding: "8px 0",
-            borderBottom: "1px solid #eee",
-          }}
-        >
-          <strong>SKU:</strong> {v.sku || "-"} <br />
-          <strong>Color:</strong> {v.color || "-"} <br />
-          <strong>Price:</strong> {v.price} TND
-        </div>
-      ))}
-    </div>
-  );
-};
 
 //
 // ===============================
@@ -138,6 +103,31 @@ const AddVariantButton = ({ record }: { record?: Product }) => {
   );
 };
 
+
+// Delete button product with variant 
+
+const DeleteProductVariantButton = ({ record }: any) => {
+  const notify = useNotify();
+  const refresh = useRefresh();
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure?")) return;
+
+    try {
+      await axios.delete(
+        `http://localhost:4000/api/products/${record.id}`,
+        { withCredentials: true }
+      );
+
+      notify("Product deleted", { type: "success" });
+      refresh();
+    } catch (e: any) {
+      notify(e.message, { type: "error" });
+    }
+  };
+
+  return <Button label="Delete" onClick={handleDelete} />;
+};
 //
 // ===============================
 // 🔹 FILTERS
@@ -165,7 +155,7 @@ const productFilters = [
 export const ListProducts = () => {
   return (
     <List filters={productFilters} exporter={false}>
-      <Datagrid expand={<VariantExpand />} rowClick="expand">
+      <Datagrid expand={<VariantExpandTwo />} rowClick="expand">
         {/* BASIC */}
         <TextField source="id" />
         <TextField source="name" />
@@ -241,6 +231,8 @@ export const ListProducts = () => {
             </>
           )}
         />
+        <EditButton />
+        <DeleteProductVariantButton/>
       </Datagrid>
     </List>
   );

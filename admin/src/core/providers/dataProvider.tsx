@@ -1,4 +1,4 @@
-import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptGetOneUserAddress, adaptList, adaptListCompanies, adaptListProductByCategory, adaptListProducts, adaptObject,adaptOneCompany,adaptUpdateUserAddress,adaptUserAddresses, buildProductFormData } from "../../apiAdapter";
+import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptGetOneUserAddress, adaptList, adaptListCompanies, adaptListProductByCategory, adaptListProducts, adaptObject,adaptOneCompany,adaptUpdateProductWithVariant,adaptUpdateUserAddress,adaptUserAddresses, buildProductFormData } from "../../apiAdapter";
 import { httpclientService } from "../../auth/httpclientService/httpclientService";
 
 
@@ -68,7 +68,16 @@ const dataProvider: any = {
 
   getOne: async (resource: any, params: any) => {
     console.log("RESOURCE CALLED:", resource, params);
- 
+    // =========================
+    // 🟢 PRODUCTS / ID FIX
+    // =========================
+    if (resource === "products") {
+      const { json } = await httpclientService(
+        `${apiUrl}/products/${params.id}`
+      );
+  
+      return adaptUpdateProductWithVariant(json);
+    }
     // if (resource === "inventories") {
     //   const record = params.meta?.record;
   
@@ -92,7 +101,7 @@ const dataProvider: any = {
 
     if (resource === "inventories") {
 
-      // ✅ HERE
+      //  HERE
       const urlParams = new URLSearchParams(window.location.search);
   
       const variantId = urlParams.get("variantId");

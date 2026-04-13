@@ -256,6 +256,8 @@ export const adaptListProductByCategory = (json: any) => {
     urlImage: p.urlImage || "",
     categoryId: p.CategoryId || null,
     supplierId: p.supplierId || null,
+   
+    variants: Array.isArray(p.variants) ? p.variants : [],
   }));
 
   return {
@@ -291,5 +293,81 @@ export const adaptGetManyUserAddresses = (json: any) => {
     })),
 
     total: addresses.length,
+  };
+};
+
+
+const adaptCategory = (cat: any) =>
+  cat
+    ? {
+        id: cat.id,
+        name: cat.name,
+      }
+    : null;
+export const adaptUpdateProductWithVariant1 = (json: any) => {
+  const record = json?.data;
+
+  if (!record) {
+    throw new Error("Invalid product response");
+  }
+
+  return {
+    data: {
+      id: record.id,
+      name: record.name,
+      price: record.price,
+      nameImage: record.nameImage,
+      categoryId: record.categoryId,
+      supplierId: record.supplierId,
+      type: record.type,
+
+      variants: record.variants || [],
+
+      // FIX: include category properly
+      category: record.category
+        ? {
+            id: record.category.id,
+            name: record.category.name,
+          }
+        : null,
+    },
+  };
+};
+
+
+
+
+export const adaptUpdateProductWithVariant = (json: any) => {
+  const record = json?.data;
+
+  if (!record) {
+    throw new Error("Invalid product response");
+  }
+
+  return {
+    data: {
+      id: record.id,
+      name: record.name,
+      price: record.price,
+      nameImage: record.nameImage,
+
+      categoryId: record.category?.id ?? record.categoryId,
+      categoryName: record.category?.name ?? "",
+
+      supplierId: record.supplierId,
+      type: record.type,
+
+      variants: Array.isArray(record.variants)
+        ? record.variants
+        : [],
+
+      // optional UI safe object
+      category: record.category
+        ? {
+            id: record.category.id,
+            name: record.category.name,
+          }
+        : null,
+    },
   };
 };
