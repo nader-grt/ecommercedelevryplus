@@ -3,9 +3,9 @@ export default class VariantDomain {
   private color: string;
   private size: string;
   private price: number;
-  private sku: string;
+  private sku!: string;
 
-  constructor(color: string, size: string, price: number) {
+  constructor(color: string, size: string, price: number,sku?:string) {
 
     if (!color || !size) {
       throw new Error("Color and size are required");
@@ -19,7 +19,8 @@ export default class VariantDomain {
     this.size = size;
     this.price = price;
 
-    this.sku = this.generateSKU();
+   // this.sku = this.generateSKU();
+    this.sku = sku ?? this.generateSKU();
   }
 
   private generateSKU(): string {
@@ -44,4 +45,12 @@ export default class VariantDomain {
     return this.price;
   }
 
+  public toObject() {
+    return {
+      color: this.color,
+      size: this.size,
+      price: this.price,
+      sku: this.sku,
+    };
+  }
 }

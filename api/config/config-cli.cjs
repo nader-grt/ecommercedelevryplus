@@ -228,6 +228,10 @@ npx sequelize-cli migration:generate --name add-settings-missing-fields
 fix users add field companyId
 npx sequelize-cli migration:generate --name add-companyId-to-users
 
+fix variantid for orderItem 
+npx sequelize-cli migration:generate --name  add-variantId-to-order-items
+
+
 sudo /opt/lampp/lampp start
 Starting XAMPP for Linux...
 XAMPP: Starting Apache...

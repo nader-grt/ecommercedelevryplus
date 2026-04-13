@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { Product, Variant } from "../../models/main";
+import { OrderItem, Product, Variant } from "../../models/main";
 import IVariantProductRepo from "./IVariantProductRepo";
 
 
@@ -8,6 +8,87 @@ import IVariantProductRepo from "./IVariantProductRepo";
 export default  class VariantProductRepo extends IVariantProductRepo
 {
 
+
+  // update variant
+public async updateVariant(id: number, data: any): Promise<any> {
+  const variant = await Variant.findByPk(id);
+
+  if (!variant) return null;
+
+  await variant.update(data);
+
+  return variant;
+}
+
+//  delete variant
+public async deleteVariant(id: number): Promise<boolean> {
+  const variant = await Variant.findByPk(id);
+
+  if (!variant) return false;
+
+  await variant.destroy();
+
+  return true;
+}
+
+//  count variants per product
+public async countByProduct(productId: number): Promise<number> {
+  return await Variant.count({ where: { productId } });
+}
+
+
+public async isVariantUsed(variantId: number): Promise<boolean> {
+  try {
+
+    if (!variantId) {
+      throw new Error("variantId is required");
+    }
+
+    const count :any = await OrderItem.count({
+      where: {
+        variantId: variantId
+      }
+    });
+
+    return (count > 0);
+
+  } catch (error) {
+    throw error;
+  }
+}
+
+public async convertProductToSimple(productId: number): Promise<any> {
+
+  const product = await Product.findByPk(productId);
+
+  if (!product) {
+    throw new Error("Product not found");
+  }
+
+  await product.update({
+    type: "SIMPLE"
+  });
+
+  return product;
+}
+
+
+//  check duplicate combination
+public async findDuplicateCombination(
+  productId: number,
+  color: string,
+  size: string,
+  excludeId?: number
+): Promise<any> {
+  return await Variant.findOne({
+    where: {
+      productId,
+      color,
+      size,
+      ...(excludeId && { id: { [Op.ne]: excludeId } }),
+    },
+  });
+}
 
     public async addVariantIfExistInProducts(data:any):Promise<any> 
     {

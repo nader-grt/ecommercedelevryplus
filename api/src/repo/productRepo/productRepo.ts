@@ -1,6 +1,6 @@
 import { InferAttributes, Op } from "sequelize";
 import ProductDomain from "../../models/domain/productDoman/ProductDomain";
-import { Product, sequelize, Variant } from "../../models/main";
+import { Category, OrderItem, Product, sequelize, Variant } from "../../models/main";
 import productRepoInterface from "./productRepoInterface";
 import QueryBuilder from "../../util/QuiryBuilder";
 
@@ -156,6 +156,30 @@ export default class ProductRepo extends productRepoInterface {
       console.log(error);
     }
   }
+
+  public async getProductsByCategoryWithVariants(categoryId: number): Promise<any> {
+    try {
+      return await Product.findAll({
+        where: { categoryId },
+  
+        attributes: ["id", "name", "price", "type", "nameImage"],
+  
+        include: [
+          {
+            model: Variant,
+            as: "variants",
+            attributes: ["id", "sku", "color", "size", "price"],
+          },
+        ],
+        raw: true,
+nest: true
+      });
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }
+
 
   public async DeleteProductById(id: number): Promise<any> {
     try {
@@ -313,4 +337,252 @@ export default class ProductRepo extends productRepoInterface {
       throw error;
     }
   }
+
+
+  public async createProductWithVariants2(
+    productData: any,
+    variants: any[]
+  ): Promise<any> {
+
+    console.log("rrrrrrrrrrrepo vvv ppp ",productData ,"  variantss  ",variants)
+    const { name, type, price, categoryId, supplierId, nameImage } = productData;
+  
+    return await sequelize.transaction(async (t) => {
+      // ===============================
+      // 🔹 VALIDATION
+      // ===============================
+      if (type === "SIMPLE" && variants?.length) {
+        throw new Error("SIMPLE product cannot have variants");
+      }
+  
+      if (type === "VARIABLE" && (!variants || variants.length === 0)) {
+        throw new Error("VARIABLE product must have variants");
+      }
+  
+      if (!nameImage) {
+        throw new Error("nameImage is required");
+      }
+  
+      // ===============================
+      // 🔹 CREATE PRODUCT
+      // ===============================
+      const product = await Product.create(
+        {
+          name,
+          type,
+          categoryId,
+          supplierId: supplierId || null,
+          nameImage, // FIX
+       //   price: type === "SIMPLE" ? price : price,
+          price:  price,
+        },
+        { transaction: t }
+      );
+  
+      // ===============================
+      // 🔹 CREATE VARIANTS
+      // ===============================
+      if (type === "VARIABLE") {
+        const variantsData = variants.map((v: any) => ({
+          sku: v.sku || null,
+          color: v.color || null,
+          size: v.size || null,
+          price: v.price,
+          productId: product.id,
+        }));
+  
+        await Variant.bulkCreate(variantsData, { transaction: t });
+      }
+  
+      // ===============================
+      // 🔹 RETURN RESULT
+      // ===============================
+      return await Product.findByPk(product.id, {
+        include: [
+          {
+            model: Variant,
+            as: "variants", //  FIX
+          },
+        ],
+        transaction: t,
+      });
+    });
+
+   
+  }
+  public async updateProductWithVariants(
+    productId: number,
+    productData: any,
+    variants?: any[]
+  ): Promise<any> {
+  
+    const { name, type, price, categoryId, supplierId, nameImage } = productData;
+  
+    return await sequelize.transaction(async (t) => {
+  
+      // ===============================
+      // 🔹 GET PRODUCT
+      // ===============================
+      const product: any = await Product.findByPk(productId, {
+        include: [{ model: Variant, as: "variants" }, { model: Category, as: "category" }],
+        transaction: t,
+        raw: false,
+  nest: true
+      });
+  
+      if (!product) {
+        throw new Error("Product not found");
+      }
+  
+      // ===============================
+      //  SMART HANDLING
+      // ===============================
+      const hasVariants = variants !== undefined;   // 👈 مهم
+      const safeVariants = variants ?? [];          // 👈 مهم
+  
+      // ===============================
+      // 🔹 VALIDATION
+      // ===============================
+      if (type === "SIMPLE" && safeVariants.length > 0) {
+        throw new Error("SIMPLE product cannot have variants");
+      }
+  
+      if (type === "VARIABLE" && hasVariants && safeVariants.length === 0) {
+        throw new Error("VARIABLE product must have variants");
+      }
+  
+      // ===============================
+      // 🔹 UPDATE PRODUCT
+      // ===============================
+      await product.update({
+        name,
+        type,
+        price,
+        categoryId,
+        supplierId: supplierId || null,
+        nameImage
+      }, { transaction: t });
+  
+      // ===============================
+      //  CASE: SIMPLE
+      // ===============================
+      if (type === "SIMPLE") {
+  
+        if (hasVariants) {
+          // user بعث variants → نحذفهم
+          await Variant.destroy({
+            where: { productId },
+            transaction: t
+          });
+        }
+  
+        return await Product.findByPk(productId, {
+          include: [{ model: Variant, as: "variants" } ,{ model: Category, as: "category" }],
+          transaction: t,
+          raw: false,
+  nest: true
+        });
+      }
+  
+      // ===============================
+      //  CASE: VARIABLE
+      // ===============================
+      const existingVariants = product.variants || [];
+  
+      const existingMap = new Map<number, any>();
+      existingVariants.forEach((v: any) => {
+        existingMap.set(v.id, v);
+      });
+  
+      const incomingIds = new Set<number>();
+  
+      // ===============================
+      // 🔹 UPDATE / CREATE
+      // ===============================
+      if (hasVariants) {
+  
+        for (const v of safeVariants) {
+  
+          // -----------------------
+          // UPDATE
+          // -----------------------
+          if (v.id) {
+  
+            incomingIds.add(v.id);
+  
+            const existing = existingMap.get(v.id);
+  
+            if (!existing) {
+              throw new Error(`Variant ${v.id} not found`);
+            }
+  
+            const used = await OrderItem.count({
+              where: { variantId: v.id },
+              transaction: t
+            });
+  
+            // ❗ حماية business
+            if (
+              used > 0 &&
+              (v.color !== existing.color || v.size !== existing.size)
+            ) {
+              throw new Error("Cannot modify variant used in orders");
+            }
+  
+            await existing.update({
+              sku: v.sku || null,
+              color: v.color,
+              size: v.size,
+              price: v.price
+            }, { transaction: t });
+  
+          } else {
+  
+            // -----------------------
+            // CREATE
+            // -----------------------
+            await Variant.create({
+              productId,
+              sku: v.sku || null,
+              color: v.color,
+              size: v.size,
+              price: v.price
+            }, { transaction: t });
+          }
+        }
+  
+        // ===============================
+        //  DELETE REMOVED
+        // ===============================
+        for (const existing of existingVariants) {
+  
+          if (!incomingIds.has(existing.id)) {
+  
+            const used = await OrderItem.count({
+              where: { variantId: existing.id },
+              transaction: t
+            });
+  
+            if (used > 0) {
+              throw new Error("Cannot delete variant used in orders");
+            }
+  
+            await existing.destroy({ transaction: t });
+          }
+        }
+      }
+  
+      // ===============================
+      // 🔹 RETURN FINAL
+      // ===============================
+      return await Product.findByPk(productId, {
+        include: [{ model: Variant, as: "variants" }  ,{ model: Category, as: "category" }],
+        transaction: t,
+        raw: false,
+  nest: true
+      });
+  
+    });
+  }
+
 }

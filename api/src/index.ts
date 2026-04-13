@@ -27,6 +27,9 @@ import updateAddressRoutes from "./routes/userAddressRoute/UpdateUserAddressByAd
 
 // product  
 import createProductRoute from "./routes/productRoutes/createProductRoute.js";
+import createProductVariantsRoute from "./routes/productRoutes/CreateProductWithVariantRoute.js";
+import updateProductVariantsRoute from "./routes/productRoutes/UpdateProductWithVariantRoute.js";
+import deleteProductVariantsRoute from "./routes/productRoutes/DeleteProductWithVariantRoute.js";
 import updateProductRoute from "./routes/productRoutes/updateProductRoute.js";
 import getProductRandomRoute from "./routes/productRoutes/GetProductRandomRoute.js";
 import getProductByCategoryRoute from "./routes/productRoutes/GetProductByCategoryRoute.js";
@@ -39,6 +42,8 @@ import getVariantProductRoute from "./routes/VariantProductRoute/GetVariantProdu
 import listVariantProductRoute from "./routes/VariantProductRoute/ListVariantProductRoute.js";
 import convertVariantRoute from "./routes/VariantProductRoute/ConvertProductToVariableRoute.js";
 import addVariantProductRoute from "./routes/VariantProductRoute/CreateVariantsProductRoute.js";
+import updateVariantProductRoute from "./routes/VariantProductRoute/UpdateVariantForProductRoute.js";
+import deleteVariantProductRoute from "./routes/VariantProductRoute/DeleteVariantForProductRoute.js";
 
 //category
 import createCategoryRoute from "./routes//categoryRoute/createCategoryRoute.js";
@@ -196,7 +201,10 @@ app.use("/apimail", mailRoutes);
 
 // product  + static images 
 app.use("/images", express.static(folderPath));
-app.use("/api",createProductRoute)  ;
+//app.use("/api",createProductRoute)  ;
+app.use("/api",createProductVariantsRoute)
+app.use("/api",updateProductVariantsRoute)
+app.use("/api",deleteProductVariantsRoute)
 app.use("/api",updateProductRoute)  ;
 app.use("/api",getProductRandomRoute)  ;
 app.use("/api",getProductByCategoryRoute)  ;
@@ -211,6 +219,8 @@ app.use("/api",getVariantProductRoute)
 app.use("/api",listVariantProductRoute)
 app.use("/api",convertVariantRoute)
 app.use("/api",addVariantProductRoute)
+app.use("/api",updateVariantProductRoute)
+app.use("/api",deleteVariantProductRoute)
 
 
 

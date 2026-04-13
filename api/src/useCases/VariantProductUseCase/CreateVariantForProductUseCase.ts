@@ -1,3 +1,4 @@
+import VariantDomain from "../../models/domain/VariantDomain/VariantDomain";
 import ProductRepo from "../../repo/productRepo/productRepo";
 import VariantProductRepo from "../../repo/VariantProductRepo/VariantProductRepo";
 
@@ -27,10 +28,32 @@ export default class CreateVariantForProductUseCase
            const existingVariant = await this._variantRepo.findBySku(sku);
 
    
+
+
        
       if (existingVariant) {
         throw new Error("Variant SKU already exists");
       }
+
+      // Domain 
+    
+      const domain = new VariantDomain(
+        color,
+        size,
+        price,
+      
+      );
+      // duplicate check
+      const duplicate = await this._variantRepo.findDuplicateCombination(
+        dto.productId,
+        domain.getColor,
+        domain.getSize
+      );
+  
+      if (duplicate) {
+        throw new Error("Variant already exists");
+      }
+  
 
       // 3. create variant
       const variant = await this._variantRepo.addVariantIfExistInProducts({

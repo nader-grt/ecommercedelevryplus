@@ -6,6 +6,7 @@ export default interface IOrderItem {
 id?:number ;
   orderId:number ;
   productId:number;
+   variantId: number | null;
   quantity:number;
   price:number;
   productName:string ;
@@ -75,6 +76,7 @@ export class OrderItem extends Model<IOrderItem> implements IOrderItem {
 
   public  orderId!:number ;
   public  productId!:number;
+  public variantId!: number | null;
   public  quantity!:number;
   public  price!:number;
   public  productName!:string ;
@@ -93,6 +95,16 @@ export class OrderItem extends Model<IOrderItem> implements IOrderItem {
         quantity: { type: DataTypes.INTEGER, allowNull: false },
         price: { type: DataTypes.INTEGER, allowNull: false, unique: true },
         productName: { type: DataTypes.STRING, allowNull: false },
+        variantId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+          references: {
+            model: "Variants",
+            key: "id"
+          },
+          onUpdate: "CASCADE",
+          onDelete: "SET NULL"
+        },
      
       //  totalPrice: { type: DataTypes.DOUBLE, allowNull: false },
       },

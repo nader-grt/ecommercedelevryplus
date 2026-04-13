@@ -223,6 +223,7 @@ OrderWithDeliverie.belongsTo(DelivererPerson, {
 });
 
 /* =========================
+
    Product - OrderItem (1 : N)
 ========================= */
 Product.hasMany(OrderItem, { foreignKey: "productId", as: "orderItems" });
