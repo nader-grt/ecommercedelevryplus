@@ -28,12 +28,14 @@ import updateAddressRoutes from "./routes/userAddressRoute/UpdateUserAddressByAd
 // product  
 import createProductRoute from "./routes/productRoutes/createProductRoute.js";
 import createProductVariantsRoute from "./routes/productRoutes/CreateProductWithVariantRoute.js";
-import updateProductVariantsRoute from "./routes/productRoutes/UpdateProductWithVariantRoute.js";
+import updatedProductVariantsRoute from "./routes/productRoutes/UpdateProductWithVariantRoute.js";
 import deleteProductVariantsRoute from "./routes/productRoutes/DeleteProductWithVariantRoute.js";
 import updateProductRoute from "./routes/productRoutes/updateProductRoute.js";
 import getProductRandomRoute from "./routes/productRoutes/GetProductRandomRoute.js";
 import getProductByCategoryRoute from "./routes/productRoutes/GetProductByCategoryRoute.js";
 import getProductRoute from "./routes/productRoutes/GetProductRoute.js";
+import getProductVariantsRoute from "./routes/productRoutes/GetProductWithVariantRoute.js";
+
 import getAllProductByCategoryIdRoute from "./routes/productRoutes/GetAllProductsFiltredByCategoryIdRoute.js";
 
 
@@ -203,12 +205,13 @@ app.use("/apimail", mailRoutes);
 app.use("/images", express.static(folderPath));
 //app.use("/api",createProductRoute)  ;
 app.use("/api",createProductVariantsRoute)
-app.use("/api",updateProductVariantsRoute)
+app.use("/api",updatedProductVariantsRoute)
 app.use("/api",deleteProductVariantsRoute)
-app.use("/api",updateProductRoute)  ;
+//app.use("/api",updateProductRoute)  ;
 app.use("/api",getProductRandomRoute)  ;
 app.use("/api",getProductByCategoryRoute)  ;
-app.use("/api",getProductRoute)  ;
+app.use("/api",getProductVariantsRoute)  ;
+//app.use("/api",getProductRoute)  ;
 app.use("/api",getAllProductByCategoryIdRoute) ;
 
 //  Variant + product 

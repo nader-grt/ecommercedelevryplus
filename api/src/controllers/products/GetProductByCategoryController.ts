@@ -4,8 +4,8 @@ import GetProductByCategoryUseCase from "../../useCases/productUseCase/GetProduc
 
  interface listProductDTO
  {
-    nameProduct:string ;
-    priceProdust:number;
+    name:string ;
+    price:number;
     urlImage:string;
  }
 
@@ -14,8 +14,8 @@ export default class GetProductByCategoryController  extends BaseController
            async listProduct(products:any[]):Promise<listProductDTO[] | any>
            {
             return products.map((p) => ({
-                nameProduct: p.name,
-                priceProdust: p.price,
+                name: p.name,
+                price: p.price,
                 urlImage: `${process.env.BASE_URL}/images/${p.nameImage}`,
               }));
            }
@@ -28,8 +28,8 @@ export default class GetProductByCategoryController  extends BaseController
               if (!map.has(p.id)) {
                 map.set(p.id, {
                   id: p.id,
-                  nameProduct: p.name,
-                  priceProdust: p.price,
+                  name: p.name,
+                  price: p.price,
                   type: p.type,
                   urlImage: `${process.env.BASE_URL}/images/${p.nameImage}`,
                   variants: [],

@@ -4,9 +4,10 @@ import ProductRepo from "../../repo/productRepo/productRepo";
 
 
 interface GetProductDTO {
-   
+   id:number;
     name:string; 
     price:number ;
+    type:string;
     categoryId:number;
     supplierId:any;
   }
@@ -33,17 +34,19 @@ export default class GetProductUseCase
                              try {
 
                               console.log("step 3 usecase ",productId)
-                         const product =         await this._productRepoUseCase.GetProductById(productId) ;
+                         //const product =         await this._productRepoUseCase.GetProductById(productId) ;
 
-                         const product2 =         await this._productRepoUseCase.GetProductWithVariantsById(productId) ;
-                         console.log("prooo  ",product2)
+                         const product =         await this._productRepoUseCase.GetProductWithVariantsById(productId) ;
+
+                         console.log("prooooooooooooood  ",product)
+                         console.log("prooo  ",product)
 
                          if(!product)
                          {
                             return {success :false ,message : "product not found "}
                          }
 
-                         return {success :true ,product : product2}  ;
+                         return {success :true ,product : product}  ;
                           
                              } catch (error) {
                                 console.log(error)

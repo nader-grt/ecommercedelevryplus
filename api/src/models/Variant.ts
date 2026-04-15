@@ -9,7 +9,8 @@ export default interface IIVariant
     sku:string;
     color:string;
     size:string;
-    price:number
+    price:number;
+    isDeleted?: boolean; // NEW
 
 }
 /**
@@ -48,7 +49,8 @@ export class Variant extends Model<IIVariant> implements IIVariant
    public sku!:string;
     public color!:string;
     public  size!:string;
-    public price!:number
+    public price!:number;
+    public isDeleted?: boolean;
 }
 
 
@@ -92,12 +94,23 @@ export function VariantModel(sequelize:Sequelize)
     price: { 
       type: DataTypes.DECIMAL(10,2), 
       allowNull: false 
-    }
+    },
+    //  
+    isDeleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   
   },{
     sequelize,
     tableName:"Variants",
-    timestamps:true
+    timestamps:true,
+    defaultScope: {
+      where: {
+        isDeleted: false
+      }
+    }
   })
 
     return Variant ;

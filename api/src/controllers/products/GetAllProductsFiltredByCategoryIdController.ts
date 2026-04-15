@@ -3,18 +3,19 @@ import { BaseController } from "../../infra/BaseCOntroller";
 import GetAllProductsFiltredByCategoryIdUseCase from "../../useCases/productUseCase/GetAllProductsFiltredByCategoryIdUseCase";
 
 interface listProductFiltredDTO
-{
-   nameProduct:string ;
-   priceProduct:number;
+{ id: number;
+   name:string ;
+   price:number;
    urlImage:string;
+   type: string;
    categoryId: number ;
    supplierId: number ;
 }
 
 interface ProductVariantDTO {
   id: number;
-  nameProduct: string;
-  priceProduct: number;
+  name: string;
+  price: number;
   urlImage: string;
   categoryId: number;
   supplierId: number | null;
@@ -31,8 +32,10 @@ export default class GetAllProductsFiltredByCategoryIdController extends BaseCon
   {
   //  console.log("pppppppppppppppp ",products)
    return products.map((p) => ({
-       nameProduct: p.name,
-       priceProduct: p.price,
+       id:p.id,
+       name: p.name,
+       price: p.price,
+       type:p.type,
        urlImage: `${process.env.BASE_URL}/images/${p.nameImage}`,
        categoryId: p.categoryId,
        supplierId: p.supplierId
@@ -64,8 +67,8 @@ export default class GetAllProductsFiltredByCategoryIdController extends BaseCon
       if (!map.has(p.id)) {
         map.set(p.id, {
           id: p.id,
-          nameProduct: p.name,
-          priceProduct: p.price,
+          name: p.name,
+          price: p.price,
           urlImage: `${process.env.BASE_URL}/images/${p.nameImage}`,
           categoryId: p.categoryId,
           supplierId: p.supplierId,

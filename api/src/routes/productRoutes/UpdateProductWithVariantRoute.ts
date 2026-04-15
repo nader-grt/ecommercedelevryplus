@@ -13,10 +13,10 @@ const router = Router();
 const categoryRepo = new CategoryRepo();
 const supplierRepo = new SupplierRepo();
 const productRepo = new ProductRepo();
-export const fileHandlerCreate = new FileHandler(folderPath);
+export const fileHandlerUpdate = new FileHandler(folderPath);
 //fileHandlerCreate
 const updateProductUseCase = new updateProductVariantUseCase(
-  fileHandlerCreate,
+  fileHandlerUpdate,
   productRepo,
   categoryRepo,
   supplierRepo
@@ -28,11 +28,15 @@ const updateProductVariantRoute = new updateProductVariantController(updateProdu
 router.put(
   "/products/:id",
   verifyToken,
-  fileHandlerCreate.uploadMiddlewareImage("imageName"),
+  fileHandlerUpdate.uploadMiddlewareImage("imageName"),
+
   (req: Request, res: Response) => {
-    console.log("vvvvvvvvvvvvv update productttttt variants    1");
+    console.log("vvvvvvvvvvvvv bbbbbbbbbbbbbbbbbbupdate productttttt variants    1");
     updateProductVariantRoute.execute(req, res);
   }
 );
 
 export default router;
+
+
+

@@ -30,7 +30,7 @@ router.post(
   verifyToken,
   fileHandlerCreate.uploadMiddlewareImage("imageName"),
   (req: Request, res: Response) => {
-    console.log("vvvvvvvvvvvvv create productttttt variants    1");
+    console.log(" create productttttt variants    1");
     createProductVariantRoute.execute(req, res);
   }
 );

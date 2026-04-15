@@ -12,3 +12,12 @@ export  function dateToStringDMY(date: Date): string {
     return new Date(dateStr);
   }
   
+
+ export function sanitizeProductVariant(dto: any) {
+    return {
+      name: (dto.name || "").replace(/^"+|"+$/g, "").trim(),
+      price: dto.price ? Number(dto.price) : 0,
+      categoryId: Number(dto.categoryId),
+      supplierId: dto.supplierId ? Number(dto.supplierId) : null,
+    };
+  }

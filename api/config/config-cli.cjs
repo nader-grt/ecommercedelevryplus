@@ -232,6 +232,10 @@ fix variantid for orderItem
 npx sequelize-cli migration:generate --name  add-variantId-to-order-items
 
 
+soft delete 
+
+npx sequelize-cli migration:generate --name add-soft-delete-to-products-and-variants
+
 sudo /opt/lampp/lampp start
 Starting XAMPP for Linux...
 XAMPP: Starting Apache...

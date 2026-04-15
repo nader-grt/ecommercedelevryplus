@@ -28,10 +28,10 @@ export default class  GetProductController extends BaseController
 
                        console.log("step 2 " ,productId)
                             try {
-                          // const result =          await  this._getProductUseCase.execute(productId)
+                      
                            const result =          await  this._getProductUseCase.execute(productId)
 
-                           console.log("rrrrrrrr result  ",result)
+                       
 
           if(!result.success)
           {
@@ -39,24 +39,21 @@ export default class  GetProductController extends BaseController
           }
 
           console.log("result product ********",result.product )
-            //       const productData = {
-            //         nameProduct:result.product.name ,
-            //  priceProduct : result.product.price ,
-            //  urlImage : `${BASE_URL}/images/${result.product.nameImage}`
-            //       }
+          
 
                   const productData = {
-                     id: result.id,
-                     nameProduct: result.product.name,
+                     id: result.product.id,
+                     name: result.product.name,
                      type: result.product.type,
-                     priceProduct: result.product.price,
+                     price: result.product.price,
                      urlImage: `${BASE_URL}/images/${result.product.nameImage}`,
+                     category: result.product.category, 
                      variants: result.product.variants || [],
                    };
-
+            
       
 
-                                   return this.resultValue(res," item product   ",productData)
+                                   return this.resultValue(res," get product   ",productData)
                             } catch (error) {
                                 console.log(error)
                             }

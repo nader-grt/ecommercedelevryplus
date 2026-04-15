@@ -10,6 +10,7 @@ export  default interface IProduct
   categoryId?: number;
   supplierId?:number;
   type: ProductType | any;
+  isDeleted?: boolean; // NEW
 }
 
 
@@ -21,6 +22,7 @@ implements IProduct{
      public price!:number ;
      public nameImage!: string;
      public type!: ProductType; // 
+     public isDeleted?: boolean;
     
 
 
@@ -95,11 +97,22 @@ export  function ProductModel(sequelize:Sequelize)
                 allowNull: false,
                 defaultValue: "SIMPLE",
               },
+              //  NEW
+              isDeleted: {
+                type: DataTypes.BOOLEAN,
+                allowNull: false,
+                defaultValue: false,
+              },
            
     }, {
         sequelize,
         tableName: "Products",
         timestamps: false,
+        defaultScope: {
+          where: {
+            isDeleted: false
+          }
+        }
       })
 
 

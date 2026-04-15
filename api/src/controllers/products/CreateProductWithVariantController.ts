@@ -12,13 +12,13 @@ export default class CreateProductWithVariantController extends BaseController {
 
   protected async executeImpl(req: Request, res: Response): Promise<any> {
     try {
-      console.log("REQ BODY:", req.body);
+      console.log("REQ BODY:", req.body, "FILE:", req.file);
 
       const { name, price, categoryId, supplierId } = req.body;
       const file = req.file;
 
       // ===============================
-      //  PARSE VARIANTS 
+      //  PARSE VARIANTS
       // ===============================
       let variantList: any[] = [];
 
@@ -34,19 +34,20 @@ export default class CreateProductWithVariantController extends BaseController {
       }
 
       // ===============================
+      //  TYPE (AUTO FIX )
+      // ===============================
+      const isVariable = variantList.length > 0;
+      const finalType = isVariable ? "VARIABLE" : "SIMPLE";
+
+      // ===============================
       // 🔹 IMAGE VALIDATION
       // ===============================
-      if (!file && !req.body.imageName) {
+      if (!file) {
         return this.badRequest(res, "Product image is required");
       }
 
       // ===============================
-      // 🔹 DETERMINE TYPE
-      // ===============================
-      const isVariable = variantList.length > 0;
-
-      // ===============================
-      // 🔹 PRICE LOGIC
+      //  PRICE LOGIC
       // ===============================
       let priceProduct: number;
 
@@ -57,9 +58,9 @@ export default class CreateProductWithVariantController extends BaseController {
           return this.badRequest(res, "Invalid variant price");
         }
 
-        priceProduct = Math.min(...prices); //  optional
+        priceProduct = Math.min(...prices);
       } else {
-        if (price === "" || price === null || price === undefined) {
+        if (!price) {
           return this.badRequest(res, "Price is required for SIMPLE product");
         }
 
@@ -73,21 +74,22 @@ export default class CreateProductWithVariantController extends BaseController {
       }
 
       // ===============================
-      // 🔹 DTO
+      //  DTO
       // ===============================
       const dto = {
         nameProduct: name,
         priceProduct,
         categoryIdProduct: Number(categoryId),
         supplierIdProduct: supplierId ? Number(supplierId) : null,
-        imageName: file?.filename || req.body.imageName,
+        imageName: file.filename, // always from multer
         variants: variantList,
+        type: finalType, //  VERY IMPORTANT
       };
 
       console.log("DTO READY:", dto);
 
       // ===============================
-      // 🔹 CALL USECASE
+      //  CALL USECASE
       // ===============================
       const result = await this._usecase.execute(dto);
 

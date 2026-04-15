@@ -38,8 +38,8 @@ export default class GetProductByCategoryUseCase
                                        }
 
 
-                                       // const BASE_URL = process.env.BASE_URL; // http://localhost:4000
-                             //  const listProducts =    await this ._useCaseproductRepo.getProductByCategoryId(Number(dto.categoryId)) ;
+                             
+                          
                                const listProducts = await this._useCaseproductRepo.getProductsByCategoryWithVariants(Number(dto.categoryId))
 
                                console.log(" listProducts listProducts ******** ",listProducts)

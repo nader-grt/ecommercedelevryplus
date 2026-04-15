@@ -24,4 +24,9 @@ export default abstract class productRepoInterface
         productData: any,
         variants?: any[]
       ): Promise<any>
+
+      protected abstract GetProductWithVariant(productid?:number):Promise<any>;
+      protected abstract DeleteProductWithVariant(productid?:number):Promise<any>
+      protected abstract hasOrders(productId: number): Promise<boolean> ;
+      protected abstract softDeleteWithVariants(productId: number): Promise<void> ;
 }

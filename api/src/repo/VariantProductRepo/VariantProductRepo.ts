@@ -1,9 +1,20 @@
 import { Op } from "sequelize";
-import { OrderItem, Product, Variant } from "../../models/main";
+import { Inventorie, OrderItem, Product, sequelize, Variant } from "../../models/main";
 import IVariantProductRepo from "./IVariantProductRepo";
 
 
+export enum DeleteVariantStatus {
+  SOFT_DELETED = "SOFT_DELETED",
+  HARD_DELETED = "HARD_DELETED",
+  BLOCKED_ORDERS = "BLOCKED_ORDERS",
+  BLOCKED_INVENTORY = "BLOCKED_INVENTORY",
+  NOT_FOUND = "NOT_FOUND",
+}
 
+export interface DeleteVariantResult {
+  status: DeleteVariantStatus;
+  message: string;
+}
 
 export default  class VariantProductRepo extends IVariantProductRepo
 {
@@ -21,14 +32,83 @@ public async updateVariant(id: number, data: any): Promise<any> {
 }
 
 //  delete variant
-public async deleteVariant(id: number): Promise<boolean> {
-  const variant = await Variant.findByPk(id);
+public async deleteVariant(id: number): Promise<DeleteVariantResult> {
+  const t =  await sequelize.transaction();
 
-  if (!variant) return false;
+  try {
+    // =========================
+    // 1. CHECK VARIANT EXISTS
+    // =========================
+    const variant = await Variant.findByPk(id, { transaction: t });
 
-  await variant.destroy();
+    if (!variant) {
+      return {
+        status: DeleteVariantStatus.NOT_FOUND,
+        message: "Variant not found",
+      };
+    }
 
-  return true;
+    // =========================
+    // 2. CHECK ORDERS (CRITICAL BLOCK)
+    // =========================
+    const orderCount = await OrderItem.count({
+      where: { variantId: id },
+      transaction: t,
+    });
+
+    if (orderCount > 0) {
+      return {
+        status: DeleteVariantStatus.BLOCKED_ORDERS,
+        message: "Cannot delete variant used in orders",
+      };
+    }
+
+    // =========================
+    // 3. CHECK INVENTORY
+    // =========================
+    const inventoryCount = await Inventorie.count({
+      where: { variantId: id },
+      transaction: t,
+    });
+
+    // =========================
+    // 4. SOFT DELETE ALWAYS FIRST
+    // =========================
+    await variant.update(
+      { isDeleted: true },
+      { transaction: t }
+    );
+
+    // =========================
+    // 5. IF INVENTORY EXISTS → KEEP RECORD BUT MARK
+    // =========================
+    if (inventoryCount > 0) {
+      await sequelize.models.Inventorie.update(
+        { isArchived: true },
+        { where: { variantId: id }, transaction: t }
+      );
+
+      await t.commit();
+
+      return {
+        status: DeleteVariantStatus.SOFT_DELETED,
+        message: "Variant archived (inventory exists)",
+      };
+    }
+
+    // =========================
+    // 6. CLEAN HARD DELETE SAFE DATA
+    // =========================
+    await t.commit();
+
+    return {
+      status: DeleteVariantStatus.SOFT_DELETED,
+      message: "Variant soft deleted successfully",
+    };
+  } catch (error) {
+    await t.rollback();
+    throw error;
+  }
 }
 
 //  count variants per product
@@ -156,7 +236,7 @@ public async findDuplicateCombination(
               {
                 model:Product,
                 as: "product", 
-                attributes: ["id", "name"],
+                attributes: ["id", "name", "type"]
               },
             ],
           });
@@ -246,4 +326,27 @@ public async findDuplicateCombination(
           throw error;
         }
       }
+
+
+      // repo
+public async softDeleteVariant(id: number, t?: any): Promise<void> {
+  await Variant.update(
+    { isDeleted: true },
+    { where: { id }, transaction: t }
+  );
+}
+
+public async countInventory(id: number, t?: any): Promise<number> {
+  return await sequelize.models.Inventorie.count({
+    where: { variantId: id },
+    transaction: t,
+  });
+}
+
+public async countOrders(id: number, t: any): Promise<number> {
+  return await OrderItem.count({
+    where: { variantId: id },
+    transaction: t,
+  });
+}
 }

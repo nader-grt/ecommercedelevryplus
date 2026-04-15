@@ -240,7 +240,14 @@ nest: true
             as: "variants",
             required: false,
           },
+          {
+            model: Category,
+            as: "category",
+            required: false,
+          },
         ],
+        raw: false,
+        nest: true
       });
   
       if (!product) {
@@ -585,4 +592,269 @@ nest: true
     });
   }
 
+
+  
+  public async GetProductWithVariant(productid?: number): Promise<any> {
+    const t = await sequelize.transaction();
+  
+    try {
+      // ===============================
+      // 🔹 SINGLE PRODUCT
+      // ===============================
+      if (productid) {
+        const product: any = await Product.findByPk(productid, {
+          include: [
+            { model: Variant, as: "variants" },
+            { model: Category, as: "category" }
+          ],
+          transaction: t,
+          nest: true
+        });
+  
+        if (!product) {
+          await t.rollback();
+          return { data: null };
+        }
+  
+        const data = product.get({ plain: true });
+  
+        const formatted = {
+          id: data.id,
+          name: data.name,
+          price: data.price,
+          type: data.type,
+  
+          categoryId: data.category?.id ?? data.categoryId,
+          supplierId: data.supplierId,
+  
+          urlImage: data.nameImage
+            ? `http://localhost:4000/images/${data.nameImage}`
+            : null,
+  
+          variants: (data.variants || []).map((v: any) => ({
+            id: v.id,
+            sku: v.sku,
+            color: v.color,
+            size: v.size,
+            price: Number(v.price)
+          })),
+  
+          category: data.category
+            ? {
+                id: data.category.id,
+                name: data.category.name
+              }
+            : null
+        };
+  
+        await t.commit();
+  
+        return {
+          data: formatted //  React-admin
+        };
+      }
+  
+      // ===============================
+      // 🔹 LIST PRODUCTS
+      // ===============================
+      const { rows, count } = await Product.findAndCountAll({
+        include: [
+          { model: Variant, as: "variants" },
+          { model: Category, as: "category" }
+        ],
+        order: [["id", "ASC"]],
+        transaction: t,
+        distinct: true,
+        nest: true
+      });
+  
+      const formattedList = rows.map((product: any) => {
+        const data = product.get({ plain: true });
+  
+        return {
+          id: data.id,
+          name: data.name,
+          price: data.price,
+          type: data.type,
+  
+          categoryId: data.category?.id ?? data.categoryId,
+          supplierId: data.supplierId,
+  
+          urlImage: data.nameImage
+            ? `http://localhost:4000/images/${data.nameImage}`
+            : null,
+  
+          variants: (data.variants || []).map((v: any) => ({
+            id: v.id,
+            sku: v.sku,
+            color: v.color,
+            size: v.size,
+            price: Number(v.price)
+          })),
+  
+          category: data.category
+            ? {
+                id: data.category.id,
+                name: data.category.name
+              }
+            : null
+        };
+      });
+  
+      await t.commit();
+  
+      return {
+        data: formattedList,
+        total: count // React-admin
+      };
+  
+    } catch (error: any) {
+      await t.rollback();
+      console.error(" GetProductWithVariant error:", error.message);
+  
+      throw error;
+    }
+  }
+
+  public async DeleteProductWithVariant(productId?: number): Promise<any> {
+    const t = await sequelize.transaction();
+  
+    try {
+      if (!productId) {
+        throw new Error("Product id is required");
+      }
+  
+      // =========================
+      // 🔹 CHECK EXISTENCE
+      // =========================
+      const product = await Product.findOne({
+        where: {
+          id: productId,
+          isDeleted: false
+        },
+        transaction: t
+      });
+  
+      if (!product) {
+        throw new Error("Product not found");
+      }
+  
+      // =========================
+      // 🔹 CHECK ORDERS
+      // =========================
+      const hasOrders = await this.hasOrders(productId);
+  
+      if (hasOrders) {
+        // =========================
+        // SOFT DELETE
+        // =========================
+        await Product.update(
+          { isDeleted: true },
+          { where: { id: productId }, transaction: t }
+        );
+  
+        await Variant.update(
+          { isDeleted: true },
+          { where: { productId }, transaction: t }
+        );
+  
+        await t.commit();
+  
+        return {
+          success: true,
+          type: "SOFT_DELETE",
+          message: "Product archived (used in orders)",
+        };
+      }
+  
+      // =========================
+      //  HARD DELETE
+      // =========================
+      await Variant.destroy({
+        where: { productId },
+        transaction: t
+      });
+  
+      await Product.destroy({
+        where: { id: productId },
+        transaction: t
+      });
+  
+      await t.commit();
+  
+      return {
+        success: true,
+        type: "HARD_DELETE",
+        message: "Product deleted permanently",
+      };
+  
+    } catch (error: any) {
+      await t.rollback();
+      console.error("DeleteProductWithVariant error:", error);
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
+  }
+
+  public async hasOrders(productId: number): Promise<boolean> {
+    // =========================
+    // 🔹 CHECK DIRECT (productId)
+    // =========================
+    const directOrder = await OrderItem.findOne({
+      where: { productId },
+      attributes: ["id"],
+    });
+  
+    if (directOrder) return true;
+  
+    // =========================
+    // 🔹 GET ACTIVE VARIANTS
+    // =========================
+    const variants = await Variant.findAll({
+      where: {
+        productId,
+        isDeleted: false //  
+      },
+      attributes: ["id"],
+    });
+  
+    const variantIds = variants.map(v => v.id);
+  
+    if (variantIds.length === 0) return false;
+  
+    // =========================
+    // 🔹 CHECK VARIANT ORDERS
+    // =========================
+    const variantOrder = await OrderItem.findOne({
+      where: {
+        variantId: variantIds
+      },
+      attributes: ["id"],
+    });
+  
+    return !!variantOrder;
+  }
+
+  public async softDeleteWithVariants(productId: number): Promise<void> {
+    const t = await sequelize.transaction();
+  
+    try {
+      await Variant.update(
+        { isDeleted: true },
+        { where: { productId }, transaction: t }
+      );
+  
+      await Product.update(
+        { isDeleted: true },
+        { where: { id: productId }, transaction: t }
+      );
+  
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+  }
 }

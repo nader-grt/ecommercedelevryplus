@@ -3,28 +3,6 @@ import { BaseController } from "../../infra/BaseCOntroller";
 import UpdateProductWithVariantUseCase from "../../useCases/productUseCase/UpdateProductWithVariantUseCase";
 
 export default class UpdateProductWithVariantController extends BaseController {
-
-
-  private formatProductResponse(product: any) {
-    if (!product) return null;
-  
-    return {
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      nameImage: product.nameImage,
-      categoryId: product.categoryId,
-      supplierId: product.supplierId,
-      type: product.type,
-      variants: product.variants || [],
-      category: product.category
-        ? {
-            id: product.category.id,
-            name: product.category.name,
-          }
-        : null,
-    };
-  }
   private _usecase: UpdateProductWithVariantUseCase;
 
   constructor(usecase: UpdateProductWithVariantUseCase) {
@@ -32,68 +10,125 @@ export default class UpdateProductWithVariantController extends BaseController {
     this._usecase = usecase;
   }
 
-  protected async executeImpl(req: Request, res: Response): Promise<any> {
+  // ===============================
+  //  FORMAT RESPONSE (React-Admin)
+  // ===============================
+  private formatProductResponse(product: any) {
+    if (!product) return null;
+
+    const data = product.dataValues ?? product;
+
+    return {
+      id: data.id,
+      name: data.name,
+      price: data.price,
+      urlImage: data.nameImage
+        ? `http://localhost:4000/images/${data.nameImage}`
+        : null,
+      categoryId: data.category?.id ?? data.categoryId,
+      supplierId: data.supplierId ?? null,
+      type: data.type,
+      variants: Array.isArray(data.variants) ? data.variants : [],
+      category: data.category
+        ? {
+            id: data.category.id,
+            name: data.category.name,
+          }
+        : null,
+    };
+  }
+
+  // ===============================
+  //  MAIN CONTROLLER
+  // ===============================
+  protected async executeImpl(req: Request, res: Response) {
     try {
+      const productId = Number(req.params.id);
 
-      // ===============================
-      // 🔹 1. GET ID
-      // ===============================
-      const { id } = req.params;
+      console.log(" BODY:", req.body);
+      console.log(" FILE:", req.file);
 
-      if (!id) {
-        return this.badRequest(res, "Product id is required");
+      if (!productId || isNaN(productId)) {
+        return this.badRequest(res, "Invalid product id");
       }
 
-      // ===============================
-      // 🔹 2. EXTRACT BODY
-      // ===============================
       let { variants = [], ...productData } = req.body;
 
-      // ===============================
-      // 🔹 3. HANDLE FORM-DATA
-      // ===============================
-      if (typeof variants === "string") {
-        try {
+      // =========================
+      // 🔹 SAFE PARSE VARIANTS
+      // =========================
+      try {
+        if (typeof variants === "string") {
           variants = JSON.parse(variants);
-        } catch {
-          return this.badRequest(res, "Invalid variants format");
         }
+      } catch {
+        return this.badRequest(res, "Invalid variants format");
       }
 
-      // ===============================
-      // 🔹 4. IMAGE UPDATE (optional)
-      // ===============================
+      if (!Array.isArray(variants)) {
+        variants = [];
+      }
+
+      // =========================
+      // 🔹 TYPE FIX 
+      // =========================
+      const isVariable = variants.length > 0;
+      productData.type = isVariable ? "VARIABLE" : "SIMPLE";
+
+      // =========================
+      // 🔹 PRICE LOGIC 
+      // =========================
+      if (isVariable) {
+        const prices = variants.map((v: any) => Number(v.price));
+
+        if (prices.some((p: number) => isNaN(p))) {
+          return this.badRequest(res, "Invalid variant price");
+        }
+
+        productData.price = Math.min(...prices);
+      } else {
+        const parsed = Number(productData.price);
+
+        if (isNaN(parsed)) {
+          return this.badRequest(res, "Invalid price");
+        }
+
+        productData.price = parsed;
+      }
+
+      // =========================
+      // 🔹 IMAGE HANDLING
+      // =========================
       if (req.file) {
         productData.nameImage = req.file.filename;
       }
+      // إذا ما جاش file → نخلي القديم (ما نبدلوش)
 
-      // ===============================
-      // 🔹 5. CALL BUSINESS LOGIC
-      // ===============================
+      // =========================
+      // 🔹 CALL USECASE
+      // =========================
       const result = await this._usecase.execute(
-        Number(id),
+        productId,
         productData,
         variants
       );
 
-      // ===============================
-      // 🔹 6. SUCCESS RESPONSE
-      // ===============================
+      if (!result.success) {
+        return this.badRequest(res, result.message);
+      }
 
+      // =========================
+      // 🔹 FORMAT RESPONSE
+      // =========================
       const cleanData = this.formatProductResponse(result.data);
-      return this.resultValue(
-        res,
-        "Product updated successfully",
-        result.data
-      );
 
-    } catch (error: any) {
-      console.error("UpdateProduct error:", error);
+      return res.status(200).json({
+        data: cleanData,
+      });
 
-      return this.fail(
-        res,
-        error.message || "Internal server error"
-      );
+    } catch (err: any) {
+      console.error(" UPDATE ERROR:", err);
+      return this.fail(res, err.message);
     }
   }
 }

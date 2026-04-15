@@ -1,44 +1,78 @@
+import sequelize from "../../dbConfig/config";
 import VariantProductRepo from "../../repo/VariantProductRepo/VariantProductRepo";
 
 export default class DeleteVariantForProductUseCase {
-  private _repo!: VariantProductRepo;
+  private _repo: VariantProductRepo;
+
   constructor(repo: VariantProductRepo) {
     this._repo = repo;
   }
 
   async execute(id: number): Promise<any> {
+    const t = await sequelize.transaction();
+  
     try {
-      // 1. get variant
-
-      console.log("delete variants  id ",id)
+      if (!id) throw new Error("Variant id is required");
+  
+      // =========================
+      // 1. GET VARIANT
+      // =========================
       const variant = await this._repo.getVariantById(id);
-
-      console.log(" variants  ",variant)
-      if (!variant) throw new Error("Variant not found");
-
+  
+      if (!variant) {
+        throw new Error("Variant not found");
+      }
+  
       const productId = variant.productId;
-
-      // 2. check if used in orders
-       const used = await this._repo.isVariantUsed(id);
-
-      if (used) {
+  
+      // =========================
+      // 2. CHECK ORDERS
+      // =========================
+      const orderCount = await this._repo.countOrders(id, t);
+  
+      if (orderCount > 0) {
         throw new Error("Cannot delete variant used in orders");
       }
-
-      // await this.repo.softDelete(id);
-
-      //  4. count remaining variants
-      await this._repo.deleteVariant(id);
-
-    const count = await this._repo.countByProduct(productId);
-
-    if (count === 0) {
-      await this._repo.convertProductToSimple(productId);
-    }
-
+  
+      // =========================
+      // 3. CHECK INVENTORY
+      // =========================
+      const inventoryCount = await this._repo.countInventory(id, t);
+  
+      // =========================
+      // 4. SOFT DELETE
+      // =========================
+      await this._repo.softDeleteVariant(id, t);
+  
+      // =========================
+      // 5. HANDLE INVENTORY
+      // =========================
+      let message = "Variant deleted";
+  
+      if (inventoryCount > 0) {
+        message = "Variant archived (inventory exists)";
+      }
+  
+      // =========================
+      // 6. CHECK REMAINING VARIANTS
+      // =========================
+      const remaining = await this._repo.countByProduct(productId);
+  
+      if (remaining === 0) {
+        await this._repo.convertProductToSimple(productId);
+      }
+  
+      await t.commit();
+  
       return {
-        message: "Variant deleted successfully",
+        success: true,
+        message,
       };
-    } catch (error: any) {}
+  
+    } catch (error: any) {
+      await t.rollback();
+      console.error("USECASE ERROR:", error);
+      throw error;
+    }
   }
 }
