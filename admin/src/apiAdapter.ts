@@ -79,8 +79,8 @@ export const adaptListProducts = (json: any) => {
 
   const records = products.map((p: any) => ({
     id: p.id, //
-    name: p.nameProduct || "",
-    price: p.priceProduct || 0,
+    name: p.name|| "",
+    price: p.price || 0,
     urlImage: p.urlImage || "",
     categoryId: p.categoryId || null,
     supplierId: p.supplierId || null,
@@ -246,13 +246,14 @@ export const adaptGetOneUserAddress = (json: any) => {
   };
 };
 
-export const adaptListProductByCategory = (json: any) => {
+export const adaptListProductByCategory1 = (json: any) => {
   const products = json?.data?.products || [];
 
   const records = products.map((p: any, index: number) => ({
-    id: index + 1,
-    name: p.nameProduct || "",
-    price: p.priceProdust || 0,
+    id: p.id,
+    name: p.name || "",
+    price: p.price || 0,
+    type:p.type || "",
     urlImage: p.urlImage || "",
     categoryId: p.CategoryId || null,
     supplierId: p.supplierId || null,
@@ -265,6 +266,51 @@ export const adaptListProductByCategory = (json: any) => {
     total: records.length,
   };
 };
+/*
+export const adaptListProductByCategory = (json: any) => {
+  const products = json?.data?.products || [];
+
+  const records = products.map((p: any) => ({
+    id: p.id, // ✅ FIX هنا
+
+    name: p.nameProduct || "",
+    price: p.priceProduct || 0,
+    urlImage: p.urlImage || "",
+    categoryId: p.categoryId || null,
+    supplierId: p.supplierId || null,
+    variants: Array.isArray(p.variants) ? p.variants : [],
+  }));
+
+  return {
+    data: records,
+    total: records.length,
+  };
+};*/
+
+
+
+// this is list with filter by category
+export const adaptListProductByCategory = (json: any) => {
+  const products = json?.data?.products || [];
+
+  const records = products.map((p: any) => ({
+    id: p.id,
+
+    name: p.name,   
+    price: p.price, 
+    type:p.type || "",
+    urlImage: p.urlImage,
+    categoryId: p.category?.id ?? null,
+    variants: Array.isArray(p.variants) ? p.variants : [],
+  }));
+
+  return {
+    data: records,
+    total: records.length,
+  };
+};
+
+
 
 export const adaptObject = (json: any) => {
   const record = extractData(json);
@@ -316,7 +362,7 @@ export const adaptUpdateProductWithVariant1 = (json: any) => {
       id: record.id,
       name: record.name,
       price: record.price,
-      nameImage: record.nameImage,
+      urlImage: record.urlImage,
       categoryId: record.categoryId,
       supplierId: record.supplierId,
       type: record.type,
@@ -349,7 +395,7 @@ export const adaptUpdateProductWithVariant = (json: any) => {
       id: record.id,
       name: record.name,
       price: record.price,
-      nameImage: record.nameImage,
+      urlImage: record.urlImage,
 
       categoryId: record.category?.id ?? record.categoryId,
       categoryName: record.category?.name ?? "",
@@ -357,11 +403,16 @@ export const adaptUpdateProductWithVariant = (json: any) => {
       supplierId: record.supplierId,
       type: record.type,
 
+  
       variants: Array.isArray(record.variants)
-        ? record.variants
-        : [],
-
-      // optional UI safe object
+      ? record.variants.map((v:any) => ({
+          id: v.id,
+          sku: v.sku,
+          color: v.color,
+          size: v.size,
+          price: Number(v.price),
+        }))
+      : [],
       category: record.category
         ? {
             id: record.category.id,

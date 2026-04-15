@@ -1,5 +1,6 @@
 import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptGetOneUserAddress, adaptList, adaptListCompanies, adaptListProductByCategory, adaptListProducts, adaptObject,adaptOneCompany,adaptUpdateProductWithVariant,adaptUpdateUserAddress,adaptUserAddresses, buildProductFormData } from "../../apiAdapter";
 import { httpclientService } from "../../auth/httpclientService/httpclientService";
+import { buildProductFormDataProvider } from "../../shared/utils/buildFormData";
 
 
 const apiUrl = "http://localhost:4000/api";
@@ -78,26 +79,7 @@ const dataProvider: any = {
   
       return adaptUpdateProductWithVariant(json);
     }
-    // if (resource === "inventories") {
-    //   const record = params.meta?.record;
-  
-    //   const variantId = record?.variantId;
-    //   const warehouseId = record?.warehouseId;
-  
-    //   const query = new URLSearchParams();
-  
-    //   if (variantId) query.append("variantId", variantId);
-    //   if (warehouseId) query.append("warehouseId", warehouseId);
-  
-    //   const url = `${apiUrl}/${resource}/${params.id}?${query.toString()}`;
-  
-    //   const { json } = await httpclientService(url);
-  
-
-    //   return adaptObject(json.data);
-    // }
-
-
+   
 
     if (resource === "inventories") {
 
@@ -120,63 +102,8 @@ const dataProvider: any = {
     }
   
 
-    // if (resource === "inventories") {
-    //   const id = params.id;
-  
-    //   // IMPORTANT: fallback if meta missing
-    //   const recordFromList = params.meta?.record;
-  
-    //   const variantId = recordFromList?.variantId;
-    //   const warehouseId = recordFromList?.warehouseId;
-  
-    //   const query = new URLSearchParams();
-  
-    //   if (variantId) query.append("variantId", variantId);
-    //   if (warehouseId) query.append("warehouseId", warehouseId);
-  
-    //   const url = `${apiUrl}/${resource}/${id}?${query.toString()}`;
-  
-    //   const { json } = await httpclientService(url);
-  
-    //   return adaptObject(json.data);
-    // }
     
-    // if (resource === "inventories") {
-    //   const variantId = params.meta?.variantId;
-    //   const warehouseId = params.meta?.warehouseId;
-    
-    //   const query = new URLSearchParams();
-    
-    //   if (variantId) query.append("variantId", variantId);
-    //   if (warehouseId) query.append("warehouseId", warehouseId);
-    
-    //   const url = `${apiUrl}/${resource}/${params.id}?${query.toString()}`;
-    
-    //   const { json } = await httpclientService(url);
-    
-    //   return adaptObject(json.data);
-    // }
-
-    // if (resource === "inventories") {
-
-    //   console.log(" aaaaaaaaaaaaaaaaeeeeeeeeeeeeeerrrrrrrrrrrrrrttttttttttttt")
-    //   const { variantId, warehouseId } = params.meta || {};
-    
-    //   console.log("***********" ,{ variantId, warehouseId } )
-    //   const query = new URLSearchParams();
-    
-    //   if (variantId) query.append("variantId", variantId);
-    //   if (warehouseId) query.append("warehouseId", warehouseId);
-    
-    //   const url = `${apiUrl}/${resource}/${params.id}?${query.toString()}`;
-    
-
-    //   console.log("uuuuuuuuuuuuuu  ",url)
-    //   const { json } = await httpclientService(url);
-    
-    //   //return adaptObject(json.data);
-    // }
- 
+   
     if (resource === "companies") {
         
       console.log("*****  ", `${apiUrl}/${resource}/${params.id}`)
@@ -246,23 +173,38 @@ const dataProvider: any = {
 
   create: async (resource: any, params: any) => {
 
-    console.log("createeeeee ")
-       
-    if(resource === "products")
-    {
+   
+   
+    if (resource === "products") {
       const url = `${apiUrl}/products`;
   
-     let  body :any = buildProductFormData(params.data);
-       console.log(params.data ,  "   bodyyyyyyyyyy",body)
-     const isFormData = body instanceof FormData;
+      const { variants = [], imageName, ...productData } = params.data;
+  
+      const formData = new FormData();
+  
+      Object.entries(productData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null && typeof value !== "object") {
+          formData.append(key, String(value));
+        }
+      });
+  
+      // variants
+      formData.append("variants", JSON.stringify(variants));
+  
+      // image (IMPORTANT FIX)
+      if (imageName instanceof File) {
+        formData.append("imageName", imageName);
+      }
+  
       const { json } = await httpclientService(url, {
         method: "POST",
-        body:  isFormData ? body : JSON.stringify(params.data),
+        body: formData,
       });
-      return {
-        data: json.data,
-      };
+  
+      return adaptObject(json);
     }
+  
+
     if (resource.toLowerCase().includes("useraddress")) {
       const url = `${apiUrl}/usersAddress`;
   
@@ -304,21 +246,90 @@ const dataProvider: any = {
   },
 
   update: async (resource: any, params: any) => {
-    console.log(  `${apiUrl}/${resource}/${params.id}`,  "gggggggggggggghhhhhhrrrrrrrrrrrr  ", resource, params, params.id);
-
+    console.log("updatedd product variant ")
+    const url = `${apiUrl}/${resource}/${params.id}`;
     if (resource === "userAddresses") {
       console.log("fffffffffff ",params.data)
       const url = `${apiUrl}/usersAddress/${params.id}`;
   
-      console.log("usrllllllllllllll   ",url)
+     
       const { json } = await httpclientService(url, {
         method: "PUT",
         body: JSON.stringify(params.data),
+        credentials: "include"
       });
   
-      console.log("jjjjjjjjjjjjjjjjjjjjjjj  ",json)
+    
       return adaptUpdateUserAddress(json);
     }
+
+    // =========================
+    // 🟢 PRODUCTS (IMAGE + VARIANTS)
+    // =========================
+  
+  
+    if (resource === "products") {
+      const formData = buildProductFormDataProvider(params.data);
+    
+      const { json } = await httpclientService(
+        `${apiUrl}/products/${params.id}`,
+        {
+          method: "PUT",
+          body: formData,
+        }
+      );
+    
+      return adaptObject(json);
+    }
+
+
+    // if (resource === "products") {
+    //   const data = params.data;
+    
+    //   console.log("🔥 REAL DATA:", data);
+    
+    //   const formData = new FormData();
+    
+    //   // ===============================
+    //   // 🔹 SAFE FIELDS
+    //   // ===============================
+    //   formData.append("name", (data.name ?? "").toString().trim());
+    //   formData.append("price", String(data.price ?? 0));
+    //   formData.append("categoryId", String(data.categoryId ?? ""));
+    //   formData.append("supplierId", String(data.supplierId ?? ""));
+    //   formData.append("type", data.type ?? "VARIABLE");
+    
+    //   // ===============================
+    //   // 🔥 VARIANTS (FIX IMPORTANT)
+    //   // ===============================
+    //   const variants =
+    //     typeof data.variants === "string"
+    //       ? data.variants
+    //       : JSON.stringify(data.variants ?? []);
+    
+    //   formData.append("variants", variants);
+    
+    //   // ===============================
+    //   // 🔥 IMAGE FIX (react-admin format)
+    //   // ===============================
+    //   const file = data?.image?.rawFile;
+    
+    //   if (file instanceof File) {
+    //     formData.append("imageName", file);
+    //   }
+    
+    //   const { json } = await httpclientService(
+    //     `${apiUrl}/products/${params.id}`,
+    //     {
+    //       method: "PUT",
+    //       body: formData,
+    //     }
+    //   );
+    
+    //   console.log(" SERVER RESPONSE:", json);
+    
+    //   return adaptObject(json);
+    // }
 
     const { json } = await httpclientService(
       `${apiUrl}/${resource}/${params.id}`,

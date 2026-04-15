@@ -17,6 +17,7 @@ import axios from "axios";
 import { CreateVariantModal } from "../../shared/components/CreateVariantModal";
 
 import VariantExpandTwo from "./VariantExpandTwo";
+import { DeleteProductVariantButton } from "./DeleteProductVariantButton";
 
 //
 // ===============================
@@ -106,28 +107,28 @@ const AddVariantButton = ({ record }: { record?: Product }) => {
 
 // Delete button product with variant 
 
-const DeleteProductVariantButton = ({ record }: any) => {
-  const notify = useNotify();
-  const refresh = useRefresh();
+// const DeleteProductVariantButton = ({ record }: any) => {
+//   const notify = useNotify();
+//   const refresh = useRefresh();
 
-  const handleDelete = async () => {
-    if (!window.confirm("Are you sure?")) return;
+//   const handleDelete = async () => {
+//     if (!window.confirm("Are you sure?")) return;
 
-    try {
-      await axios.delete(
-        `http://localhost:4000/api/products/${record.id}`,
-        { withCredentials: true }
-      );
+//     try {
+//       await axios.delete(
+//         `http://localhost:4000/api/products/${record.id}`,
+//         { withCredentials: true }
+//       );
 
-      notify("Product deleted", { type: "success" });
-      refresh();
-    } catch (e: any) {
-      notify(e.message, { type: "error" });
-    }
-  };
+//       notify("Product deleted", { type: "success" });
+//       refresh();
+//     } catch (e: any) {
+//       notify(e.message, { type: "error" });
+//     }
+//   };
 
-  return <Button label="Delete" onClick={handleDelete} />;
-};
+//   return <Button label="Delete" onClick={handleDelete} />;
+// };
 //
 // ===============================
 // 🔹 FILTERS
@@ -228,12 +229,20 @@ export const ListProducts = () => {
             <>
               <ConvertToVariableButton record={record} />
               <AddVariantButton record={record} />
+              <DeleteProductVariantButton record={record} />
             </>
           )}
         />
-        <EditButton />
-        <DeleteProductVariantButton/>
+        <EditButton 
+        onClick={(e:any) => {
+          e.stopPropagation(); //
+        }}
+        
+        />
+        
       </Datagrid>
     </List>
   );
 };
+
+// <DeleteProductVariantButton/>

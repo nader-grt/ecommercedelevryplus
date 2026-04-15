@@ -3,89 +3,77 @@ import {
   SimpleForm,
   TextInput,
   NumberInput,
-  required,
-  SelectInput,
   ArrayInput,
   SimpleFormIterator,
-  FormDataConsumer,
-  ImageInput,
-  ImageField,
+  Toolbar,
+  SaveButton,
+  required,
   ReferenceInput,
+  SelectInput,
 } from "react-admin";
 
+import { useFormContext } from "react-hook-form";
+
+// ===============================
+// TOOLBAR
+// ===============================
+const CustomToolbar = () => (
+  <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+    <SaveButton />
+  </Toolbar>
+);
+
+// ===============================
+// FILE INPUT (IMPORTANT FIX)
+// ===============================
+const ProductImageInput = () => {
+  const { setValue } = useFormContext();
+
+  return (
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+
+        if (file) {
+          setValue("imageName", file); // 🔥 MUST MATCH backend
+        }
+      }}
+    />
+  );
+};
+
+// ===============================
+// CREATE PRODUCT
+// ===============================
 export const CreateProduct = () => {
   return (
     <Create>
-      <SimpleForm>
-        {/* NAME */}
-        <TextInput
-          source="name"
-          label="Product Name"
-          validate={[required()]}
-        />
+      <SimpleForm toolbar={<CustomToolbar />}>
 
-        {/* CATEGORY */}
-        <ReferenceInput
-          source="categoryId"
-          reference="categories"
-          label="Category"
-        >
+        <TextInput source="name" validate={required()} />
+        <NumberInput source="price" />
+
+        <ReferenceInput source="categoryId" reference="categories">
           <SelectInput optionText="name" />
         </ReferenceInput>
 
-        {/* TYPE */}
-        <SelectInput
-          source="type"
-          label="Product Type"
-          choices={[
-            { id: "SIMPLE", name: "Simple Product" },
-            { id: "VARIABLE", name: "Variable Product" },
-          ]}
-          defaultValue="SIMPLE"
-          validate={[required()]}
-        />
+        <TextInput source="supplierId" />
 
-        {/* PRICE (ALWAYS SHOWN) */}
-        <FormDataConsumer>
-          {({ formData }) => (
-            <NumberInput
-              source="price"
-              label={
-                formData?.type === "VARIABLE"
-                  ? "Default Price (optional)"
-                  : "Price"
-              }
-              validate={
-                formData?.type === "SIMPLE" ? [required()] : []
-              }
-            />
-          )}
-        </FormDataConsumer>
+        <TextInput source="type" defaultValue="VARIABLE" />
 
-        {/* VARIANTS (VARIABLE ONLY) */}
-        <FormDataConsumer>
-          {({ formData }) =>
-            formData?.type === "VARIABLE" ? (
-              <ArrayInput source="variants" label="Variants">
-                <SimpleFormIterator>
-                  <TextInput source="color" label="Color" />
-                  <TextInput source="size" label="Size" />
-                  <NumberInput source="price" label="Price" />
-                </SimpleFormIterator>
-              </ArrayInput>
-            ) : null
-          }
-        </FormDataConsumer>
+        <ArrayInput source="variants" defaultValue={[]}>
+          <SimpleFormIterator>
+            <TextInput source="sku" />
+            <TextInput source="color" />
+            <TextInput source="size" />
+            <NumberInput source="price" />
+          </SimpleFormIterator>
+        </ArrayInput>
 
-        {/* IMAGE */}
-        <ImageInput
-          source="image"
-          label="Product Image"
-          accept={{ "image/*": [] }}
-          maxSize={7 * 1024 * 1024}
-        >
-          <ImageField source="src" title="preview" />
-        </ImageInput>
+        <ProductImageInput />
+
       </SimpleForm>
     </Create>
   );

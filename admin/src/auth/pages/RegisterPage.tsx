@@ -27,7 +27,7 @@ export const RegisterPage = () => {
     try {
       const data = await registerUser(form); // 
 
-     console.log("register data  ",data)
+  
       await authProvider.login({ email: form.email, password: form.password });
 
    
