@@ -9,7 +9,7 @@ import {
   } from "react-admin";
   
   export const CreateInventorie = () => (
-    <Create>
+    <Create title="Add Stock">
       <SimpleForm>
   
         {/* Select Warehouse */}

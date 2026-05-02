@@ -52,6 +52,11 @@ const MyMenu = () => {
         primaryText="Companies"
         leftIcon={<BusinessIcon />}
       />
+         <Menu.Item
+        to="/owners"
+        primaryText="Company Owners"
+        leftIcon={<BusinessIcon />}
+      />
 
       <Menu.Item
         to="/warehouses"
@@ -116,6 +121,13 @@ const MyMenu = () => {
         leftIcon={<HomeIcon />}
       />
 
+
+
+      <Menu.Item
+        to="/categories"
+        primaryText="Categories"
+        leftIcon={<CategoryIcon />}
+      />
       <Menu.Item
         to="/products"
         primaryText="Products"
@@ -128,11 +140,6 @@ const MyMenu = () => {
         leftIcon={<ShoppingCartIcon />}
       />
 
-      <Menu.Item
-        to="/categories"
-        primaryText="Categories"
-        leftIcon={<CategoryIcon />}
-      />
 
       <Menu.Item to="/days" primaryText="Days" leftIcon={<ViewWeekIcon />} />
     </Menu>

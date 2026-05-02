@@ -1,4 +1,4 @@
-import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptGetOneUserAddress, adaptList, adaptListCompanies, adaptListProductByCategory, adaptListProducts, adaptObject,adaptOneCompany,adaptUpdateProductWithVariant,adaptUpdateUserAddress,adaptUserAddresses, buildProductFormData } from "../../apiAdapter";
+import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptList, adaptListCategories, adaptListCompanies, adaptListProductByCategory, adaptListProducts, adaptObject,adaptOneCompany,adaptOneWarehouse,adaptUpdateProductWithVariant,adaptUpdateUserAddress,adaptUserAddresses, buildProductFormData } from "../../apiAdapter";
 import { httpclientService } from "../../auth/httpclientService/httpclientService";
 import { buildProductFormDataProvider } from "../../shared/utils/buildFormData";
 
@@ -42,6 +42,37 @@ const dataProvider: any = {
     return adaptListCompanies(json);
   }
 
+  //  =========================
+  //  ADD THIS BLOCK HERE
+  //  =========================
+  if (resource === "owners") {
+    const records = json?.data || [];
+
+    return {
+      data: records.map((item: any) => ({
+        ...item,
+        id: item.id,
+      })),
+      total: records.length,
+    };
+  }
+
+  if (resource === "categories") {
+    const query = {
+      page,
+      perPage,
+      sort: field,
+      order,
+      filter: JSON.stringify(filter),
+    };
+  
+    const url = `${apiUrl}/categories?${new URLSearchParams(query).toString()}`;
+  
+    const { json } = await httpclientService(url);
+  
+    return adaptListCategories(json);
+  }
+
   if (resource === "products") {
 
     if (categoryId) {
@@ -68,9 +99,25 @@ const dataProvider: any = {
     },
 
   getOne: async (resource: any, params: any) => {
-    console.log("RESOURCE CALLED:", resource, params);
+   
+    if (resource === "categories") {
+      const { json } = await httpclientService(
+        `${apiUrl}/categories/${params.id}`,
+        {
+          credentials: "include",
+        }
+      );
+    
+      return {
+        data: {
+          id: json.data.categoryId,  //  FIX
+          name: json.data.name,
+        },
+      };
+    }
+
     // =========================
-    // 🟢 PRODUCTS / ID FIX
+    //  PRODUCTS / ID FIX
     // =========================
     if (resource === "products") {
       const { json } = await httpclientService(
@@ -80,6 +127,14 @@ const dataProvider: any = {
       return adaptUpdateProductWithVariant(json);
     }
    
+    //warehouse one 
+    if (resource === "warehouses") {
+      const { json } = await httpclientService(
+        `${apiUrl}/warehouses/${params.id}`
+      );
+    
+      return adaptOneWarehouse(json);
+    }
 
     if (resource === "inventories") {
 
@@ -120,33 +175,53 @@ const dataProvider: any = {
     return adaptObject(json);
   },
 
-
   getMany: async (resource: string, params: { ids: number[] }) => {
     try {
       const { json } = await httpclientService(
         `${apiUrl}/${resource}?ids=${params.ids.join(",")}`
       );
-
+  
       let dataArray: any[] = [];
+  
+      // =========================
+      // normalize response
+      // =========================
       if (Array.isArray(json.data)) {
         dataArray = json.data;
       } else if (json.data && typeof json.data === "object") {
         dataArray = [json.data];
       }
-
-      dataArray = dataArray.map((item) => {
-        if (!item.id) {
-          throw new Error(
-            `getMany: Resource "${resource}" item does not have an id key`
-          );
-        }
-        return item;
-      });
-
-      return { data: dataArray };
+  
+      // =========================
+      // FIX: ensure id exists
+      // =========================
+      const normalized = dataArray.map((item: any) => ({
+        ...item,
+        id:
+          item.id ??
+          item.categoryId ??
+          item.orderId ??
+          item.userId ??
+          item.email ??
+          null,
+      }));
+  
+      // =========================
+      // validate safely (no crash)
+      // =========================
+      const valid = normalized.filter((item) => item.id !== null);
+  
+      if (valid.length !== normalized.length) {
+        console.warn(
+          `getMany warning: some ${resource} items missing id`,
+          normalized
+        );
+      }
+  
+      return { data: valid };
     } catch (error) {
       console.error("getMany error:", error);
-      return { data: [] }; // fallback
+      return { data: [] };
     }
   },
 
@@ -172,8 +247,28 @@ const dataProvider: any = {
   },
 
   create: async (resource: any, params: any) => {
-
-   
+    if (resource === "categories") {
+      const { json } = await httpclientService(`${apiUrl}/categories`, {
+        method: "POST",
+        body: JSON.stringify(params.data),
+        credentials: "include",
+      });
+    
+      //  FIX: correct deep structure
+      const record = json?.data?.data;
+    
+      if (!record?.id) {
+        console.error(" BAD CATEGORY RESPONSE:", json);
+        throw new Error("Missing category id in response");
+      }
+    
+      return {
+        data: {
+          id: record.id,
+          name: record.name,
+        },
+      };
+    }
    
     if (resource === "products") {
       const url = `${apiUrl}/products`;
@@ -264,7 +359,27 @@ const dataProvider: any = {
     }
 
     // =========================
-    // 🟢 PRODUCTS (IMAGE + VARIANTS)
+    //  Category 
+    // =========================
+    if (resource === "categories") {
+      const { json } = await httpclientService(
+        `${apiUrl}/categories/${params.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify(params.data),
+          credentials: "include",
+        }
+      );
+    
+      return {
+        data: {
+          id: params.id,
+          ...params.data,
+        },
+      };
+    }
+    // =========================
+    //  PRODUCTS (IMAGE + VARIANTS)
     // =========================
   
   
@@ -352,6 +467,27 @@ const dataProvider: any = {
   },
 
   delete: async (resource: any, params: any) => {
+
+    if (resource === "categories") {
+      console.log(" pppppppppppp  " ,params)
+      const { json } = await httpclientService(
+        `${apiUrl}/${resource}/${params.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+    
+      return {
+        data: {
+          id: params.id,
+          status: json.status,
+          message: json.message,
+          data: json.data,
+        },
+      };
+    }
+
+
     const { json } = await httpclientService(
       `${apiUrl}/${resource}/${params.id}`,
       {
@@ -368,14 +504,7 @@ const dataProvider: any = {
     });
     return { data: json };
   },
-  // getAllCategories: async (resource:any, params:any) => {
-  //   console.log("object  trftttttttttttttttttttt")
-  //   const { json } = await httpclientService(`${apiUrl}/categories/${resource}`, {
-  //     method: "DELETE",
-  //     body: JSON.stringify(params.ids),
-  //   });
-  //   return { data: json };
-  // },
+
 };
 
 export default dataProvider;

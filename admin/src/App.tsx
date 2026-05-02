@@ -3,7 +3,7 @@ import { Admin, Resource } from "react-admin";
 
 import authProvider from "./core/providers/authProvider";
 
-import Dashboard from "./dashboard/Dashboard";
+
 
 import { RegisterPage } from "./auth/pages/RegisterPage";
 import { LoginPage } from "./auth/pages/LoginPage";
@@ -26,6 +26,9 @@ import { ShowInventorie } from "./modules/Inventory/ShowInventorie";
 import { EditInventorie } from "./modules/Inventory/EditInventorie";
 import { CreateInventorie } from "./modules/Inventory/CreateInventorie";
 import { CreateVariant } from './modules/variantProduct/CreateVariant';
+import { CreateCategorie } from "./modules/categories/CreateCategorie";
+import { OwnersCompanyList } from "./modules/OwnerCompany/OwnersCompanyList";
+import Dashboard from "./dashboard/Dashboard";
 
 
 
@@ -56,6 +59,12 @@ const App = () => {
       create={CreateCompany}
       edit={EditCompany}
       show={ShowCompany}
+    />
+
+<Resource
+      name="owners"
+      list={OwnersCompanyList}
+    
     />
 
 <Resource
@@ -93,18 +102,12 @@ const App = () => {
  <Resource
     name="categories" 
     //categories
+    create={CreateCategorie}
     list={ListCategories}
     edit={EditCategorie}
     
   /> 
 
- {/* <Resource
-    name="days" 
-    //days
-     list={ListWeekDays}
-     create={CreateWeekDay}
-    
-  />   */}
 
   <Resource  name="products"
     create={CreateProduct}

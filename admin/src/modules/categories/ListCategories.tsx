@@ -1,50 +1,37 @@
-import { List, Datagrid, TextField, EditButton } from "react-admin";
+import {
+  List,
+  Datagrid,
+  TextField,
+  EditButton,
+
+} from "react-admin";
+import { CustomDeleteButton } from "./CustomDeleteButton";
 
 export const ListCategories = () => (
-  <List
-  
-  exporter={false}>
-    <Datagrid>
-      <TextField source="id"
-      sx={{
-        maxWidth: '16em',
-        '&.MuiTableCell-body': {
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-        },
-    }}
-      />
-      <TextField source="name"
-      
-      sx={{
-        maxWidth: '16em',
-        '&.MuiTableCell-body': {
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-        },
-    }}
+  <List exporter={false}>
+    <Datagrid rowClick={false}>
+      <TextField
+        source="id"
+        sx={{
+          maxWidth: "16em",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
       />
 
-      {/* <TextField source="lastName"
-      
-      
-      sx={{
-        maxWidth: '16em',
-        '&.MuiTableCell-body': {
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-        },
-    }}
+      <TextField
+        source="name"
+        sx={{
+          maxWidth: "16em",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+        }}
       />
- 
-      
-      <EmailField source="email" /> */}
+
       <EditButton />
+      <CustomDeleteButton />
     </Datagrid>
   </List>
 );
-
-

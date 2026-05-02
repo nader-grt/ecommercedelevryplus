@@ -28,19 +28,38 @@ export const adaptList = (json: any) => {
 };
 
 export const adaptCompany = (item: any) => ({
-  ...item,
-  id: item.id,
+  id: item.id, // must exist for react-admin
+  name: item.name,
+  type: item.type,
   isActive: Boolean(item.isActive),
+  ownerId: item.ownerId,
+
+  // keep full owner for UI (optional but useful)
+  owner: item.owner
+    ? {
+        id: item.owner.id,
+        firstName: item.owner.firstName,
+        email: item.owner.email,
+      }
+    : null,
 });
 
-export const adaptListCompanies = (json: any) => ({
-  data: json.data.map(adaptCompany),
-  total: json.data.length, //  until backend pagination
-});
+export const adaptListCompanies = (json: any) => {
+  const records = json?.data ?? [];
 
-export const adaptOneCompany = (json: any) => ({
-  data: adaptCompany(json.data),
-});
+  return {
+    data: records.map(adaptCompany),
+    total: records.length,
+  };
+};
+
+export const adaptOneCompany = (json: any) => {
+  const record = json?.data ?? json;
+
+  return {
+    data: adaptCompany(record),
+  };
+};
 // products
 export const buildProductFormData = (data: any) => {
   console.log("dataaaaaa  ", data);
@@ -153,10 +172,10 @@ export const adaptUserAddresses = (json: any) => {
 
   users.forEach((user: any) => {
     (user.addresses || []).forEach((addr: any) => {
-      // ✅ use address.id as unique key
+      //  use address.id as unique key
       if (!map.has(addr.id)) {
         map.set(addr.id, {
-          id: addr.id, // ✅ stable unique id
+          id: addr.id, //  stable unique id
           userId: user.id,
 
           firstName: user.firstName || "",
@@ -271,7 +290,7 @@ export const adaptListProductByCategory = (json: any) => {
   const products = json?.data?.products || [];
 
   const records = products.map((p: any) => ({
-    id: p.id, // ✅ FIX هنا
+    id: p.id, //  FIX هنا
 
     name: p.nameProduct || "",
     price: p.priceProduct || 0,
@@ -419,6 +438,104 @@ export const adaptUpdateProductWithVariant = (json: any) => {
             name: record.category.name,
           }
         : null,
+    },
+  };
+};
+
+
+
+
+
+
+
+
+export const adaptListCategories = (json: any) => {
+  const raw = json?.data;
+
+  let records: any[] = [];
+
+  // 1: إذا كانت array
+  if (Array.isArray(raw)) {
+    records = raw;
+  }
+
+  // 2: إذا كانت { data: [] }
+  else if (Array.isArray(raw?.data)) {
+    records = raw.data;
+  }
+
+  else if (raw?.category) {
+    records = [raw.category];
+  }
+
+  return {
+    data: records.map((cat: any) => ({
+      id: cat.categoryId ?? cat.id,
+      name: cat.name,
+    })),
+    total: records.length,
+  };
+};
+
+
+
+
+// export const adaptListCategories = (json: any) => {
+//   const raw = json?.data;
+
+//   // =========================
+//   // CASE 1: backend returns { data: [...] }
+//   // =========================
+//   let records = [];
+
+//   if (Array.isArray(raw)) {
+//     records = raw;
+//   } else if (Array.isArray(raw?.data)) {
+//     records = raw.data;
+//   } else {
+//     records = [];
+//   }
+
+//   return {
+//     data: records.map((cat: any) => ({
+//       id: cat.id,
+//       name: cat.name,
+//     })),
+//     total: records.length,
+//   };
+// };
+
+
+//warehouse 
+
+export const adaptWarehouses = (json: any) => {
+  const records = json?.data || [];
+
+  return {
+    data: records.map((w: any) => ({
+      id: w.id,
+      name: w.name,
+      companyId: w.companyId,
+
+      //  flatten relation
+      companyName: w.company?.name || null,
+      ownerId: w.company?.ownerId || null,
+    })),
+    total: records.length,
+  };
+};
+
+export const adaptOneWarehouse = (json: any) => {
+  const w = json?.data;
+
+  return {
+    data: {
+      id: w.id,
+      name: w.name,
+      companyId: w.companyId,
+
+      companyName: w.company?.name || null,
+      ownerId: w.company?.ownerId || null,
     },
   };
 };
