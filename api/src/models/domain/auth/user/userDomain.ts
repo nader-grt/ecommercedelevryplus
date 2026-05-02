@@ -22,7 +22,7 @@ export default class userDomain {
   protected _phone: string = "";
   protected _email: string = "" ;
   protected password?: string = "";
-  protected role?: any = "" ;
+  protected role?: any | string ;
   protected city?: string;
   protected address?: string;
 
@@ -101,7 +101,7 @@ export default class userDomain {
     this.password = pass;
   }
 
-  public set setRole(role: string) {
+  public set setRole(role: any) {
     this.role = role.toLowerCase();
   }
 

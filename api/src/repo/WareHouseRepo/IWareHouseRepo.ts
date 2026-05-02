@@ -11,6 +11,7 @@ export  abstract class IWareHouseRepo
 
     abstract findAllFiltredByName(dataclean:any,notcleandata:any): Promise<any[]>
     abstract findByCompanyId(companyId: number): Promise<Warehouse[]>;
+    abstract getWarehouseById(warehouseId: number,  user?: any): Promise<any>;
     // abstract update(id: number, data: Partial<Warehouse>): Promise<Warehouse | null>;
     // abstract delete(id: number): Promise<void>;
 }

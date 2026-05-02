@@ -5,19 +5,16 @@ import CreatWareHouseUseCase from "../../useCases/WareHouseUseCase/CreatWareHous
 import CreatWareHouseController from "../../controllers/WareHouse/CreatWareHouseController";
 import WareHouseRepo from "../../repo/WareHouseRepo/WareHouseRepo";
 
-
-
-const router = Router()
+const router = Router();
 
 const company = new CompanyRepo();
-const wareHouse = new WareHouseRepo()
+const wareHouse = new WareHouseRepo();
 
-  const   createuseCase  = new  CreatWareHouseUseCase(wareHouse,company);
-       const createWarehouseCRoute                    = new CreatWareHouseController(createuseCase)
-       router.post("/warehouses", verifyToken, (req: Request, res: Response) => {
-        console.log("req", req.body);
-        createWarehouseCRoute.execute(req, res);
-      });
- 
+const createuseCase = new CreatWareHouseUseCase(wareHouse, company);
+const createWarehouseCRoute = new CreatWareHouseController(createuseCase);
+router.post("/warehouses", verifyToken, (req: Request, res: Response) => {
+  console.log("req", req.body);
+  createWarehouseCRoute.execute(req, res);
+});
 
-       export default router
+export default router;

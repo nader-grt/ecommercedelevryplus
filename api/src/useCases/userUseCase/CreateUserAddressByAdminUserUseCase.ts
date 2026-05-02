@@ -17,6 +17,7 @@ export interface IUserWithAddressDTO {
       lastName?: string;
       email?: string;
       phone?: string;
+      role?:string;
   
       addresses: IAddress[];
     };
@@ -75,6 +76,7 @@ export default class CreateUserAddressByAdminUserUseCase
                      lastName: userAddress.lastName,
                      email: userAddress.email,
                      phone: userAddress.phone,
+                     role:userAddress.role
                    //  city: userAddress.addresses[0]?.city || "DefaultCity",
                  } ;
 
@@ -87,6 +89,8 @@ console.log("userData ",userData ,"firstAddress ",firstAddress)
                     [firstAddress]
                   );
     
+
+                  console.log(" userDomainInstance  ",userDomainInstance)
           //  userDomainInstance.validateUserAndAddresses();
     
      
@@ -108,10 +112,11 @@ console.log("userData ",userData ,"firstAddress ",firstAddress)
       password: hashedPassword
     });
   
+    console.log("newUser newUser ",newUser)
     userId = newUser.id;
 }
 
-  // console.log("uuuuuuuu ",userId)
+
 userDomainInstance.getAddresses().forEach(addr => {
     addr.userId = userId;
 });

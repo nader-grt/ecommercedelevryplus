@@ -1,3 +1,4 @@
+import CategoryDomain from "../../models/domain/cetegoryDomain/categoryDomain";
 import CategoryRepo from "../../repo/categoryRepo/categoryRepo";
 
 
@@ -16,10 +17,10 @@ export default class GetCategoryUseCase
     {
 
 
-        console.log("usecaseeeeeee  ",Number(id)  ,"idddddddddddd  ",id)
+       
               try {
                            
-                const resultCategory :any = await CategoryRepo.FindCategoryById(id) ;
+                const resultCategory :any = await this.usecaseRepo.GetCategoryById(id) ;
 
                console.log("result usecaseee  ",resultCategory)
 

@@ -1,135 +1,219 @@
-import CategoryDomain from "../../models/domain/cetegoryDomain/CategoryDomaun";
-import { Category } from "../../models/main";
-import categoryRepoInterface from "./categoryRepoInterface";
+import CategoryDomain from "../../models/domain/cetegoryDomain/categoryDomain";
+import { Category, OrderItem, Product } from "../../models/main";
+import CategoryRepoInterface from "./categoryRepoInterface";
 
-export interface ICategoryRepo {
-  name: string;
+export default class CategoryRepo extends CategoryRepoInterface {
+
+  // ======================
+  //  FIND BY NAME
+  // ======================
+  public async findByName(name: string): Promise<CategoryDomain | null> {
+    if (!name?.trim()) return null;
+
+    const result = await Category.findOne({
+      where: { name: name.trim() },
+      raw: true,
+    });
+
+    return result
+      ? CategoryDomain.reCreateCategory(result)
+      : null;
+  }
+
+  // ======================
+  // CREATE
+  // ======================
+  public async createCategory(category: {
+    name: string;
+  }): Promise<CategoryDomain> {
+
+    const name = category?.name?.trim();
+
+
+    console.log("create categoryyyyy  name  ",name)
+    if (!name) {
+      throw new Error("Category name is required");
+    }
+
+    //  prevent duplicate
+    const existing = await this.findByName(name);
+    if (existing) {
+      throw new Error("Category name already exists");
+    }
+
+    const created = await Category.create({ name });
+
+    console.log("cccccccccccc created category ************",created )
+
+    console.log("finnnnnnnn   ",CategoryDomain.reCreateCategory(
+      created.get({ plain: true })
+    ))
+    const plain = created.get({ plain: true });
+
+if (!plain?.id) {
+  throw new Error("Failed to create category");
 }
 
-export default class CategoryRepo extends categoryRepoInterface {
-  public async createCategory(category: any): Promise<void> {
-    try {
-
-      console.log("object   ",category)
-      await Category.create(category);
-    } catch (error) {
-      console.log(error);
-    }
+return CategoryDomain.reCreateCategory({
+  id: plain.id,
+  name: plain.name,
+});
+  
   }
 
-  static async isEmpty(): Promise<boolean> {
-    return (await Category.count()) === 0;
+  // ======================
+  // GET BY ID
+  // ======================
+  public async GetCategoryById(id: number): Promise<CategoryDomain | null> {
+    if (!id) return null;
+
+    const result = await Category.findByPk(id, { raw: true });
+
+    return result
+      ? CategoryDomain.reCreateCategory(result)
+      : null;
   }
 
-  static async FindCategoryById(id: number): Promise<CategoryDomain | any> {
-    try {
-      const resultCategory: any = await Category.findOne({
-        where: { id },
-      });
-      const categoryResult = new CategoryDomain();
+  // ======================
+  // UPDATE
+  // ======================
+  public async UpdateCategoryById(category: {
+    categoryId: number;
+    name: string;
+  }): Promise<CategoryDomain | null> {
 
-      if (!resultCategory) return null;
-
-      const categoryName = resultCategory.get({ plain: true });
-      return CategoryDomain.reCreateCategory(categoryName);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  public async GetCategoryById(id: number): Promise<CategoryDomain | any> {
-    try {
-      const updatedCategory: any = await Category.findOne({ where: { id } });
-
-      if (!updatedCategory) return null;
-
-      return CategoryDomain.reCreateCategory(updatedCategory);
-    } catch (error) {
-      console.log(error);
-    }
-  }
-  public async UpdateCategoryById(
-    category: any
-  ): Promise<CategoryDomain | any> {
     const t = await Category.sequelize!.transaction();
-    try {
-      const { categoryId, name } = category;
 
-      // [affectedCount, affectedRows]
-      const [resultCategoryCount] = await Category.update(
+    try {
+      const { categoryId } = category;
+      const name = category.name?.trim();
+
+      if (!categoryId || !name) {
+        throw new Error("Invalid data");
+      }
+
+      //  check exists
+      const existingCategory = await Category.findByPk(categoryId, {
+        transaction: t,
+      });
+
+      if (!existingCategory) {
+        await t.rollback();
+        return null;
+      }
+
+      //  prevent duplicate (except )
+      const duplicate = await Category.findOne({
+        where: { name },
+        transaction: t,
+        raw: true,
+      });
+
+      if (duplicate && duplicate.id !== categoryId) {
+        throw new Error("Category name already exists");
+      }
+
+      //  update
+      const [affectedRows] = await Category.update(
         { name },
         {
           where: { id: categoryId },
           transaction: t,
-          // returning: true // for fetch all rwos after updated
         }
       );
 
-      const updatedCategory: any = await Category.findOne({
-        where: { id: categoryId },
+      if (affectedRows === 0) {
+        throw new Error("Update failed");
+      }
+
+      //  get updated
+      const updated = await Category.findByPk(categoryId, {
         transaction: t,
         raw: true,
       });
 
       await t.commit();
 
-      if (!updatedCategory) {
-        await t.rollback();
-        return null;
-      }
+      return updated
+        ? CategoryDomain.reCreateCategory(updated)
+        : null;
 
-      //    console.log("updatedCategory.dataValues  ",updatedCategory.dataValues)
-
-      return CategoryDomain.reCreateCategory(updatedCategory);
     } catch (error) {
       await t.rollback();
-      console.log(error);
-    }
-  }
-  public async GetAllCategories(filterIds?:any): Promise<any> {
-    try {
-      const allCategories = await Category.findAll({
-        raw: true,
-      });
-
-
-      const categories = new CategoryDomain();
-
-      console.log( filterIds?.length > 0, "aaaaaaaaaaaaaaaaaannnnnnnnnny ",filterIds)
-      if (filterIds?.length > 0) {
-        const result = await Category.findAll({
-          where: { id: filterIds[0] } ,raw :true
-        });
-      //  console.log("rrrrrresult ",result)
-        /**
-          id: 1,
-    name: 'Electronics',
-         */
-        const resultCategory :any = {
-          id:result[0].id,
-          name:result[0].name
-        }
-        console.log(" 123 ",resultCategory)
-        return result[0]
-        // return await Category.findAll({
-        //   where: { id: filterIds[0] } 
-        // });
-      }
-      return categories.GetAllCategoriesByName(allCategories);
-    } catch (error) {
-      console.log(error);
+      console.log("UpdateCategory error:", error);
+      throw error;
     }
   }
 
-  public async DeleteCategoryById(id: number): Promise<any> {
-    try {
-      const result = await Category.destroy({
-        where: { id: id },
-      });
+  // ======================
+  // GET ALL
+  // ======================
+  public async GetAllCategories(
+    filterIds?: number[]
+  ): Promise<CategoryDomain[]> {
 
-      return result;
-    } catch (error) {
-      console.log(error);
-    }
+    const whereClause =
+      Array.isArray(filterIds) && filterIds.length > 0
+        ? { id: filterIds }
+        : undefined;
+
+    const results = await Category.findAll({
+      where: whereClause,
+      raw: true,
+    });
+
+    return results.map((e) =>
+      CategoryDomain.reCreateCategory(e)
+    ) as CategoryDomain[];
+  }
+
+  // ======================
+  // DELETE
+  // ======================
+  public async DeleteCategoryById(id: number): Promise<boolean> {
+    if (!id) throw new Error("Invalid id");
+
+    const deleted = await Category.destroy({
+      where: { id },
+    });
+
+    return deleted > 0;
+  }
+
+  public async categoryHasOrders(categoryId: number): Promise<boolean> {
+    const item = await OrderItem.findOne({
+      include: [
+        {
+          model: Product,
+          as: "product",
+          where: { categoryId },
+          attributes: ["id"],
+        },
+      ],
+    });
+  
+    return !!item;
+  }
+
+
+  public async softDeleteCategory(categoryId: number): Promise<void> {
+    await Category.update(
+      { deletedAt: new Date() },
+      { where: { id: categoryId } }
+    );
+  }
+
+
+  public async getOrderItemCountByCategoryId(categoryId: number): Promise<number> {
+    return await OrderItem.count({
+      include: [
+        {
+          model: Product,
+          as: "product",
+          where: { categoryId },
+          required: true,
+        },
+      ],
+    });
   }
 }

@@ -102,7 +102,12 @@ export function RefreshTokenModel(sequelize: Sequelize) {
       id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
       userId: { type: DataTypes.INTEGER, allowNull: false },
       token: { type: DataTypes.STRING, allowNull: false },
-      revoked: { type: DataTypes.BOOLEAN, allowNull: false, unique: true },
+    //  revoked: { type: DataTypes.BOOLEAN, allowNull: false, unique: true },
+    revoked: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
       expiresAt: { type: DataTypes.DATE, allowNull: false },
  
     },

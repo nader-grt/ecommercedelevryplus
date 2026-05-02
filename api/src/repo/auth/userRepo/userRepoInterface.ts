@@ -9,4 +9,7 @@ export default abstract class IUserRepoInterface {
   //  protected abstract CreateUser():Promise<void> ;
   protected abstract DeleteUser(userid?: number): Promise<void>;
   protected abstract updateUser(user: any, userid?: number): Promise<any>;
+  protected abstract UpdateRoleUserHasCompany( userId: number, transaction?:any):Promise<any>
+  protected abstract  updateUserCompany(userId: number, companyId: number, transaction?: any):Promise<void>
+  protected abstract findOwnersWithCompanyAndAddress(): Promise<any[]> 
 }

@@ -2,44 +2,101 @@ import { Request, Response } from "express";
 import { BaseController } from "../../infra/BaseCOntroller";
 import DeleteCategoryUseCase from "../../useCases/categoryUseCase/DeleteCategoryUseCase";
 
+export default class DeleteCategoryController extends BaseController {
+  constructor(private usecase: DeleteCategoryUseCase) {
+    super();
+  }
 
+  protected async executeImpl(req: Request, res: Response): Promise<any> {
+    const id = Number(req.params.id);
 
+    console.log("DELETE CATEGORY ID:", id);
 
+    if (isNaN(id)) {
+      return this.resultValue(
+        res,
+        "Invalid category id",
+        null,
+        "ERROR"
+      );
+    }
 
-export default class DeleteCategoryController extends BaseController
-{
+    try {
+      const result = await this.usecase.execute(id);
 
+      switch (result.status) {
+        // =========================
+        case "NOT_FOUND":
+          return this.resultValue(
+            res,
+            result.message,
+            null,
+            result.status
+          );
 
-       private usecase!:DeleteCategoryUseCase
-       constructor(deleteCategoryUseCase:DeleteCategoryUseCase)
-       {
-          super() ;
+        // =========================
+        case "HAS_ORDERS":
+          return this.resultValue(
+            res,
+            result.message,
+            {
+                  count: result.count,
+                },
+            result.status
+          );
 
-          this.usecase = deleteCategoryUseCase  
-       }
+        // =========================
+        case "HAS_PRODUCTS":
+          return this.resultValue(
+            res,
+            result.message,
+            {
+              count: result.count,
+            },
+            result.status
+          );
 
+        // =========================
+        case "DELETED":
+          return this.resultValue(
+            res,
+            result.message,
+            {
+              id,
+            },
+            result.status
+          );
 
+        // =========================
+        case "ERROR":
+          return this.resultValue(
+            res,
+            result.message,
+            null,
+            result.status
+          );
 
-      protected async executeImpl(req: Request, res: Response): Promise<any> {
-          
-          const {id}  = req.params ;
-          const categoryId :number = Number(id)  ;
+        // =========================
+        default: {
+          const _exhaustive: never = result;
 
-
-            try {
-                         const category   =    await this.usecase.execute(categoryId)  ;
-
-                         if (!category) {
-                              return this.notFound(res, `Category with id ${categoryId} not found`);
-                          }
-                  
-                          this.ok(res, "Category deleted successfully");
-
-                        
-                              
-
-            } catch (error) {
-                  console.log(error)
-            }
+          return this.resultValue(
+            res,
+            "Unhandled case",
+            null,
+            "ERROR"
+          );
+        }
       }
+    } catch (err) {
+      console.log("Controller error:", err);
+
+      return this.resultValue(
+        res,
+        "Internal server error",
+        null,
+        "ERROR"
+      );
+    }
+  }
 }

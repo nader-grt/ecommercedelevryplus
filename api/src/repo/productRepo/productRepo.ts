@@ -142,44 +142,80 @@ export default class ProductRepo extends productRepoInterface {
     return data;
   }
 
-  public async getProductByCategoryId(categoryId: number): Promise<any> {
+  public async getProductByCategoryId(categoryId: number): Promise<{
+    products: any[];
+    count: number;
+  }> {
     try {
-      const listProductCategry = await Product.findAll({
-        where: { categoryId: categoryId },
-        raw: true,
-      });
-
-      if (!listProductCategry) return null;
-
-      return listProductCategry;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
-  public async getProductsByCategoryWithVariants(categoryId: number): Promise<any> {
-    try {
-      return await Product.findAll({
+      const listProductCategory = await Product.findAll({
         where: { categoryId },
-  
-        attributes: ["id", "name", "price", "type", "nameImage"],
-  
-        include: [
-          {
-            model: Variant,
-            as: "variants",
-            attributes: ["id", "sku", "color", "size", "price"],
-          },
-        ],
         raw: true,
-nest: true
       });
+  
+      return {
+        products: listProductCategory || [],
+        count: listProductCategory?.length || 0,
+      };
     } catch (error) {
       console.log(error);
-      throw error;
+      return {
+        products: [],
+        count: 0,
+      };
     }
   }
 
+  public async getProductCountByCategoryId(categoryId: number): Promise<number> {
+    return await Product.count({
+      where: { categoryId },
+    });
+  }
+
+
+
+//   public async getProductsByCategoryWithVariants(categoryId: number): Promise<any> {
+//     try {
+//       return await Product.findAll({
+//         where: { categoryId },
+  
+//         attributes: ["id", "name", "price", "type", "nameImage"],
+  
+//         include: [
+//           {
+//             model: Variant,
+//             as: "variants",
+//             attributes: ["id", "sku", "color", "size", "price"],
+//           },
+//         ],
+//         raw: true,
+// nest: true
+//       });
+//     } catch (error) {
+//       console.log(error);
+//       throw error;
+//     }
+//   }
+
+public async getProductsByCategoryWithVariants(categoryId: number): Promise<any> {
+  try {
+    return await Product.findAll({
+      where: { categoryId },
+
+      attributes: ["id", "name", "price", "type", "nameImage"],
+
+      include: [
+        {
+          model: Variant,
+          as: "variants",
+          attributes: ["id", "sku", "color", "size", "price"],
+        },
+      ],
+    });
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
 
   public async DeleteProductById(id: number): Promise<any> {
     try {

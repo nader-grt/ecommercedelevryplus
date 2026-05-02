@@ -88,6 +88,8 @@ import listCompanyRoute from  "./routes/CompanyRoute/ListCompanyRoute.js"
 import getCompanyRoute from  "./routes/CompanyRoute/GetCompanyRoute.js"
 
 
+// OWNER FILES 
+import listOwnersRoute from  "./routes/CompanyRoute/GetCompanyOwnersRoute.js"
 //Inventorie
 
 import createInventorieRoute from  "./routes/InventorieRoute/CreateInventorieRoute.js"
@@ -98,6 +100,7 @@ import getInventorieRoute from  "./routes/InventorieRoute/GetInventorieRoute.js"
 
 import createWareHouseRoute from  "./routes/WareHouseRoute/CreateWareHouseRoute.js"
 import listWareHouseRoute from  "./routes/WareHouseRoute/ListWareHouseRoute.js"
+import getWareHouseRoute from  "./routes/WareHouseRoute/GetWareHouseRoute.js"
 
 
 import createSecretaryRoute from  "./routes/SecretaryRoute/CreateSecretaryRoute.js"
@@ -166,10 +169,16 @@ app.use("/api", deleteCompanyRoute);
 app.use("/api",createCompanyRoute);
 
 
+//OWNERS  
+
+app.use("/api",listOwnersRoute)
+
+
 //warehouse 
 
 app.use("/api", listWareHouseRoute);
 app.use("/api", createWareHouseRoute);
+app.use("/api",getWareHouseRoute)
 
 
 
@@ -310,27 +319,43 @@ app.use("/api",refreshTokenRoute)
 const PORT = 4000;
 
 
+// async function startServer() {
+//   try {
+  
+//     await sequelize.authenticate();
+//     console.log("Database connected");
+
+  
+//     await sequelize.sync();
+//     console.log("Database synced");
+
+   
+//     app.listen(PORT, () => {
+//       console.log(`Server running on http://localhost:${PORT}`);
+//     });
+
+//   } catch (err) {
+//     console.error("Error starting server:", err);
+//     process.exit(1); 
+//   }
+// }
+
 async function startServer() {
   try {
-  
     await sequelize.authenticate();
     console.log("Database connected");
 
-  
-    await sequelize.sync();
-    console.log("Database synced");
+    //    here sunc must remove 
 
-   
     app.listen(PORT, () => {
       console.log(`Server running on http://localhost:${PORT}`);
     });
 
   } catch (err) {
     console.error("Error starting server:", err);
-    process.exit(1); 
+    process.exit(1);
   }
 }
-
 (async () => {
   await startServer();
 })();

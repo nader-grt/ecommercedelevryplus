@@ -22,45 +22,29 @@ export default class UpdateCategoryController extends BaseController
               this.usecase = updateCategoryUseCase
        }
 
-     
-      protected async executeImpl(req: Request, res: Response): Promise<any> {
-          const {id} = req.params
-          const categoryId  = Number(id)
-          const {name } = req.body ;
-
-
-console.log(" {name ,categoryId}  ", {name ,categoryId})
-
-                      
-                        if (!name || !categoryId) {
-                          this.conflict(res, "Invalid input");
-                          return;
-                        }
-          try {
-
-
-
-             const dtoCategory :any = {
-                  name ,categoryId
-             }
-                
+       protected async executeImpl(req: Request, res: Response): Promise<any> {
+        const categoryId = Number(req.params.id);
+        const { name } = req.body;
       
-
-
-                                           
-
-                                   const result = await this.usecase.execute({ name, categoryId });
-                                                    if (!result) {
-                                                      return this.notFound(res, "Category not found");
-                                                    }
-
-                                                    console.log("uupppp ffffinallll  ",result)
-                                              
-                                                    this.resultValue(res, "Category updated successfully",result);
-               
-                      
-          } catch (error) {
-            console.log(error)
+        if (!name) {
+          return this.conflict(res, "Name is required");
+        }
+      
+        try {
+          const result = await this.usecase.execute({ name, categoryId });
+      
+          if (!result) {
+            return this.notFound(res, "Category not found");
           }
+      
+          return this.resultValue(res, "Category updated successfully", {
+            id: result.getCategoryId,
+            name: result.getName,
+          });
+      
+        } catch (error) {
+          console.log(error);
+          return this.fail(res, "Internal error");
+        }
       }
 }

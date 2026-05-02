@@ -5,7 +5,8 @@ export enum Role {
   USER = "USER",
   SUPPLIER = "SUPPLIER",
   DELIVERER ="DELIVERER",
-  SECRTRIE ="SECRTRIE"
+  SECRTRIE ="SECRTRIE",
+  OWNER = "OWNER"
 }
 
 
@@ -46,6 +47,7 @@ export default interface IUser {
   email: string;
   password?: string;
   role?: Role;
+  companyId?:number | null
   //city?: string;
   //address?: string;
 }
@@ -58,6 +60,7 @@ export class User extends Model<IUser> implements IUser {
   public email!: string;
   public password!: string;
   public role!: Role;
+  public companyId!:number | null
   //public city!: string;
  // public address!: string;
 }
@@ -76,7 +79,7 @@ export function UserModel(sequelize: Sequelize) {
         allowNull: false,
        // defaultValue: Role.USER,
       },
-     // city: { type: DataTypes.STRING, allowNull: false },
+      companyId: { type: DataTypes.INTEGER, allowNull: true },
      // address: { type: DataTypes.STRING, allowNull: false },
     },
     {

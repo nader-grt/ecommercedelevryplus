@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { BaseController } from "../../infra/BaseCOntroller";
 import CreateInventorieUseCase from "../../useCases/InventorieUseCase/CreateInventorieUseCase";
+import { RequestAuth } from "../../middleware/verifyToken";
 
 
 
@@ -12,10 +13,10 @@ export default class CreateInventorieController extends BaseController
     {super()
       this._usecase  = usecase
     }
-      protected async executeImpl(req: Request, res: Response): Promise<any> {
+      protected async executeImpl(req: RequestAuth, res: Response): Promise<any> {
                        try {
                         
-
+              const user = req.user
                         const { variantId, warehouseId, quantity } = req.body;
 
                         const dto = {
@@ -24,7 +25,7 @@ export default class CreateInventorieController extends BaseController
                           quantity,
                         };
                   
-                        const result = await this._usecase.execute(dto);
+                        const result = await this._usecase.execute(dto,user);
                   
                         return this.ok(res, result);
                        

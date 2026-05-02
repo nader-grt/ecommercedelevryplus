@@ -25,8 +25,8 @@ export abstract class BaseController {
   }
 
     
-  protected resultValue(res: Response,message?:string, data?: any) {
-    return res.status(200).json({message, data});
+  protected resultValue(res: Response,message?:any, data?: any,status?:string) {
+    return res.status(200).json({message, data,status});
   }
 
   protected created(res: Response, data?: any) {
@@ -46,7 +46,7 @@ export abstract class BaseController {
     //return res.status(400).json({ error: error.details[0].message });
   }
 
-  protected conflict(res: Response, message?: string) {
+  protected conflict(res: Response, message?: string,count?:any) {
     return res.status(409).json({ error: message || 'Conflict' });
   }
 

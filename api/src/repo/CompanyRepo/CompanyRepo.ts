@@ -1,57 +1,314 @@
 import { Op, Transaction } from "sequelize";
 import ICompanyRepo from "./ICompanyRepo";
-import { Company } from "../../models/main";
+import { Address, Company, sequelize, User } from "../../models/main";
 import { ICompany, ICompanyCreation } from "../../models/Company";
+import { Role } from "../../models/user";
 
 export default class CompanyRepo implements ICompanyRepo {
 
+  // =========================
+  // CREATE COMPANY ONLY
+  // =========================
   async createCompany(
     data: ICompanyCreation,
     transaction?: Transaction
   ): Promise<ICompany> {
     const company = await Company.create(data, { transaction });
-  
-    return company.get({ plain: true }); // 
+    return company.get({ plain: true });
   }
 
- 
-async findAll(filterIds?: any): Promise<ICompany[]> {
-  try {
-    let where: any = {};
+  // =========================
+  // FIND ALL COMPANIES
+  // =========================
+  // async findAll(filterIds?: number[]): Promise<any[]> {
+  //   const where: any = {};
 
-    // 
-    if (filterIds && filterIds.length > 0) {
-      where.id = {
-        [Op.in]: filterIds, //  multiple ids
-      };
+  //   if (filterIds?.length) {
+  //     where.id = { [Op.in]: filterIds };
+  //   }
+
+  //   const companies = await Company.findAll({
+  //     where,
+  //     attributes: [
+  //       "id",
+  //       "name",
+  //       "type",
+  //       "ownerId",
+  //       "trade_name",
+  //       "tax_number",
+  //       "registration_number",
+  //       "status",
+  //       "createdAt"
+  //     ],
+
+  //     include: [
+  //       {
+  //         model: User,
+  //         as: "owner",
+  //         attributes: ["id", "firstName", "email"],
+  //       },
+  //     ],
+
+  //     order: [["createdAt", "DESC"]],
+  //   });
+
+  //   return companies.map((c: any) => c.get({ plain: true }));
+  // }
+  async findAll2(filterIds?: number[]): Promise<any[]> {
+    const where: any = {};
+  
+    if (filterIds?.length) {
+      where.id = { [Op.in]: filterIds };
     }
-
+  
     const companies = await Company.findAll({
       where,
-      attributes: ["id", "name", "type", "isActive"],
-      raw: true,
+  
+      attributes: [
+        "id",
+        "name",
+        "type",
+        "ownerId",
+        "trade_name",
+        "tax_number",
+        "registration_number",
+        "status",
+        "createdAt",
+      ],
+  
+      include: [
+        {
+          model: User,
+          as: "owner",
+          attributes: ["id", "firstName", "email", "role"],
+  
+          //  THIS IS THE FIX
+          where: {
+            role: "OWNER",
+          },
+  
+          required: true, // ensures only companies with OWNER appear
+        },
+      ],
+  
+      order: [["createdAt", "DESC"]],
+    });
+  
+    return companies.map((c: any) => c.get({ plain: true }));
+  }
+
+  // async findAll2(filterIds?: number[]): Promise<any[]> {
+  //   const where: any = {};
+  
+  //   if (filterIds?.length) {
+  //     where.id = { [Op.in]: filterIds };
+  //   }
+  
+  //   const companies = await Company.findAll({
+  //     where,
+  
+  //     attributes: [
+  //       "id",
+  //       "name",
+  //       "type",
+  //       "ownerId",
+  //       "trade_name",
+  //       "tax_number",
+  //       "registration_number",
+  //       "status",
+  //       "createdAt",
+  //     ],
+  
+  //     include: [
+  //       {
+  //         model: User,
+  //         as: "owner",
+  //         attributes: ["id", "firstName", "email", "role"],
+  
+  //         where: {
+  //           role: "OWNER",
+  //         },
+  
+  //         required: true,
+  //       },
+  //     ],
+  
+  //     order: [["createdAt", "DESC"]],
+  //   });
+  
+  //   const plain = companies.map((c: any) => c.get({ plain: true }));
+  
+  //   // ===============================
+  //   // DISTINCT BY EMAIL (REAL FIX)
+  //   // ===============================
+  //   const uniqueByEmail = Array.from(
+  //     new Map(
+  //       plain
+  //         .filter((c: any) => c?.owner?.email)
+  //         .map((c: any) => [c.owner.email, c])
+  //     ).values()
+  //   );
+  
+  //   // ===============================
+  //   //  IMPORTANT for React-Admin
+  //   // ===============================
+  //   return uniqueByEmail.map((item: any) => ({
+  //     ...item,
+  //     id: item.owner.id, // stable unique id for frontend
+  //   }));
+  // }
+
+  async findAll(filterIds?: number[]): Promise<any[]> {
+    const where: any = {};
+  
+    if (filterIds?.length) {
+      where.id = { [Op.in]: filterIds };
+    }
+  
+    const companies = await Company.findAll({
+      where,
+  
+      attributes: [
+        "id",
+        "name",
+        "type",
+        "ownerId",
+        "trade_name",
+        "tax_number",
+        "registration_number",
+        "status",
+        "createdAt",
+      ],
+  
+      include: [
+        {
+          model: User,
+          as: "owner",
+          attributes: ["id", "firstName", "email", "role"],
+          where: {
+            role: "OWNER",
+          },
+          required: true,
+        },
+      ],
+  
+      order: [["createdAt", "DESC"]],
+    });
+  
+    return companies.map((c: any) => {
+      const item = c.get({ plain: true });
+  
+      return {
+        ...item,
+        id: item.id, // company id (React-Admin friendly)
+      };
+    });
+  }
+
+  // =========================
+  // FIND OWNERS WITH COMPANY + ADDRESS
+  // =========================
+  async findOwnersWithCompanyAndAddress(): Promise<any[]> {
+    return await User.findAll({
+      where: { role: "OWNER" },
+
+      attributes: ["id", "firstName", "email", "role"],
+
+      include: [
+        {
+          model: Company,
+          as: "company",
+          required: true,
+          attributes: [
+            "id",
+            "name",
+            "type",
+            "trade_name",
+            "status"
+          ],
+        },
+
+        {
+          model: Address,
+          as: "addresses",
+          required: false,
+          attributes: [
+            "id",
+            "street",
+            "city",
+            "country",
+            "zipCode"
+          ],
+        },
+      ],
+    });
+  }
+
+  // =========================
+  // PAGINATION
+  // =========================
+  async findAllPaginated(page = 1, limit = 10): Promise<any> {
+    const offset = (page - 1) * limit;
+
+    const { rows, count } = await Company.findAndCountAll({
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+      attributes: [
+        "id",
+        "name",
+        "type",
+        "ownerId",
+        "trade_name",
+        "tax_number",
+        "registration_number",
+        "status"
+      ],
     });
 
-    return companies;
-  } catch (error) {
-    console.error("CompanyRepo findAll Error:", error);
-    throw error;
-  }
-}
-
-  async findById(id: number): Promise<ICompany | null> {
-    const company = await Company.findByPk(id);
-  
-    if (!company) return null;
-  
     return {
-      id: company.id,
-      name: company.name,
-      type: company.type,
-      isActive: company.isActive,
+      data: rows.map(r => r.get({ plain: true })),
+      total: count,
+      page,
+      limit,
     };
   }
 
+  // =========================
+  // FIND BY ID
+  // =========================
+  async findById(id: number): Promise<ICompany | null> {
+
+    console.log("companyiddddd  ",id)
+    const company = await Company.findByPk(id);
+
+    console.log("compant find ",company)
+    if (!company) return null;
+
+    return company.get({ plain: true });
+  }
+
+  // =========================
+  // FIND BY OWNER
+  // =========================
+  async findByOwnerId(ownerId: number): Promise<ICompany[]> {
+    return await Company.findAll({
+      where: { ownerId },
+      attributes: [
+        "id",
+        "name",
+        "type",
+        "ownerId",
+        "trade_name",
+        "status"
+      ],
+      raw: true,
+    });
+  }
+
+  // =========================
+  // UPDATE COMPANY
+  // =========================
   async update(
     id: number,
     data: Partial<ICompany>,
@@ -63,11 +320,14 @@ async findAll(filterIds?: any): Promise<ICompany[]> {
       throw new Error("Company not found");
     }
 
+    const updated = await company.update(data, { transaction });
 
-          console.log(  company ,    "************    ",data)
-    return await company.update(data, { transaction });
+    return updated.get({ plain: true });
   }
 
+  // =========================
+  // DELETE COMPANY (HARD)
+  // =========================
   async delete(
     id: number,
     transaction?: Transaction
@@ -83,6 +343,30 @@ async findAll(filterIds?: any): Promise<ICompany[]> {
     return { message: "Company deleted successfully" };
   }
 
+  // =========================
+  // SOFT DELETE (STATUS BASED)
+  // =========================
+  async softDelete(
+    id: number,
+    transaction?: Transaction
+  ) {
+    const company = await Company.findByPk(id, { transaction });
+
+    if (!company) {
+      throw new Error("Company not found");
+    }
+
+    await company.update(
+      { status: "DELETED" },
+      { transaction }
+    );
+
+    return { message: "Company deactivated successfully" };
+  }
+
+  // =========================
+  // TOGGLE ACTIVE STATUS
+  // =========================
   async toggleActive(
     id: number,
     transaction?: Transaction
@@ -93,10 +377,108 @@ async findAll(filterIds?: any): Promise<ICompany[]> {
       throw new Error("Company not found");
     }
 
-    company.isActive = !company.isActive;
+    const currentStatus = company.getDataValue("status");
 
-    await company.save({ transaction });
+    const newStatus =
+      currentStatus === "ACTIVE"
+        ? "SUSPENDED"
+        : "ACTIVE";
 
-    return company;
+    const updated = await company.update(
+      { status: newStatus },
+      { transaction }
+    );
+
+    return updated.get({ plain: true });
+  }
+
+  // =========================
+  // CHECK DUPLICATE
+  // =========================
+  async findByNameAndOwner(name: string, ownerId: number) {
+    return await Company.findOne({
+      where: { name, ownerId },
+      raw: true,
+    });
+  }
+
+  // =========================
+  // FULL FLOW (USER + COMPANY + ADDRESS)
+  // =========================
+  async createUserCompanyFullFlow(data: any): Promise<any> {
+    const t = await sequelize.transaction();
+
+    try {
+      const { company, owner } = data;
+
+      // ================= USER =================
+      const user = await User.create(
+        {
+          firstName: owner.firstName,
+          lastName: owner.lastName,
+          email: owner.email,
+          phone: owner.phone,
+          password: owner.password,
+          role: Role.OWNER,
+          companyId: null,
+        },
+        { transaction: t }
+      );
+
+      // ================= ADDRESSES =================
+      let addresses: any[] = [];
+
+      if (owner.addresses?.length) {
+        const created = await Address.bulkCreate(
+          owner.addresses.map((a: any) => ({
+            street: a.street,
+            city: a.city,
+            country: a.country || "Tunisia",
+            zipeCode: a.zipCode,
+            delegation: a.delegation || "",
+            addressSuplementaire: a.addressSuplementaire || "",
+            userId: user.id,
+          })),
+          { transaction: t }
+        );
+
+        addresses = created.map(a => a.get({ plain: true }));
+      }
+
+      // ================= COMPANY =================
+      const createdCompany = await Company.create(
+        {
+          name: company.name,
+          type: company.type || "SHOP",
+
+          trade_name: company.trade_name || null,
+          tax_number: company.tax_number || null,
+          registration_number: company.registration_number || null,
+
+          status: company.status || "ACTIVE",
+
+          ownerId: user.id,
+        },
+        { transaction: t }
+      );
+
+      // ================= LINK =================
+      await user.update(
+        { companyId: createdCompany.id },
+        { transaction: t }
+      );
+
+      await t.commit();
+
+      return {
+        user: user.get({ plain: true }),
+        company: createdCompany.get({ plain: true }),
+        addresses,
+      };
+
+    } catch (err: any) {
+      await t.rollback();
+      throw err;
+    }
   }
 }

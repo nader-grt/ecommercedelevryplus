@@ -1,55 +1,27 @@
 import { Transaction } from "sequelize";
 
 export default interface IInventorieRepo {
-  createInventorie(data: any, transaction?: Transaction): Promise<any>;
+  create(data: any, transaction?: Transaction): Promise<any>;
 
-  findAll(filterIds?: any): Promise<any[]>;
+  findById(id: number, transaction?: Transaction): Promise<any | null>;
 
   findByVariantAndWarehouse(
     variantId: number,
     warehouseId: number,
     transaction?: Transaction
-  ): Promise<any>;
-   findAllFiltredInventories(dataclean:any,notcleandata:any): Promise<any[]>;
+  ): Promise<any | null>;
 
-    findById(id: number): Promise<any> ;
-  //  UPDATE
-  updateInventorie(
+  update(
     id: number,
-    data: any,
-    transaction?: Transaction
-  ): Promise<any>;
-
-  incrementStock(
-    id: number,
-    quantity: number,
-    transaction?: Transaction
-  ): Promise<any>;
-
-  decrementStock(
-    id: number,
-    quantity: number,
-    transaction?: Transaction
-  ): Promise<any>;
-
-  upsertInventory(
-    data: {
-      variantId: number;
-      warehouseId: number;
+    data: Partial<{
       quantity: number;
-    },
+      reserved: number;
+    }>,
     transaction?: Transaction
   ): Promise<any>;
 
-  reserveStock(
-    id: number,
-    quantity: number,
-    transaction?: Transaction
-  ): Promise<any>;
-
-  releaseReservedStock(
-    id: number,
-    quantity: number,
-    transaction?: Transaction
-  ): Promise<any>;
+  findAllFiltered(query: any): Promise<{
+    data: any[];
+    total: number;
+  }>;
 }

@@ -18,6 +18,8 @@ export default class CreateWareHouseUseCase {
   async execute(data: CreateWarehouseDTO): Promise<any> {
     try {
       const company = await this._companyRepo.findById(data.companyId);
+
+      console.log("cccc  \t ",company)
       if (!company) {
         throw new Error("Company not found");
       }

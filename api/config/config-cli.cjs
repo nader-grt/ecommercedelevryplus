@@ -13,6 +13,7 @@
 
 // config/config-cli.cjs
 import dotenv from "dotenv";
+import { Category } from '../src/models/main';
 dotenv.config();
 
 module.exports = {
@@ -231,11 +232,29 @@ npx sequelize-cli migration:generate --name add-companyId-to-users
 fix variantid for orderItem 
 npx sequelize-cli migration:generate --name  add-variantId-to-order-items
 
+fix companies 
+ npx sequelize-cli migration:generate --name  add-company-legal-fields-and-status
 
 soft delete 
 
 npx sequelize-cli migration:generate --name add-soft-delete-to-products-and-variants
+soft delete for Category  
+npx sequelize-cli migration:generate --name add-softdelete-index-to-categories
 
+ fix companies  table
+ npx sequelize-cli migration:generate --name add-owner-id-to-companies
+
+ trigger user with company 
+   npx sequelize-cli migration:generate --name  create-before-insert-owner-trigger
+
+   trigger update 
+      npx sequelize-cli migration:generate     --name   create-before-update-owner-trigger
+
+
+    npx sequelize-cli migration:generate     --name                 add_pro_fields_and_indexes_to_inventory_movements
+
+                npx sequelize-cli migration:generate     --name          fix-inventories-integrity-safe
+ 
 sudo /opt/lampp/lampp start
 Starting XAMPP for Linux...
 XAMPP: Starting Apache...

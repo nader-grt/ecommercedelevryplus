@@ -1,4 +1,5 @@
-import { User } from "../../../models/main";
+import { Transaction } from "sequelize";
+import { Address, Company, sequelize, User } from "../../../models/main";
 import IUser, { Role } from "../../../models/user";
 import IUserRepoInterface from "./userRepoInterface";
 
@@ -40,6 +41,12 @@ export class userRepo extends IUserRepoInterface {
     }
   }
 
+  // async createUserCompany(data: any, transaction?: any):Promise<any> {
+  //   const t = await sequelize.transaction()
+  //   const user = await User.create(data, { t });
+  //   return user.get({ plain: true });
+  // }
+  
   public async FindUserByEmailLogin(email: string): Promise<any> {
     try {
       const user = await User.findOne({
@@ -64,6 +71,49 @@ export class userRepo extends IUserRepoInterface {
       console.log(error);
     }
   }
+
+
+  async UpdateRoleUserHasCompany(
+    userId: number,
+    transaction?: any
+  ): Promise<IUserResponse> {
+    const user = await User.findByPk(userId, { transaction });
+  
+    if (!user) {
+      throw new Error("User not found");
+    }
+  
+    const currentRole = user.role;
+  
+    if (currentRole === "ADMIN") {
+      return user.get({ plain: true });
+    }
+  
+    if (currentRole === "OWNER") {
+      return user.get({ plain: true });
+    }
+  
+    await user.update(
+      { role: "OWNER" as Role }, // ✅ typed correctly
+      { transaction }
+    );
+  
+    return user.get({ plain: true });
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
   public async FindUserByEmail(email: string): Promise<any> {
@@ -91,6 +141,7 @@ export class userRepo extends IUserRepoInterface {
 
   public async FindUserById(id: number): Promise<IUserResponse | any> {
     try {
+      console.log("iiiiiiiiiiiiiiiidddddd  findd ")
       const resultUser = await User.findByPk(id);
 
       if (!resultUser) return null;
@@ -194,13 +245,16 @@ export class userRepo extends IUserRepoInterface {
     }
   }
 
-  public async registerUser(user: any): Promise<any> {
+  public async registerUser(user: any, t?: Transaction): Promise<any> {
     try {
-      console.log("userrrrrrrrrrrr hereeeeeeeeeeeee   ", user);
-      const createdUser = await User.create(user);
-      return createdUser;
+      const createdUser = await User.create(user, {
+        transaction: t, // 
+      });
+  
+      return createdUser.get({ plain: true }); //
     } catch (error) {
-      console.log(error);
+      console.error("REGISTER USER ERROR:", error);
+      throw error; // 
     }
   }
   public async FindUserByEmail2(email: string): Promise<any> {
@@ -234,4 +288,99 @@ export class userRepo extends IUserRepoInterface {
       throw error;
     }
   }
+
+
+  async updateUserCompany(userId: number, companyId: number, transaction?: any):Promise<void> {
+    await User.update(
+      { companyId },
+      { where: { id: userId }, transaction }
+    );
+  }
+  // async findOwnersWithCompanyAndAddress(): Promise<any[]> {
+  //   return await User.findAll({
+  //     where: { role: "OWNER" },
+  
+  //     attributes: ["id", "firstName", "email", "role"],
+  
+  //     include: [
+  //       {
+  //         model: Company,
+  //         as: "company",
+  //         required: true,
+  //         attributes: ["id", "name", "type", "status"], //  FIXED
+  //       },
+  //       {
+  //         model: Address,
+  //         as: "addresses",
+  //         required: false,
+  //         attributes: ["id"],
+  //       },
+  //     ],
+  //   });
+  // }
+  // async findOwnersWithCompanyAndAddress(): Promise<any[]> {
+  //   return await User.findAll({
+  //     where: { role: "OWNER" },
+  
+  //     attributes: ["id", "firstName", "email", "role"],
+  
+  //     include: [
+  //       {
+  //         model: Company,
+  //         as: "company",
+  //         required: true,
+  //         attributes: ["id", "name", "type", "status"],
+  //       },
+  //       {
+  //         model: Address,
+  //         as: "addresses",
+  //         required: false,
+  //         attributes: [
+  //           "id",
+  //           "street",
+  //           "city",
+  //           "delegation",
+  //           "country",
+  //           "zipeCode",
+  //           "addressSuplementaire"
+  //         ], //  FIXED
+  //       },
+  //     ],
+  //   });
+  // }
+
+  async findOwnersWithCompanyAndAddress(): Promise<any[]> {
+    return await User.findAll({
+      where: { role: "OWNER" },
+  
+      attributes: ["id", "firstName", "email"],
+  
+      include: [
+        {
+          model: Company,
+          as: "company",
+          required: true,
+          attributes: ["id", "name", "type", "status"],
+        },
+        {
+          model: Address,
+          as: "addresses",
+          required: false,
+          attributes: [
+            "id",
+            "street",
+            "city",
+            "delegation",
+            "country",
+            "zipeCode",
+            "addressSuplementaire",
+          ],
+        },
+      ],
+  
+      //  VERY IMPORTANT (avoid duplicate rows)
+      distinct: true,
+    });
+  }
+
 }

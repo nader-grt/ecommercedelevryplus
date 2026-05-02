@@ -29,7 +29,9 @@ export default class GetCategoryController extends BaseController
                    const      resultCategory =   await     this.usecase.execute(Number(categoryId))
                         if(resultCategory)
                         {
-                              return this.resultValue(res," find category by success ",resultCategory)
+                              return this.resultValue(res," find category by success ",{ id: resultCategory.categoryId,
+                                    name: resultCategory.name,
+                                   })// products: resultCategory.products
                         }else
                         {
                               return this.notFound(res,"not found category ")

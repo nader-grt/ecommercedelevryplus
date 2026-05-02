@@ -66,6 +66,23 @@ Company.hasMany(User, {
    as: "company",
  });
 
+
+
+
+
+/* =========================
+   Company - Owner
+========================= */
+
+Company.belongsTo(User, {
+  foreignKey: "ownerId",
+  as: "owner",
+});
+
+User.hasMany(Company, {
+  foreignKey: "ownerId",
+  as: "ownedCompanies",
+});
  /* =========================
    Company - Warehouse (1 : N)
 
@@ -316,16 +333,31 @@ Supplier.belongsTo(User, { foreignKey: "userId", as: "user" });
 ========================= */
 DelivererPerson.belongsToMany(DayWork, {
   through: "deliverer_dayWorks",
-  foreignKey: "delivererId",
-  otherKey: "dayWorkId",
+  foreignKey: {
+    name: "delivererId",
+    field: "delivererid", // 🔥 الحل
+  },
+  otherKey: {
+    name: "dayWorkId",
+    field: "dayWorkid",
+  },
   as: "dayWorks",
 });
 
 DayWork.belongsToMany(DelivererPerson, {
   through: "deliverer_dayWorks",
-  foreignKey: "dayWorkId",
-  otherKey: "delivererId",
+  foreignKey: {
+    name: "dayWorkId",
+    field: "dayWorkid",
+  },
+  otherKey: {
+    name: "delivererId",
+    field: "delivererid",
+  },
   as: "deliverers",
 });
+
+
+
 
 export { sequelize };

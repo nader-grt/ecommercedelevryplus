@@ -4,6 +4,7 @@ import UpdateCategoryController from "../../controllers/category/UpdateCategoryC
 import { verifyToken } from "../../middleware/verifyToken";
 import CategoryRepo from "../../repo/categoryRepo/categoryRepo";
 import UpdateCategoryUseCase from "../../useCases/categoryUseCase/UpdateCategoryUseCase";
+import ProductRepo from "../../repo/productRepo/productRepo";
 
 
 const router = Router();

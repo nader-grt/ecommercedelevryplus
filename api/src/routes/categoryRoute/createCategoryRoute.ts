@@ -11,7 +11,7 @@ const createCategoryUseCase = new CreateCategoryUseCase(categoryRepo);
 const createCategoryRoute = new createCategoryController(createCategoryUseCase);
 
 
-router.post("/create/category", verifyToken, (req: Request, res: Response) => {
+router.post("/categories", verifyToken, (req: Request, res: Response) => {
   console.log("req", req.body);
   createCategoryRoute.execute(req, res);
 });

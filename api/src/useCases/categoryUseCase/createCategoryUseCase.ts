@@ -1,38 +1,33 @@
-import CategoryDomain from "../../models/domain/cetegoryDomain/CategoryDomaun";
-import CategoryRepo, { ICategoryRepo } from "../../repo/categoryRepo/categoryRepo";
-
+import CategoryDomain from "../../models/domain/cetegoryDomain/categoryDomain";
+import CategoryRepo from "../../repo/categoryRepo/categoryRepo";
 
 export default class CreateCategoryUseCase {
+  constructor(private categoryRepo: CategoryRepo) {}
 
+  async execute(name: string): Promise<CategoryDomain> {
+    try {
+      // ======================
+      // 1. VALIDATION (DOMAIN LEVEL)
+      // ======================
+      const categoryDomain = new CategoryDomain();
+      categoryDomain.setName = name;
 
+      categoryDomain.validateName();
 
-             constructor(private categoryRepo : CategoryRepo)
-             {
+      // ======================
+      // 2. SAVE TO DB
+      // ======================
+      const createdCategory = await this.categoryRepo.createCategory({
+        name: categoryDomain.getName,
+      });
 
-             }
+      console.log("controllerrrrrrr  ",createdCategory)
 
-             async execute(name: string): Promise<CategoryDomain | any> {
+      return createdCategory;
 
-
-              console.log("object  ",name)
-                if (!name || name.trim().length === 0) {
-                  throw new Error("Invalid category name");
-                }
-            
-                      try {
-                              
-                const categoryDomain  = new CategoryDomain();
-                categoryDomain.setName = name;
-            
-                const createdCategory = await this.categoryRepo.createCategory(categoryDomain);
-
-                return createdCategory;
-                      } catch (error) {
-                        
-                        console.log(error)
-                      }
-            
-                
-              }
-
+    } catch (error: any) {
+      console.log("CreateCategoryUseCase error:", error);
+      throw new Error(error.message || "create category failed");
+    }
+  }
 }

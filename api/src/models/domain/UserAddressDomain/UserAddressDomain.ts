@@ -25,6 +25,7 @@ type UserDataDTO = {
   email?: string;
   phone?: string;
   city?: string;
+  role?:string;
 };
 
 
@@ -61,7 +62,8 @@ export default class UserAddressDomain extends userDomain {
       this.setCity = data.city;
   
     // default role
-    this.setRole = "USER";
+   // this.setRole = "USER";
+    this.setRole = data.role;
   }
 
   // ================= Addresses management =================
@@ -86,14 +88,16 @@ export default class UserAddressDomain extends userDomain {
   }
 
   // ================= Validation rules =================
+
+
   public validateUserAndAddresses() {
     if (!this.addresses || this.addresses.length === 0) {
       throw new Error("User must have at least one address");
     }
+  
     this.addresses.forEach(addr => {
-      if (!addr.userId) {
-        addr.userId = this.getId;
-      }
+      if (!addr.street) throw new Error("Street required");
+      if (!addr.city) throw new Error("City required");
     });
   }
 

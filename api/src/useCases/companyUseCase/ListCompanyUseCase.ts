@@ -1,34 +1,61 @@
-import { Request, Response } from "express";
 import ICompanyRepo from "../../repo/CompanyRepo/ICompanyRepo";
 
+interface ListCompanyDTO {
+  filterIds?: number[];
+  page?: number;
+  limit?: number;
+}
 
-export default class ListCompanyUseCase
-{
+export default class ListCompanyUseCase {
+  private companyRepo: ICompanyRepo;
 
-      private _listCompanyRepo! :ICompanyRepo
-      constructor(listCompanyRepo :ICompanyRepo)
-      {
-            this._listCompanyRepo = listCompanyRepo
+  constructor(companyRepo: ICompanyRepo) {
+    this.companyRepo = companyRepo;
+  }
+
+  async execute(dto: ListCompanyDTO): Promise<any> {
+    try {
+      const { filterIds, page, limit } = dto;
+
+      // =========================
+      // CASE 1: PAGINATION MODE
+      // =========================
+      if (page && limit) {
+        const result = await this.companyRepo.findAllPaginated!(
+          page,
+          limit
+        );
+
+        return {
+          success: true,
+          mode: "paginated",
+          ...result,
+        };
       }
-      async execute(filterIds?: number[]): Promise<any> {
-              try {
-                  // if (params) {
-                  //       const { page, limit } = params;
-                    
-                  //       const offset = (page - 1) * limit;
-                    
-                  //       return await this.companyRepo.findAllPaginated(limit, offset);
-                  //     }
-                    
-                        const listCompanies  =  await    this._listCompanyRepo.findAll();
-                       if(listCompanies.length === 0)
-                       {
-                        return {success:false,message:"no cmpanies yes"}
-                       }
-                      
-                       return {success:true,data:listCompanies}
-              } catch (error) {
-                
-              }
-     }
+
+      // =========================
+      // CASE 2: FILTER BY IDS
+      // =========================
+      const companies = await this.companyRepo.findAll(filterIds);
+
+      
+      if (!companies || companies.length === 0) {
+        return {
+          success: true,
+          message: "No companies found",
+          data: [],
+        };
+      }
+
+
+      console.log("ccccccccccccccccccccc  companies ",companies)
+      return {
+        success: true,
+        mode: "list",
+        data: companies,
+      };
+    } catch (error: any) {
+      throw new Error(error.message || "Failed to list companies");
+    }
+  }
 }
