@@ -37,6 +37,8 @@ export default class CreateOrderByAdminUseCase
              //  console.log("dddddddd usecase Admin ",dto)
 
                     const user =  await this._userRepo.FindUserById(dto.custmerId)  
+
+                    console.log(" user now  ",user )
                     if(!user)
                     {
                        return {success:false,message:"user not found "}
@@ -58,11 +60,13 @@ export default class CreateOrderByAdminUseCase
 
                   const productMap = await ProductRepo.getProductsMapByIds(productIds);
 
+ 
 
+                  console.log("object is  ",productMap)
 
                 // console.log(" productMap  ",productMap)
 
-                  const  order  =  new OrderDomain(dto.custmerId)  ;
+                  const  order  =  new OrderDomain(dto.custmerId,    user.companyId)  ;
 
                 // console.log("oooooooo  ",order  )
               //  console.log("dto.items  ",dto.items  ,typeof dto.items)

@@ -63,6 +63,7 @@ export default class ProductRepo extends productRepoInterface {
           nameImage: product.getImageProduct,
           categoryId: categoryId,
           supplierId: supplierId,
+          companyId: 29,
           type:product.getType,        },
         { transaction: t }
       );
@@ -415,6 +416,7 @@ public async getProductsByCategoryWithVariants(categoryId: number): Promise<any>
           type,
           categoryId,
           supplierId: supplierId || null,
+          companyId: 29,
           nameImage, // FIX
        //   price: type === "SIMPLE" ? price : price,
           price:  price,

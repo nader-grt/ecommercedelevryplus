@@ -7,6 +7,7 @@ export  abstract class IWareHouseRepo
     abstract create(data: Partial<Warehouse>): Promise<Warehouse | any>;
     abstract   findByNameAndCompany(name: string, companyId: number): Promise<any>;
     abstract findById(id: number): Promise<Warehouse | null>;
+    abstract getById(warehouseId: string,): Promise<any | null> 
     abstract findAll(dataclean:any,notcleandata:any): Promise<any[]>
 
     abstract findAllFiltredByName(dataclean:any,notcleandata:any): Promise<any[]>

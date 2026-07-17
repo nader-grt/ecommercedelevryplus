@@ -1,0 +1,317 @@
+modules:
+
+  # =========================
+  # COMPANY
+  # =========================
+  - path: "/api"
+    file: "./routes/CompanyRoute/ListCompanyRoute.js"
+
+  - path: "/api"
+    file: "./routes/CompanyRoute/GetCompanyRoute.js"
+
+  - path: "/api"
+    file: "./routes/CompanyRoute/CreateCompanyRoute.js"
+
+  - path: "/api"
+    file: "./routes/CompanyRoute/UpdateCompanyRoute.js"
+
+  - path: "/api"
+    file: "./routes/CompanyRoute/DeleteCompanyRoute.js"
+
+
+  # =========================
+  # OWNERS
+  # =========================
+  - path: "/api"
+    file: "./routes/CompanyRoute/GetCompanyOwnersRoute.js"
+
+
+  # =========================
+  # USERS MANAGEMENT
+  # =========================
+  - path: "/api"
+    file: "./routes/userRoutes/GetUserByAdminRoute.js"
+
+  - path: "/api"
+    file: "./routes/userRoutes/CreateUserAddressByAdminUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/userRoutes/GetUserAddressByAdminUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/userRoutes/ListUserAddressByAdminUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/userRoutes/UpdateUserAddressByAdminUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/userRoutes/GetProfileUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/userRoutes/GetAllUserByRoleRoute.js"
+
+  - path: "/api"
+    file: "./routes/userRoutes/DeleteUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/userRoutes/UpdateUserByAdminRoute.js"
+
+  - path: "/api"
+    file: "./routes/userRoutes/UpdateProfileUserRoute.js"
+
+  - path: "/apimail"
+    file: "./routes/userRoutes/sendUserMailRoute.js"
+
+
+  # =========================
+  # USER ADDRESS (SEPARATE)
+  # =========================
+  - path: "/api"
+    file: "./routes/userAddressRoute/CreateUserAddressByAdminUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/userAddressRoute/ListAddressByAdminUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/userAddressRoute/DeleteUserAddressByAdminRoute.js"
+
+  - path: "/api"
+    file: "./routes/userAddressRoute/UpdateUserAddressByAdminUserRoute.js"
+
+
+  # =========================
+  # AUTH
+  # =========================
+  - path: "/api"
+    file: "./routes/authRoute/registerUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/authRoute/loginUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/authRoute/logoutUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/authRoute/RefreshTokenRoute.js"
+
+
+  # =========================
+  # PRODUCTS
+  # =========================
+  - path: "/api"
+    file: "./routes/productRoutes/CreateProductWithVariantRoute.js"
+
+  - path: "/api"
+    file: "./routes/productRoutes/UpdateProductWithVariantRoute.js"
+
+  - path: "/api"
+    file: "./routes/productRoutes/DeleteProductWithVariantRoute.js"
+
+  - path: "/api"
+    file: "./routes/productRoutes/GetProductRandomRoute.js"
+
+  - path: "/api"
+    file: "./routes/productRoutes/GetProductByCategoryRoute.js"
+
+  - path: "/api"
+    file: "./routes/productRoutes/GetProductWithVariantRoute.js"
+
+  - path: "/api"
+    file: "./routes/productRoutes/GetAllProductsFiltredByCategoryIdRoute.js"
+
+
+  # =========================
+  # VARIANTS
+  # =========================
+  - path: "/api"
+    file: "./routes/VariantProductRoute/GetVariantProductRoute.js"
+
+  - path: "/api"
+    file: "./routes/VariantProductRoute/ListVariantProductRoute.js"
+
+  - path: "/api"
+    file: "./routes/VariantProductRoute/ConvertProductToVariableRoute.js"
+
+  - path: "/api"
+    file: "./routes/VariantProductRoute/CreateVariantsProductRoute.js"
+
+  - path: "/api"
+    file: "./routes/VariantProductRoute/UpdateVariantForProductRoute.js"
+
+  - path: "/api"
+    file: "./routes/VariantProductRoute/DeleteVariantForProductRoute.js"
+
+
+  # =========================
+  # CATEGORY
+  # =========================
+  - path: "/api"
+    file: "./routes/categoryRoute/createCategoryRoute.js"
+
+  - path: "/api"
+    file: "./routes/categoryRoute/DeleteCategoryRoute.js"
+
+  - path: "/api"
+    file: "./routes/categoryRoute/UpdateCategoryRoute.js"
+
+  - path: "/api"
+    file: "./routes/categoryRoute/GetCategoryRoute.js"
+
+  - path: "/api"
+    file: "./routes/categoryRoute/GetAllCategoryRoute.js"
+
+
+  # =========================
+  # EMPLOYEE
+  # =========================
+  - path: "/api"
+    file: "./routes/EmployeeRoute/CreateEmployeeRoute.js"
+
+  - path: "/api"
+    file: "./routes/EmployeeRoute/GetEmployeeRoute.js"
+
+  - path: "/api"
+    file: "./routes/EmployeeRoute/UpdateEmployeeRoute.js"
+
+  - path: "/api"
+    file: "./routes/EmployeeRoute/DeleteEmployeeRoute.js"
+
+
+  # =========================
+  # DELIVERY
+  # =========================
+  - path: "/api"
+    file: "./routes/DelevryRoute/CreateDelevryRoute.js"
+
+  - path: "/api"
+    file: "./routes/DelevryRoute/UpdateDelevryRoute.js"
+
+  - path: "/api"
+    file: "./routes/DelevryRoute/DeleteDelevryRoute.js"
+
+  - path: "/api"
+    file: "./routes/DelevryRoute/GetDelevryRoute.js"
+
+
+  # =========================
+  # SUPPLIER
+  # =========================
+  - path: "/api"
+    file: "./routes/SupplierRoute/CreateSupplierRoute.js"
+
+  - path: "/api"
+    file: "./routes/SupplierRoute/UpdateSupplierRoute..js"
+
+  - path: "/api"
+    file: "./routes/SupplierRoute/DeleteSupplierRoute..js"
+
+  - path: "/api"
+    file: "./routes/SupplierRoute/GetSupplierRoute.js"
+
+
+  # =========================
+  # INVENTORY
+  # =========================
+  - path: "/api"
+    file: "./routes/InventorieRoute/CreateInventorieRoute.js"
+
+  - path: "/api"
+    file: "./routes/InventorieRoute/AddStockInventorieRoute.js"
+    
+  - path: "/api"
+    file: "./routes/InventorieRoute/AdjustStockRouter.js"
+
+  - path: "/api"
+    file: "./routes/InventorieRoute/TransferStockRouter.js"
+
+  - path: "/api"
+    file: "./routes/InventorieRoute/ReserveStockRoute.js"    
+
+  - path: "/api"
+    file: "./routes/InventorieRoute/ListInventorieRoute.js"
+
+  - path: "/api"
+    file: "./routes/InventorieRoute/GetInventorieRoute.js"
+
+
+  # =========================
+  # WAREHOUSE
+  # =========================
+  - path: "/api"
+    file: "./routes/WareHouseRoute/CreateWareHouseRoute.js"
+
+  - path: "/api"
+    file: "./routes/WareHouseRoute/ListWareHouseRoute.js"
+
+  - path: "/api"
+    file: "./routes/WareHouseRoute/GetWareHouseRoute.js"
+
+
+  # =========================
+  # SECRETARY
+  # =========================
+  - path: "/api"
+    file: "./routes/SecretaryRoute/CreateSecretaryRoute.js"
+
+  - path: "/api"
+    file: "./routes/SecretaryRoute/UpdateSecretaryRoute.js"
+
+  - path: "/api"
+    file: "./routes/SecretaryRoute/GetSecretaryRoute.js"
+
+  - path: "/api"
+    file: "./routes/SecretaryRoute/GetSecretaryRoute.js"
+
+
+  # =========================
+  # DAY WORK
+  # =========================
+  - path: "/api"
+    file: "./routes/DayWorkRoute/CreateWorkDayRoute.js"
+
+  - path: "/api"
+    file: "./routes/DayWorkRoute/GetWorkDayRoute.js"
+
+
+  # =========================
+  # ORDERS
+  # =========================
+  - path: "/api"
+    file: "./routes/OrderRoute/CreateOrderRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderRoute/CreateOrderCustmerRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderRoute/UpdateOrderRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderRoute/DeleteOrderRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderRoute/GetOrderRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderRoute/CancelOrderByUserRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderRoute/PayOrderRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderRoute/ShipOrderRoute.js"
+
+
+  # =========================
+  # ORDER DELIVERY FLOW
+  # =========================
+  - path: "/api"
+    file: "./routes/OrderWithDeliveriesRoute/AssignDeliveryRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderWithDeliveriesRoute/CancelDeliveryOrderRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderWithDeliveriesRoute/StartDeliveryOrderRoute.js"
+
+  - path: "/api"
+    file: "./routes/OrderWithDeliveriesRoute/completeDeliveryOrderRoute.js"

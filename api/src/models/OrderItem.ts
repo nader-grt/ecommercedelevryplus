@@ -10,6 +10,7 @@ id?:number ;
   quantity:number;
   price:number;
   productName:string ;
+  warehouseId?:number 
  // totalPrice:number;
 
 
@@ -80,6 +81,7 @@ export class OrderItem extends Model<IOrderItem> implements IOrderItem {
   public  quantity!:number;
   public  price!:number;
   public  productName!:string ;
+  public warehouseId!:number 
  // public  totalPrice!:number;
     
   }
@@ -95,6 +97,10 @@ export class OrderItem extends Model<IOrderItem> implements IOrderItem {
         quantity: { type: DataTypes.INTEGER, allowNull: false },
         price: { type: DataTypes.INTEGER, allowNull: false, unique: true },
         productName: { type: DataTypes.STRING, allowNull: false },
+        warehouseId: {
+          type: DataTypes.INTEGER,
+          allowNull: true,
+      },
         variantId: {
           type: DataTypes.INTEGER,
           allowNull: true,

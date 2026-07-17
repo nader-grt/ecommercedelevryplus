@@ -5,6 +5,7 @@ import { PAYMENT_STATUS } from "./domain/OrderDomain/OrderDomain";
 export const enum STATUS 
 {
 PENDING = "PENDING", 
+RESERVED = "reserved",
 PAID = "PAID", 
 SHIPPED  ="SHIPPED"  ,
  DELIVERED  = "DELIVERED",
@@ -20,6 +21,7 @@ export default interface IOrder {
   status:STATUS
    paymentStatus: PAYMENT_STATUS;
    paidAmount: number;
+   companyId?: number;
 }
 
 
@@ -33,6 +35,8 @@ export class Order extends Model<IOrder> implements IOrder {
          public status!:STATUS ;
          public paymentStatus!: PAYMENT_STATUS;
          public paidAmount!: number;
+         public companyId!: number;
+
 
   }
 
@@ -56,6 +60,10 @@ export class Order extends Model<IOrder> implements IOrder {
           type: DataTypes.ENUM('unpaid', 'partial', 'paid'),
           allowNull: false,
         },
+        companyId: {
+          type: DataTypes.INTEGER,
+          allowNull: false
+      },
       },
       {
         sequelize,

@@ -7,7 +7,7 @@ export interface IInventoryMovement {
   id?: number;
   variantId: number;
   warehouseId: number;
-  type: "IN" | "OUT" | "ADJUSTMENT" | "TRANSFER";
+  type: "IN" | "OUT" | "ADJUSTMENT" | "TRANSFER" | "RESERVE" | "RELEASE";
   quantity: number;
   referenceId?: number;
   userId?: number;
@@ -34,7 +34,7 @@ export class InventoryMovement
   public id!: number;
   public variantId!: number;
   public warehouseId!: number;
-  public type!: "IN" | "OUT" | "ADJUSTMENT" | "TRANSFER";
+  public type!: "IN" | "OUT" | "ADJUSTMENT" | "TRANSFER" | "RESERVE" | "RELEASE";
   public quantity!: number;
   public referenceId?: number;
   public userId?: number;
@@ -67,7 +67,7 @@ export function InventoryMovementModel(sequelize: Sequelize) {
       },
 
       type: {
-        type: DataTypes.ENUM("IN", "OUT", "ADJUSTMENT", "TRANSFER"),
+        type: DataTypes.ENUM("IN", "OUT", "ADJUSTMENT", "TRANSFER","RESERVE","RELEASE"),
         allowNull: false,
       },
 

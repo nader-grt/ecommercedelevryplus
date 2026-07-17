@@ -1,13 +1,17 @@
 import { Transaction } from "sequelize";
-import IInventorieRepo from "./IInventorieRepo";
-import { Inventorie } from "../../models/main";
+import IInventorieRepo, { ICreateInventoryParams, IFindInventoryParams } from "./IInventorieRepo";
+import { Inventorie, sequelize } from "../../models/main";
 import QueryBuilder from "../../util/QuiryBuilder";
 
 export default class InventorieRepo implements IInventorieRepo {
 
   async create(data: any, transaction?: Transaction): Promise<any> {
+    console.log("CREATE INVENTORY DATA:");
+    console.log(data);
+  
     return await Inventorie.create(data, { transaction });
   }
+
 
   async findById(id: number, transaction?: Transaction): Promise<any | null> {
     return await Inventorie.findByPk(id, {
@@ -16,7 +20,7 @@ export default class InventorieRepo implements IInventorieRepo {
         {
           association: "variant",
           attributes: ["id", "sku", "color", "size", "price"],
-          include: [{ association: "product", attributes: ["id", "name"] }],
+          include: [{ association: "product", attributes: ["id", "name","companyId"] }],
         },
       ],
       transaction,
@@ -35,19 +39,51 @@ export default class InventorieRepo implements IInventorieRepo {
     });
   }
 
+  // async update(
+  //   id: number,
+  //   data: { quantity?: number; reserved?: number },
+  //   transaction?: Transaction
+  // ): Promise<any> {
+  //   const inventory = await Inventorie.findByPk(id, { transaction });
+
+  //   if (!inventory) {
+  //     throw new Error("Inventory not found");
+  //   }
+
+  //   return await inventory.update(data, { transaction });
+  // }
+
   async update(
-    id: number,
-    data: { quantity?: number; reserved?: number },
-    transaction?: Transaction
-  ): Promise<any> {
-    const inventory = await Inventorie.findByPk(id, { transaction });
+    id:number,
+    data:{
+      quantity?:number;
+      reserved?:number
+    },
+    transaction?:Transaction
+){
 
-    if (!inventory) {
-      throw new Error("Inventory not found");
+ const inventory = await Inventorie.findByPk(
+    id,
+    {
+      transaction,
+      lock: transaction?.LOCK.UPDATE
     }
+ );
 
-    return await inventory.update(data, { transaction });
-  }
+
+ if(!inventory){
+   throw new Error("Inventory not found");
+ }
+
+
+ return inventory.update(
+    data,
+    {
+      transaction
+    }
+ );
+
+}
 
   async findAllFiltered(query: any): Promise<any> {
     const qb = new QueryBuilder(query, Inventorie)
@@ -64,7 +100,7 @@ export default class InventorieRepo implements IInventorieRepo {
         {
           association: "variant",
           attributes: ["id", "sku", "color", "size", "price"],
-          include: [{ association: "product", attributes: ["id", "name"] }],
+          include: [{ association: "product", attributes: ["id", "name","companyId"] }],
         },
       ],
       distinct: true,
@@ -79,8 +115,31 @@ export default class InventorieRepo implements IInventorieRepo {
         available: inv.quantity - inv.reserved,
         warehouse: inv.warehouse,
         variant: inv.variant,
+        companyId:inv.companyId
       })),
       total: count,
     };
+  }
+
+  async findOneForUpdate(
+    params: IFindInventoryParams,
+    transaction: Transaction
+) {
+
+    return Inventorie.findOne({
+        where:{
+            variantId: params.variantId,
+            warehouseId: params.warehouseId,
+            companyId: params.companyId
+        },
+        transaction,
+        lock: transaction.LOCK.UPDATE
+    });
+
+}
+
+  async updateQuantity(inventory: any, newQuantity: number, t: any) {
+    inventory.quantity = newQuantity;
+    return inventory.save({ transaction: t });
   }
 }

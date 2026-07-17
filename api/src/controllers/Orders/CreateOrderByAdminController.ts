@@ -15,6 +15,7 @@ export  default class CreateOrderByAdminController  extends BaseController
          
                 const  { id}  =  req.params  ;  
                  const {items}  =  req.body
+                 const user :any = req.user
                 const userId  =  Number(id)
 
 
@@ -36,6 +37,8 @@ export  default class CreateOrderByAdminController  extends BaseController
                      actor
                 }
 
+                console.log("dto  order  where put companyId ",user)
+             //   await this._createOrderByAdminUseCase.execute(dto)
                     const result =        await this._createOrderByAdminUseCase.execute(dto)
 
                     if(!result.success)
@@ -44,6 +47,8 @@ export  default class CreateOrderByAdminController  extends BaseController
                     }
 
                     return this.ok(res,result.message)
+
+              //    return this.ok(res,"message ok")
                  } catch (error) {
                     console.log(error)
                  }

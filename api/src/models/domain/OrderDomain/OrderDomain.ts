@@ -18,37 +18,78 @@ private status!: STATUS;
 private totalAmountOrder!:number ;
 private paymentStatus!: PAYMENT_STATUS;
 private paidAmount!: number;
+private companyId!: number | any;
 
  
   private items: OrderItemDomain[] = [];
 
    
 
-                            constructor(customerId: number) {
+                            constructor(customerId: number,    companyId?: number
+                            ) {
                                 this.customerId = customerId;
                                 this.orderDate = new Date();
                                 this.status = STATUS.PENDING;
                                 this.paymentStatus = PAYMENT_STATUS.UNPAID;
                                 this.paidAmount = 0;
-                            }
-                            static reBuildOrderInit(props: {
-                              id: number;
-                              customerId: number;
-                              status: STATUS;
-                              paymentStatus: PAYMENT_STATUS;
-                              paidAmount: number;
-                              orderDate: Date;
-                            }) {
-                              const order = new OrderDomain(props.customerId);
-                            
-                              order.status = props.status;
-                              order.paymentStatus = props.paymentStatus;
-                              order.paidAmount = props.paidAmount;
-                              order.orderDate = props.orderDate;
-                            
-                              return order;
+                                this.companyId = companyId;
+
                             }
 
+
+                            // static reBuildOrderInit(props: {
+                            //   id: number;
+                            //   customerId: number;
+                            //   status: STATUS;
+                            //   paymentStatus: PAYMENT_STATUS;
+                            //   paidAmount: number;
+                            //   orderDate: Date;
+                            // }) {
+                            //   const order = new OrderDomain(props.customerId);
+                            
+                            //   order.status = props.status;
+                            //   order.paymentStatus = props.paymentStatus;
+                            //   order.paidAmount = props.paidAmount;
+                            //   order.orderDate = props.orderDate;
+                            
+                            //   return order;
+                            // }
+
+
+                            static reBuildOrderInit(props: {
+
+                              id:number;
+                          
+                              customerId:number;
+                          
+                              companyId?:number;
+                          
+                              status:STATUS;
+                          
+                              paymentStatus:PAYMENT_STATUS;
+                          
+                              paidAmount:number;
+                          
+                              orderDate:Date;
+                          
+                          }) {
+                          
+                              const order =
+                                  new OrderDomain(
+                                      props.customerId,
+                                      props.companyId
+                                  );
+                          
+                              order.status = props.status;
+                          
+                              order.paymentStatus = props.paymentStatus;
+                          
+                              order.paidAmount = props.paidAmount;
+                          
+                              order.orderDate = props.orderDate;
+                          
+                              return order;
+                          }
                                                 
                     addItem( productId: number, name: string, quantity: number, price: number ) 
                     {
@@ -173,4 +214,8 @@ private status!: STATUS;
               public get GetPaidAmount() {
                 return this.paidAmount;
               }
+
+              public get GetCompanyId(): number {
+                return this.companyId;
+            }
 }

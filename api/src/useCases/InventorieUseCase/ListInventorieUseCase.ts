@@ -1,51 +1,56 @@
-import InventorieRepo from "../../repo/InventorieRepo/InventorieRepo";
-import VariantProductRepo from "../../repo/VariantProductRepo/VariantProductRepo";
+export default class ListInventorieUseCase {
+  
+  
+  
+  constructor(private inventoryRepo: any) {}
 
+  async execute(dto: any, user: any): Promise<any> {
+    try {
+      // ================================
+      // 1. BUILD FILTER (BUSINESS LOGIC)
+      // ================================
+      const filter: any = dto.filter || {};
 
-
-interface ListInventorieDTO {
-    page?: number;
-    perPage?: number;
-    sortField?: string;
-    sortOrder?: "ASC" | "DESC";
-    search?: string;
-  }
-
-export default class ListInventorieUseCase 
-{
-
-  private  _variantProductRepo !:VariantProductRepo 
-  private _InventorieRepo!:InventorieRepo
-    constructor(inventorieRepo:InventorieRepo,variantProductRepo :VariantProductRepo  )
-    {
-  this._InventorieRepo = inventorieRepo;
-  this._variantProductRepo = variantProductRepo
-    }
-       async execute(dto?:ListInventorieDTO,notFiltered?: any): Promise<any> {
-                       try {
-                        
-                        const result :any = await this._InventorieRepo.findAllFiltredInventories(dto,notFiltered)  ;
-
-                        console.log("object  inventorieeeee   ",result)
-                        if (!result || result.data.length === 0) {
-                            return {
-                              success: false,
-                              message: "No inventorie found",
-                              data: [],
-                              total: 0,
-                            };
-                          }
-                    
-                          return {
-                            success: true,
-                            message: "inventorie found",
-                            data: result.data, //    
-                            total: result.total, // 
-                          };
-
-                       } catch (error) {
-                        console.error("ListInventorieUseCase Error:", error);
-                        throw error;
-                       }
+      //  OWNER → يشوف فقط شركته
+      if (user.role === "OWNER") {
+        filter.companyId = user.companyId;
       }
+
+      //  ADMIN → يشوف الكل (no restriction)
+
+      const query = {
+        page: dto.page,
+        perPage: dto.perPage,
+        sort: dto.sort,
+        order: dto.order,
+        filter,
+      };
+
+      // ================================
+      // 2. FETCH DATA
+      // ================================
+      const result = await this.inventoryRepo.findAllFiltered(query);
+
+      // ================================
+      // 3. EMPTY CASE (Business friendly)
+      // ================================
+      if (!result.data.length) {
+        return {
+          data: [],
+          total: 0,
+        };
+      }
+
+      // ================================
+      // 4. RETURN (React Admin Format)
+      // ================================
+      return {
+        data: result.data,
+        total: result.total,
+      };
+    } catch (error) {
+      console.error("ListInventorieUseCase Error:", error);
+      throw error;
+    }
+  }
 }

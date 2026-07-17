@@ -24,6 +24,9 @@ import { VariantPriceTierModel } from "./VariantPriceTier";
 import { InvoiceModel } from "./Invoice";
 import { PromotionModel } from "./Promotion";
 import { DiscountModel } from "./Discount";
+import { InventoryMovementModel } from "./InventoryMovement";
+import { InventoryAuditModel } from "./InventoryAudits";
+import { InventoryReservationModel } from "./InventoryReservation";
 
 // Initialize models
 export const User = UserModel(sequelize);
@@ -43,6 +46,10 @@ export const RefreshToken = RefreshTokenModel(sequelize)
 export const Variant = VariantModel(sequelize)
 export const Inventorie  = InventorieModel(sequelize)
 export const Warehouse  = WarehouseModel(sequelize) ;
+export const InventoryMovement = InventoryMovementModel(sequelize);
+export const InventoryAudit = InventoryAuditModel(sequelize);
+export const InventoryReservation = InventoryReservationModel(sequelize);
+
 export const Address  = AddressModel(sequelize)
 export const Company = CompanyModel(sequelize);
 export const VariantPriceTier = VariantPriceTierModel(sequelize)
@@ -83,6 +90,21 @@ User.hasMany(Company, {
   foreignKey: "ownerId",
   as: "ownedCompanies",
 });
+
+/* =========================
+   Company - Product (1:N)
+========================= */
+
+Company.hasMany(Product, {
+  foreignKey: "companyId",
+  as: "products",
+});
+
+Product.belongsTo(Company, {
+  foreignKey: "companyId",
+  as: "company",
+});
+
  /* =========================
    Company - Warehouse (1 : N)
 
@@ -335,7 +357,7 @@ DelivererPerson.belongsToMany(DayWork, {
   through: "deliverer_dayWorks",
   foreignKey: {
     name: "delivererId",
-    field: "delivererid", // 🔥 الحل
+    field: "delivererid", // 
   },
   otherKey: {
     name: "dayWorkId",
@@ -357,6 +379,165 @@ DayWork.belongsToMany(DelivererPerson, {
   as: "deliverers",
 });
 
+
+Variant.hasMany(InventoryMovement, {
+  foreignKey: "variantId",
+  as: "movements",
+});
+
+InventoryMovement.belongsTo(Variant, {
+  foreignKey: "variantId",
+  as: "variant",
+});
+
+
+Warehouse.hasMany(InventoryMovement, {
+  foreignKey: "warehouseId",
+  as: "movements",
+});
+
+InventoryMovement.belongsTo(Warehouse, {
+  foreignKey: "warehouseId",
+  as: "warehouse",
+});
+
+
+
+User.hasMany(InventoryMovement, {
+  foreignKey: "userId",
+  as: "inventoryMovements",
+});
+
+InventoryMovement.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+
+
+
+
+
+
+
+// Variant -> InventoryAudits
+
+Variant.hasMany(InventoryAudit, {
+  foreignKey: "variantId",
+  as: "audits",
+});
+
+InventoryAudit.belongsTo(Variant, {
+  foreignKey: "variantId",
+  as: "variant",
+});
+
+// Warehouse -> InventoryAudits
+
+Warehouse.hasMany(InventoryAudit, {
+  foreignKey: "warehouseId",
+  as: "audits",
+});
+
+InventoryAudit.belongsTo(Warehouse, {
+  foreignKey: "warehouseId",
+  as: "warehouse",
+});
+
+// User -> InventoryAudits
+
+User.hasMany(InventoryAudit, {
+  foreignKey: "userId",
+  as: "inventoryAudits",
+});
+
+InventoryAudit.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+
+//Reservation -> Order
+
+InventoryReservation.belongsTo(Order, {
+  foreignKey: "orderId",
+  as: "order",
+});
+
+Order.hasMany(InventoryReservation, {
+  foreignKey: "orderId",
+  as: "reservations",
+});
+
+// Reservation -> Inventory
+InventoryReservation.belongsTo(Inventorie, {
+  foreignKey: "inventoryId",
+  as: "inventory",
+});
+
+Inventorie.hasMany(InventoryReservation, {
+  foreignKey: "inventoryId",
+  as: "reservations",
+});
+
+
+//Reservation -> Warehouse
+
+InventoryReservation.belongsTo(Warehouse, {
+  foreignKey: "warehouseId",
+  as: "warehouse",
+});
+
+Warehouse.hasMany(InventoryReservation, {
+  foreignKey: "warehouseId",
+  as: "reservations",
+});
+
+//Reservation -> Variant
+
+// Reservation -> Variant
+
+InventoryReservation.belongsTo(Variant, {
+  foreignKey: "variantId",
+  as: "variant",
+});
+
+Variant.hasMany(InventoryReservation, {
+  foreignKey: "variantId",
+  as: "reservations",
+});
+
+InventoryReservation.belongsTo(Company, {
+  foreignKey: "companyId",
+  as: "company",
+});
+
+Company.hasMany(InventoryReservation, {
+  foreignKey: "companyId",
+  as: "inventoryReservations",
+});
+
+// InventoryMovement ---> Company,
+
+Company.hasMany(InventoryMovement, {
+  foreignKey: "companyId",
+  as: "inventoryMovements",
+});
+
+InventoryMovement.belongsTo(Company, {
+  foreignKey: "companyId",
+  as: "company",
+});
+
+Warehouse.hasMany(OrderItem, {
+  foreignKey: "warehouseId",
+  as: "orderItems",
+});
+
+OrderItem.belongsTo(Warehouse, {
+  foreignKey: "warehouseId",
+  as: "warehouse",
+});
 
 
 

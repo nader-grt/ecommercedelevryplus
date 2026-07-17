@@ -30,24 +30,44 @@ export default class InventorieDomain {
     this.validateState();
   }
 
-  // =========================
+  // ===================================================
   // VALIDATION
-  // =========================
+  // ===================================================
 
   private validateState() {
-    if (this._quantity < 0) throw new Error("Invalid quantity");
-    if (this._reserved < 0) throw new Error("Invalid reserved");
-    if (this._reserved > this._quantity) {
+    if (this._quantity < 0)
+      throw new Error("Quantity cannot be negative");
+
+    if (this._reserved < 0)
+      throw new Error("Reserved cannot be negative");
+
+    if (this._reserved > this._quantity)
       throw new Error("Reserved cannot exceed quantity");
-    }
   }
 
-  // =========================
+  private validateAmount(amount: number) {
+    if (amount <= 0)
+      throw new Error("Quantity must be greater than zero");
+  }
+
+  // ===================================================
   // GETTERS
-  // =========================
+  // ===================================================
 
   get id() {
     return this._id;
+  }
+
+  get variantId() {
+    return this._variantId;
+  }
+
+  get warehouseId() {
+    return this._warehouseId;
+  }
+
+  get companyId() {
+    return this._companyId;
   }
 
   get quantity() {
@@ -62,16 +82,34 @@ export default class InventorieDomain {
     return this._quantity - this._reserved;
   }
 
-  get companyId() {
-    return this._companyId;
+  // ===================================================
+  // HELPERS
+  // ===================================================
+
+  hasAvailable(quantity: number): boolean {
+    return this.available >= quantity;
   }
 
-  // =========================
-  // BUSINESS METHODS
-  // =========================
+  hasReserved(quantity: number): boolean {
+    return this._reserved >= quantity;
+  }
+
+  setQuantity(quantity: number) {
+    if (quantity < 0)
+      throw new Error("Quantity cannot be negative");
+
+    if (quantity < this._reserved)
+      throw new Error("Quantity cannot be less than reserved");
+
+    this._quantity = quantity;
+  }
+
+  // ===================================================
+  // BUSINESS
+  // ===================================================
 
   addStock(amount: number, userId?: number) {
-    if (amount <= 0) throw new Error("Invalid amount");
+    this.validateAmount(amount);
 
     this._quantity += amount;
 
@@ -85,12 +123,20 @@ export default class InventorieDomain {
     );
   }
 
-  reserveStock(amount: number, userId?: number) {
-    if (amount <= 0) throw new Error("Invalid amount");
+  removeStock(amount: number) {
+    this.validateAmount(amount);
 
-    if (amount > this.available) {
+    if (!this.hasAvailable(amount))
       throw new Error("Not enough stock");
-    }
+
+    this._quantity -= amount;
+  }
+
+  reserveStock(amount: number, userId?: number) {
+    this.validateAmount(amount);
+
+    if (!this.hasAvailable(amount))
+      throw new Error("Not enough stock");
 
     this._reserved += amount;
 
@@ -104,12 +150,34 @@ export default class InventorieDomain {
     );
   }
 
-  confirmSale(amount: number, userId?: number) {
-    if (amount <= 0) throw new Error("Invalid amount");
+  releaseReserved(amount: number, userId?: number) {
+    this.validateAmount(amount);
 
-    if (amount > this._reserved) {
-      throw new Error("Not enough reserved stock");
-    }
+    if (!this.hasReserved(amount))
+      throw new Error("Reserved quantity is insufficient");
+
+    this._reserved -= amount;
+
+    this._movements.push(
+      InventoryMovementDomain.release(
+        this._variantId,
+        this._warehouseId,
+        amount,
+        userId
+      )
+    );
+  }
+
+  // alias for new UseCases
+  releaseStock(amount: number, userId?: number) {
+    this.releaseReserved(amount, userId);
+  }
+
+  consumeReserved(amount: number, userId?: number) {
+    this.validateAmount(amount);
+
+    if (!this.hasReserved(amount))
+      throw new Error("Reserved quantity is insufficient");
 
     this._reserved -= amount;
     this._quantity -= amount;
@@ -124,33 +192,21 @@ export default class InventorieDomain {
     );
   }
 
-  releaseReserved(amount: number, userId?: number) {
-    if (amount <= 0) throw new Error("Invalid amount");
-
-    if (amount > this._reserved) {
-      throw new Error("Invalid release");
-    }
-
-    this._reserved -= amount;
-
-    this._movements.push(
-      InventoryMovementDomain.release(
-        this._variantId,
-        this._warehouseId,
-        amount,
-        userId
-      )
-    );
+  // backward compatibility
+  confirmSale(amount: number, userId?: number) {
+    this.consumeReserved(amount, userId);
   }
 
   adjustStock(amount: number, note?: string, userId?: number) {
-    if (amount === 0) throw new Error("Invalid adjustment");
+    if (amount === 0)
+      throw new Error("Invalid adjustment");
 
     this._quantity += amount;
 
-    if (this._quantity < 0) {
+    if (this._quantity < 0)
       throw new Error("Stock cannot be negative");
-    }
+
+    this.validateState();
 
     this._movements.push(
       InventoryMovementDomain.adjustment(
@@ -168,11 +224,10 @@ export default class InventorieDomain {
     amount: number,
     userId?: number
   ) {
-    if (amount <= 0) throw new Error("Invalid amount");
+    this.validateAmount(amount);
 
-    if (amount > this.available) {
+    if (!this.hasAvailable(amount))
       throw new Error("Not enough stock");
-    }
 
     this._quantity -= amount;
 
@@ -187,19 +242,19 @@ export default class InventorieDomain {
     );
   }
 
-  // =========================
-  // MOVEMENTS HANDLING
-  // =========================
+  // ===================================================
+  // EVENTS
+  // ===================================================
 
   pullMovements(): InventoryMovementDomain[] {
-    const data = [...this._movements];
+    const result = [...this._movements];
     this._movements = [];
-    return data;
+    return result;
   }
 
-  // =========================
+  // ===================================================
   // EXPORT
-  // =========================
+  // ===================================================
 
   toJSON() {
     return {

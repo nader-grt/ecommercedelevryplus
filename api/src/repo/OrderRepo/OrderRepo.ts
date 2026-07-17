@@ -4,6 +4,8 @@ import sequelize from "../../dbConfig/config";
 import { Order, OrderItem } from "../../models/main";
 import OrderWithDeliverieRepo from "../OrderWithDeliverieRepo/OrderWithDeliverieRepo";
 import OrderWithDeliverieDomain from "../../models/domain/OrderWithDeliverieDomain/OrderWithDeliverieDomain";
+import { Transaction } from "sequelize";
+import { STATUS } from "../../models/Order";
 
 
 
@@ -11,6 +13,75 @@ import OrderWithDeliverieDomain from "../../models/domain/OrderWithDeliverieDoma
 
 export default class OrderRepo extends IOrderRepo
 {
+
+  public async updateStatus(
+    orderId: number,
+    status: string,
+    transaction?: Transaction
+): Promise<any> {
+
+    const statusMap: Record<string, string> = {
+        PENDING: "pending",
+        PAID: "paid",
+        RESERVED: "reserved",
+        SHIPPED: "shipped",
+        DELIVERED: "delivered",
+        CANCELLED: "cancelled",
+    };
+
+    const dbStatus = statusMap[status.toUpperCase()];
+
+    if (!dbStatus) {
+        throw new Error(`Invalid order status: ${status}`);
+    }
+
+    const order = await Order.findByPk(orderId, {
+        transaction,
+        lock: transaction?.LOCK.UPDATE
+    });
+
+    if (!order) {
+        throw new Error(`Order ${orderId} not found`);
+    }
+
+    await order.update(
+      {
+          status: dbStatus as STATUS
+      },
+      {
+          transaction
+      }
+  );
+
+    return order;
+}
+
+
+  public async updateOrderItem(
+    orderItemId: number,
+    data: {
+        warehouseId?: number;
+        variantId?: number;
+    },
+    transaction?: Transaction
+): Promise<void> {
+
+    const [affectedRows] = await OrderItem.update(
+        data,
+        {
+            where: {
+                id: orderItemId
+            },
+            transaction
+        }
+    );
+
+    if (affectedRows === 0) {
+        throw new Error(
+            `OrderItem ${orderItemId} not found`
+        );
+    }
+}
 
    public async CreateOrderByAdmin(order:OrderDomain):Promise<any> 
    {
@@ -23,14 +94,23 @@ export default class OrderRepo extends IOrderRepo
  
 
                     try {
-                    const orderMapper :any = {
-                         customerId:order.GetCustmerId,
-                         orderDate:order.GetOrderDate,
-                         totalAmount:order.GettotalAmountOrder,
-                         status:order.GetStatusOrder,
-                         paymentStatus: order.GetPaymentStatus,
-                         paidAmount: order.GetPaidAmount,
-                    }
+                      const orderMapper :any = {
+
+                        customerId: order.GetCustmerId,
+                    
+                        companyId: order.GetCompanyId,
+                    
+                        orderDate: order.GetOrderDate,
+                    
+                        totalAmount: order.GettotalAmountOrder,
+                    
+                        status: order.GetStatusOrder,
+                    
+                        paymentStatus: order.GetPaymentStatus,
+                    
+                        paidAmount: order.GetPaidAmount
+                    
+                    };
 
                     console.log("dbbbbbbbbbbbb  ",orderMapper)
                       const resultOrder =   await Order.create(orderMapper,{transaction: t })
@@ -62,20 +142,76 @@ export default class OrderRepo extends IOrderRepo
    }
 
 
-   public async FindOrderById(id:number,) :Promise<any> 
-   {  const t = await sequelize.transaction() ;
-                    try {
+   public async FindOrderWithItems(
+    orderId:number,
+    transaction?:any
+):Promise<any>
+{
 
-                      console.log("id  repo  ",id)
-                       const order = await Order.findByPk(id, { raw: true ,transaction: t });
-                       console.log("ffffindddd  ",order)
-                       return order;  
-                  } catch (error) {
-                      console.log(error);
-                      return null; 
-                  }
+    try {
 
-   }
+
+        const order = await Order.findByPk(
+            orderId,
+            {
+
+                include:[
+                    {
+                        model:OrderItem,
+                        as:"items"
+                    }
+                ],
+
+                transaction
+
+            }
+        );
+
+
+        return order?.get({
+            plain:true
+        });
+
+
+
+    } catch(error){
+
+
+        console.log(error);
+
+        return null;
+
+    }
+
+}
+
+public async FindOrderById(
+  id:number,
+  transaction?:any
+ ):Promise<any> 
+ {  
+ 
+  const t = await sequelize.transaction();
+ 
+  try {
+ 
+    const order = await Order.findByPk(
+       id,
+       { 
+         raw:true,
+         transaction:t 
+       }
+    );
+ 
+    return order;  
+ 
+  } catch(error) {
+ 
+    console.log(error);
+    return null; 
+  }
+ 
+ }
 
    public async CancelOrderByOrderIdWithUser(orderId:number,status:string):Promise<any> 
    {
@@ -241,14 +377,32 @@ export default class OrderRepo extends IOrderRepo
                        
 
                             await t.commit()
+                            // return OrderDomain.reBuildOrderInit({
+                            //   id: order.id,
+                            //   customerId: order.customerId,
+                            //   status: order.status.toUpperCase(),        
+                            //   paymentStatus: order.paymentStatus.toUpperCase(),
+                            //   paidAmount: Number(order.paidAmount),
+                            //   orderDate: order.orderDate,
+                            // });
+
                             return OrderDomain.reBuildOrderInit({
+
                               id: order.id,
+                          
                               customerId: order.customerId,
-                              status: order.status.toUpperCase(),        
-                              paymentStatus: order.paymentStatus.toUpperCase(),
+                          
+                              companyId: order.companyId,
+                          
+                              status: order.status,
+                          
+                              paymentStatus: order.paymentStatus,
+                          
                               paidAmount: Number(order.paidAmount),
-                              orderDate: order.orderDate,
-                            });
+                          
+                              orderDate: order.orderDate
+                          
+                          });
                 } catch (error) {
                     console.log(error);
                     await t.rollback()

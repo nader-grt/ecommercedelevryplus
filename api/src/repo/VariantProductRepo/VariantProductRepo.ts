@@ -236,7 +236,7 @@ public async findDuplicateCombination(
               {
                 model:Product,
                 as: "product", 
-                attributes: ["id", "name", "type"]
+                attributes: ["id", "name", "type", "companyId"]
               },
             ],
           });
@@ -252,6 +252,18 @@ public async findDuplicateCombination(
         }
       }
 
+      async getVariantById2(variantId: string | number, transaction?: any) {
+        return Variant.findOne({
+          where: { id: variantId },
+          attributes: ["id", "sku", "price", "productId"],
+          include: [{
+            model: Product,
+            as: "product",
+            attributes: ["id", "name", "type", "companyId"], // ✅ ضيف هاد
+          }],
+          transaction,
+        });
+      }
 
       public async listVariantsWithProduct({ search, page, perPage }: any):Promise<any> {
         const where: any = {};

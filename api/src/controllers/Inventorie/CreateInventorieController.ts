@@ -16,6 +16,8 @@ export default class CreateInventorieController extends BaseController
       protected async executeImpl(req: RequestAuth, res: Response): Promise<any> {
                        try {
                         
+
+                        console.log("createee   ")
               const user = req.user
                         const { variantId, warehouseId, quantity } = req.body;
 

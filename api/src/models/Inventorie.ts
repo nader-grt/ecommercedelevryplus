@@ -90,6 +90,8 @@ export interface IInventorie {
   id?: number;
   variantId: number;
   warehouseId: number;
+  companyId:number;
+  
   quantity: number;
   reserved: number;
   createdAt?: Date;
@@ -109,6 +111,7 @@ export class Inventorie
   public id!: number;
   public variantId!: number;
   public warehouseId!: number;
+  public companyId!:number;
   public quantity!: number;
   public reserved!: number;
 
@@ -142,6 +145,14 @@ export function InventorieModel(sequelize: Sequelize) {
           key: 'id',
         },
       },
+      companyId:{
+        type:DataTypes.INTEGER,
+        allowNull:false,
+        references:{
+          model:"Companies",
+          key:"id"
+        }
+       },
 
       quantity: {
         type: DataTypes.INTEGER,

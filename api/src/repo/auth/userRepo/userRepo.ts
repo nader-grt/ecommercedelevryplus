@@ -49,10 +49,14 @@ export class userRepo extends IUserRepoInterface {
   
   public async FindUserByEmailLogin(email: string): Promise<any> {
     try {
+
+      console.log("EEEEEEEEEMAIL ",email)
       const user = await User.findOne({
         where: { email: email },
         raw: true,
       });
+
+      console.log("repoooooooo  ",user)
       if (!user) return null;
 
       // return {
@@ -379,7 +383,7 @@ export class userRepo extends IUserRepoInterface {
       ],
   
       //  VERY IMPORTANT (avoid duplicate rows)
-      distinct: true,
+    //  distinct: true,
     });
   }
 

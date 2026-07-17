@@ -1,5 +1,28 @@
 import { Transaction } from "sequelize";
 
+
+export interface IFindInventoryParams {
+  variantId: number;
+  warehouseId: number;
+  companyId: number;
+}
+
+export interface ICreateInventoryParams {
+  variantId: string | any;
+  warehouseId: string | any;
+  quantity: number;
+}
+
+export interface ICreateMovementParams {
+  variantId: string;
+  warehouseId: string;
+  type: "stock_in" | "stock_out" | "adjustment" | "transfer";
+  quantityChange: number;
+  resultingQuantity: number;
+  performedBy: string;
+}
+
+
 export default interface IInventorieRepo {
   create(data: any, transaction?: Transaction): Promise<any>;
 
@@ -24,4 +47,11 @@ export default interface IInventorieRepo {
     data: any[];
     total: number;
   }>;
+
+
+  findOneForUpdate(params: IFindInventoryParams, t?: any): Promise<any | null>;
+
+  updateQuantity(inventory: any, newQuantity: number, t: any): Promise<any>;
+
+ // create2(params: ICreateInventoryParams): Promise<any>;
 }

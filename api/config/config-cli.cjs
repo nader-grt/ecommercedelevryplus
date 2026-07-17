@@ -38,7 +38,12 @@ module.exports = {
     npx sequelize-cli db:migrate
 
    All 
-  
+npx sequelize-cli migration:generate --name add-reserved-status-to-orders
+npx sequelize-cli migration:generate --name add-products-company-foreign-key
+   SHOW CREATE TABLE Products;
+
+   npx sequelize-cli migration:generate --name add-warehouse-id-to-order-items
+SELECT * FROM SequelizeMeta;
 
    ALL TRIGGER 
 
@@ -59,6 +64,10 @@ module.exports = {
   npx sequelize-cli db:migrate:undo:all
   companies
   npx sequelize-cli migration:generate --name create-companies
+InventoryAudits
+ npx sequelize-cli migration:generate --name create-InventoryAudits
+InventoryReservations
+ npx sequelize-cli migration:generate --name add-twoColumn-companyId-inventoryId-to-InventoryReservations
 
   npx sequelize-cli migration:generate --name add-companyid-to-users
 
@@ -149,7 +158,15 @@ npx sequelize-cli migration:generate --name create-Variants
 
 npx sequelize-cli migration:generate --name add-users-email-unique-constraint
 
-
+InventoryMovements
+      MODIFY COLUMN type ENUM(
+        'IN',
+        'OUT',
+        'ADJUSTMENT',
+        'TRANSFER',
+        'RESERVE',
+        'RELEASE'
+        npx sequelize-cli migration:generate --name modify-add-enum-column-to-InventoryMovements 
 
 Warehouses
 
@@ -255,6 +272,11 @@ npx sequelize-cli migration:generate --name add-softdelete-index-to-categories
 
                 npx sequelize-cli migration:generate     --name          fix-inventories-integrity-safe
  
+
+                companyId 
+                npx sequelize-cli migration:generate --name add-company-id-to-products
+
+                npx sequelize-cli migration:generate --name add-companyId-to-inventory-movements
 sudo /opt/lampp/lampp start
 Starting XAMPP for Linux...
 XAMPP: Starting Apache...

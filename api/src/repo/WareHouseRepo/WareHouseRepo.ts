@@ -42,7 +42,13 @@ export default class WareHouseRepo extends IWareHouseRepo {
   async findById(id: number): Promise<any | null> {
     return Warehouse.findByPk(id, { include: ["company"] });
   }
-
+  async getById(warehouseId: string,): Promise<any | null> {
+        const t = await sequelize.transaction();
+    return Warehouse.findOne({
+      where: { id: warehouseId },
+      transaction:t,
+    });
+  }
 
   async findByCompanyId(companyId: number): Promise<any[] | any> {
     return Warehouse.findAll({
