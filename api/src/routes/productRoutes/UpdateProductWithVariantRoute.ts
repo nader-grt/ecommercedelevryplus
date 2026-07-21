@@ -7,6 +7,8 @@ import updateProductVariantUseCase from "../../useCases/productUseCase/UpdatePro
 import SupplierRepo from "../../repo/SupplierRepo/SupplierRepo";
 import CategoryRepo from "../../repo/categoryRepo/categoryRepo";
 import updateProductVariantController from "../../controllers/products/UpdateProductWithVariantController";
+import { userRepo } from "../../repo/auth/userRepo/userRepo";
+import GetCompanyOwnersUseCase from "../../useCases/companyUseCase/GetCompanyOwnersUseCase";
 
 const router = Router();
 
@@ -15,11 +17,19 @@ const supplierRepo = new SupplierRepo();
 const productRepo = new ProductRepo();
 export const fileHandlerUpdate = new FileHandler(folderPath);
 //fileHandlerCreate
+
+//
+/*
+ 
+private _userCompany :GetCompanyOwnersUseCase  = new  GetCompanyOwnersUseCase(new userRepo());
+ */
+const getCompanyOwnersUseCase  = new  GetCompanyOwnersUseCase(new userRepo());
 const updateProductUseCase = new updateProductVariantUseCase(
   fileHandlerUpdate,
   productRepo,
   categoryRepo,
-  supplierRepo
+  supplierRepo,
+  getCompanyOwnersUseCase
 );
 const updateProductVariantRoute = new updateProductVariantController(updateProductUseCase);
 

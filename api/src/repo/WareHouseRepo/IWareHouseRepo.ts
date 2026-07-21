@@ -1,9 +1,15 @@
+import { Transaction } from "sequelize";
 import { Warehouse } from "../../models/Warehouse";
 
 
 export  abstract class IWareHouseRepo 
 {
-
+  
+    abstract findByCompany(
+        companyId: number,
+        transaction?: Transaction
+    ): Promise<any[]>
+    abstract  findByCompanyWithInventory(  companyId: number,transaction?: Transaction, inventoryOptions?: any ): Promise<any[]> ;
     abstract create(data: Partial<Warehouse>): Promise<Warehouse | any>;
     abstract   findByNameAndCompany(name: string, companyId: number): Promise<any>;
     abstract findById(id: number): Promise<Warehouse | null>;

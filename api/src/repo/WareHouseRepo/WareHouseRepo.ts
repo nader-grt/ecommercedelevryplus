@@ -7,6 +7,40 @@ import QueryBuilder from "../../util/QuiryBuilder";
 
 export default class WareHouseRepo extends IWareHouseRepo {
   
+  async findByCompany(
+    companyId: number,
+    transaction?: Transaction
+): Promise<any[]> {
+    return await Warehouse.findAll({
+        where: {
+            companyId
+        },
+        transaction
+    });
+}
+
+  async findByCompanyWithInventory(
+    companyId: number,
+    transaction?: Transaction,
+    inventoryOptions: any = {}
+  ): Promise<any[]> {
+    return Warehouse.findAll({
+      where: { companyId },
+      include: [
+        {
+          association: "inventories", // or model: Inventorie, as: "inventories"
+          required: true,
+          ...inventoryOptions,
+        },
+        {
+          model: Company,
+          as: "company",
+        },
+      ],
+      transaction,
+    });
+  }
+
     async create(data: any): Promise<any> {
         const transaction = await Warehouse.sequelize!.transaction();
       

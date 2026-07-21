@@ -1,4 +1,5 @@
-import { Transaction } from "sequelize";
+import { Op, Transaction } from "sequelize";
+import { InventoryReservation } from "../../models/InventoryReservation";
 
 export interface CreateReservationDTO {
   inventoryId: number;
@@ -7,9 +8,35 @@ export interface CreateReservationDTO {
   warehouseId: number;
   companyId: number;
   quantity: number;
-  status: "ACTIVE" | "RELEASED" | "CONSUMED";
+  status: "PENDING" | "RELEASED" | "CONSUMED";
   userId?: number;
   note?: string;
+}
+
+export interface ReservationWhere {
+  id?: number;
+  orderId?: number;
+  orderItemId?: number;      // إذا أضفت العمود لاحقاً
+  inventoryId?: number;
+  variantId?: number;
+  warehouseId?: number;
+  companyId?: number;
+    // معدل: يقبل string أو كائن Sequelize
+    status?: string | { [Op.ne]: string } | { [Op.in]: string[] } | { [Op.notIn]: string[] };
+    
+       
+  statusNot?: string;        // للاستبعاد
+  createdAtFrom?: Date;      // فلترة بالتاريخ
+  createdAtTo?: Date;
+}
+
+export interface FindAllOptions {
+  where: ReservationWhere;
+  transaction?: Transaction;
+  limit?: number;
+  offset?: number;
+  order?: [string, string][]; // [['createdAt', 'DESC']]
+  include?: any[];            // للعلاقات
 }
 
 export default interface IInventoryReservationRepo {
@@ -18,6 +45,7 @@ export default interface IInventoryReservationRepo {
   // CREATE
   // =========================
 
+  findAll(options: FindAllOptions): Promise<InventoryReservation[]>
   create(
     data: CreateReservationDTO,
     transaction?: Transaction

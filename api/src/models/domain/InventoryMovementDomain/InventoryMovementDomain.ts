@@ -13,6 +13,16 @@ export default class InventoryMovementDomain {
   private _quantity: number;
   private _userId?: number;
   private _note?: string;
+    // =========================
+  // GETTERS
+  // =========================
+
+  get variantId(): number { return this._variantId; }
+  get warehouseId(): number { return this._warehouseId; }
+  get type(): MovementType { return this._type; }
+  get quantity(): number { return this._quantity; }
+  get userId(): number | undefined { return this._userId; }
+  get note(): string | undefined { return this._note; }
 
   private constructor(props: {
     variantId: number;

@@ -25,7 +25,12 @@ export interface ICreateMovementParams {
 
 export default interface IInventorieRepo {
   create(data: any, transaction?: Transaction): Promise<any>;
+  findWarehousesWithLocation( companyId: number,transaction?: Transaction):Promise<any | null>;
 
+  findWarehouseIdsByCompany(
+    companyId: number,
+    transaction?: Transaction
+  ): Promise<number[]> 
   findById(id: number, transaction?: Transaction): Promise<any | null>;
 
   findByVariantAndWarehouse(
@@ -47,11 +52,19 @@ export default interface IInventorieRepo {
     data: any[];
     total: number;
   }>;
-
+  findWarehousesByPriority(
+    companyId: number,
+    transaction?: Transaction
+): Promise<any[]>
 
   findOneForUpdate(params: IFindInventoryParams, t?: any): Promise<any | null>;
 
   updateQuantity(inventory: any, newQuantity: number, t: any): Promise<any>;
-
+  findForUpdate(
+    variantId: number,
+    warehouseId: number,
+    companyId: number,
+    transaction: Transaction
+) : Promise<any>;
  // create2(params: ICreateInventoryParams): Promise<any>;
 }

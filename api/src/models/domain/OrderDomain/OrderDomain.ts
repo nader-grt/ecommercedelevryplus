@@ -91,18 +91,31 @@ private companyId!: number | any;
                               return order;
                           }
                                                 
-                    addItem( productId: number, name: string, quantity: number, price: number ) 
-                    {
+                    // addItem( productId: number, name: string, quantity: number, price: number ) 
+                    // {
 
+                    //     if (this.status !== STATUS.PENDING) {
+                    //     throw new Error("cannot add items after payment");
+                    //     }
+
+                    //     if (quantity <= 0) {
+                    //     throw new Error("quantity must be greater than zero");
+                    //     }
+
+                    //     this.items.push( new OrderItemDomain(productId, name, quantity, price) );
+                    // }
+                    addItem( productId: number, name: string, quantity: number, price: number, variantId: number ) 
+                    {
+                    
                         if (this.status !== STATUS.PENDING) {
                         throw new Error("cannot add items after payment");
                         }
-
+                    
                         if (quantity <= 0) {
                         throw new Error("quantity must be greater than zero");
                         }
-
-                        this.items.push( new OrderItemDomain(productId, name, quantity, price) );
+                    
+                        this.items.push( new OrderItemDomain(productId, name, quantity, price, variantId) );
                     }
 
                     validateBeforeSave() {

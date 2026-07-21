@@ -61,6 +61,8 @@ SELECT * FROM SequelizeMeta;
   npx sequelize-cli migration:generate --name   create-trigger-prevent-product-deletion-with-variants
 
 
+  npx sequelize-cli migration:generate --name update-product-and-variant-triggers
+
   npx sequelize-cli db:migrate:undo:all
   companies
   npx sequelize-cli migration:generate --name create-companies
@@ -277,6 +279,12 @@ npx sequelize-cli migration:generate --name add-softdelete-index-to-categories
                 npx sequelize-cli migration:generate --name add-company-id-to-products
 
                 npx sequelize-cli migration:generate --name add-companyId-to-inventory-movements
+
+
+                InventoryReservations', 'orderItemId',
+
+                                npx sequelize-cli migration:generate --name add-orderItemId-to-InventoryReservations
+
 sudo /opt/lampp/lampp start
 Starting XAMPP for Linux...
 XAMPP: Starting Apache...

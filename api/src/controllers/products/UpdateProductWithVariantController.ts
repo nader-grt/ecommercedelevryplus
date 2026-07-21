@@ -102,7 +102,6 @@ export default class UpdateProductWithVariantController extends BaseController {
       if (req.file) {
         productData.nameImage = req.file.filename;
       }
-      // إذا ما جاش file → نخلي القديم (ما نبدلوش)
 
       // =========================
       // 🔹 CALL USECASE

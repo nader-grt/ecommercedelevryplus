@@ -7,18 +7,22 @@ module.exports = {
       BEFORE UPDATE ON Products
       FOR EACH ROW
       BEGIN
+
         DECLARE variantCount INT;
 
-        IF NEW.type = 'SIMPLE' AND OLD.type = 'VARIABLE' THEN
+        IF OLD.type = 'VARIABLE'
+           AND NEW.type = 'SIMPLE' THEN
 
-          SELECT COUNT(*) INTO variantCount
-          FROM Variants
-          WHERE productId = OLD.id;
+            SELECT COUNT(*)
+            INTO variantCount
+            FROM Variants
+            WHERE productId = OLD.id
+              AND isDeleted = 0;
 
-          IF variantCount > 0 THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot change VARIABLE product to SIMPLE while variants exist';
-          END IF;
+            IF variantCount > 1 THEN
+                SIGNAL SQLSTATE '45000'
+                SET MESSAGE_TEXT = 'Cannot convert VARIABLE product to SIMPLE while multiple variants exist';
+            END IF;
 
         END IF;
 

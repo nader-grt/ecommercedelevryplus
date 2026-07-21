@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { BaseController } from "../../infra/BaseCOntroller";
-import ReserveStockUseCase from "../../useCases/InventorieUseCase/ReserveStockUseCase";
+import ReserveStockUseCase, { ReserveStockCommand } from "../../useCases/InventorieUseCase/ReserveStockUseCase";
 import { RequestAuth } from "../../middleware/verifyToken";
 
 
@@ -22,12 +22,35 @@ export default class ReserveStockController  extends BaseController
                       console.log(" user is  ",user)
                     try {
                         
-                        const result = await this._useCase.execute(orderId,user)
+               
 
+                     const command = this.buildCommand(req);
 
-                        return this.ok(res,result)
+                     console.log("command is \t ",command)
+                     
+                     const result = await this._useCase.execute(command);
+         
+                    
+                     return this.ok(res, result);
+         
                     } catch (error:any) {
                         
                     }
        }
+       private buildCommand(req: RequestAuth): ReserveStockCommand {
+        
+              const { orderId } = req.body;
+              const user :any = req.user;
+      
+              //   orderId
+              if (!orderId || typeof orderId !== 'number') {
+                  throw new Error("ORDER_ID_REQUIRED: معرف الطلب مطلوب ويجب أن يكون رقماً");
+              }
+      
+              return {
+                  orderId: orderId,
+                  userId: user.id,
+                  companyId: 29
+              };
+          }
 }

@@ -21,6 +21,7 @@ import {
     quantity: number;
   
     status: "pending" | "confirmed" | "released";
+    orderItemId:number;
   
     createdAt?: Date;
   
@@ -53,6 +54,7 @@ import {
     public companyId!: number;
   
     public quantity!: number;
+    public orderItemId!:number ;
   
     public status!: "pending" | "confirmed" | "released";
   
@@ -105,6 +107,7 @@ import {
             min: 1,
           },
         },
+        orderItemId: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   
         status: {
           type: DataTypes.ENUM(

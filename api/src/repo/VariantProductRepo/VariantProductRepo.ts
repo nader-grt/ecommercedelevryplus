@@ -31,17 +31,101 @@ public async updateVariant(id: number, data: any): Promise<any> {
   return variant;
 }
 
-//  delete variant
+// old  delete variant
+// public async deleteVariant(id: number): Promise<DeleteVariantResult> {
+//   const t =  await sequelize.transaction();
+
+//   try {
+//     // =========================
+//     // 1. CHECK VARIANT EXISTS
+//     // =========================
+//     const variant = await Variant.findByPk(id, { transaction: t });
+
+//     if (!variant) {
+//       return {
+//         status: DeleteVariantStatus.NOT_FOUND,
+//         message: "Variant not found",
+//       };
+//     }
+
+//     // =========================
+//     // 2. CHECK ORDERS (CRITICAL BLOCK)
+//     // =========================
+//     const orderCount = await OrderItem.count({
+//       where: { variantId: id },
+//       transaction: t,
+//     });
+
+//     if (orderCount > 0) {
+//       return {
+//         status: DeleteVariantStatus.BLOCKED_ORDERS,
+//         message: "Cannot delete variant used in orders",
+//       };
+//     }
+
+//     // =========================
+//     // 3. CHECK INVENTORY
+//     // =========================
+//     const inventoryCount = await Inventorie.count({
+//       where: { variantId: id },
+//       transaction: t,
+//     });
+
+//     // =========================
+//     // 4. SOFT DELETE ALWAYS FIRST
+//     // =========================
+//     await variant.update(
+//       { isDeleted: true },
+//       { transaction: t }
+//     );
+
+//     // =========================
+//     // 5. IF INVENTORY EXISTS → KEEP RECORD BUT MARK
+//     // =========================
+//     if (inventoryCount > 0) {
+//       await sequelize.models.Inventorie.update(
+//         { isArchived: true },
+//         { where: { variantId: id }, transaction: t }
+//       );
+
+//       await t.commit();
+
+//       return {
+//         status: DeleteVariantStatus.SOFT_DELETED,
+//         message: "Variant archived (inventory exists)",
+//       };
+//     }
+
+//     // =========================
+//     // 6. CLEAN HARD DELETE SAFE DATA
+//     // =========================
+//     await t.commit();
+
+//     return {
+//       status: DeleteVariantStatus.SOFT_DELETED,
+//       message: "Variant soft deleted successfully",
+//     };
+//   } catch (error) {
+//     await t.rollback();
+//     throw error;
+//   }
+// }
+
+
 public async deleteVariant(id: number): Promise<DeleteVariantResult> {
-  const t =  await sequelize.transaction();
+  const t = await sequelize.transaction();
 
   try {
     // =========================
-    // 1. CHECK VARIANT EXISTS
+    // 1. GET VARIANT
     // =========================
-    const variant = await Variant.findByPk(id, { transaction: t });
+    const variant = await Variant.findByPk(id, {
+      transaction: t,
+    });
 
     if (!variant) {
+      await t.rollback();
+
       return {
         status: DeleteVariantStatus.NOT_FOUND,
         message: "Variant not found",
@@ -49,14 +133,38 @@ public async deleteVariant(id: number): Promise<DeleteVariantResult> {
     }
 
     // =========================
-    // 2. CHECK ORDERS (CRITICAL BLOCK)
+    // 2. CHECK IF LAST VARIANT
+    // =========================
+    const variantCount = await Variant.count({
+      where: {
+        productId: variant.productId,
+        isDeleted: false,
+      },
+      transaction: t,
+    });
+
+    if (variantCount <= 1) {
+      await t.rollback();
+
+      return {
+        status: DeleteVariantStatus.BLOCKED_INVENTORY,
+        message: "Cannot delete the last variant of a product",
+      };
+    }
+
+    // =========================
+    // 3. CHECK ORDERS
     // =========================
     const orderCount = await OrderItem.count({
-      where: { variantId: id },
+      where: {
+        variantId: id,
+      },
       transaction: t,
     });
 
     if (orderCount > 0) {
+      await t.rollback();
+
       return {
         status: DeleteVariantStatus.BLOCKED_ORDERS,
         message: "Cannot delete variant used in orders",
@@ -64,56 +172,69 @@ public async deleteVariant(id: number): Promise<DeleteVariantResult> {
     }
 
     // =========================
-    // 3. CHECK INVENTORY
+    // 4. CHECK INVENTORY
     // =========================
     const inventoryCount = await Inventorie.count({
-      where: { variantId: id },
+      where: {
+        variantId: id,
+      },
       transaction: t,
     });
 
-    // =========================
-    // 4. SOFT DELETE ALWAYS FIRST
-    // =========================
-    await variant.update(
-      { isDeleted: true },
-      { transaction: t }
-    );
-
-    // =========================
-    // 5. IF INVENTORY EXISTS → KEEP RECORD BUT MARK
-    // =========================
     if (inventoryCount > 0) {
-      await sequelize.models.Inventorie.update(
-        { isArchived: true },
-        { where: { variantId: id }, transaction: t }
+      await variant.update(
+        {
+          isDeleted: true,
+        },
+        { transaction: t }
       );
 
       await t.commit();
 
       return {
         status: DeleteVariantStatus.SOFT_DELETED,
-        message: "Variant archived (inventory exists)",
+        message: "Variant archived because inventory exists",
       };
     }
 
     // =========================
-    // 6. CLEAN HARD DELETE SAFE DATA
+    // 5. HARD DELETE
     // =========================
+    await variant.destroy({
+      transaction: t,
+    });
+
     await t.commit();
 
     return {
-      status: DeleteVariantStatus.SOFT_DELETED,
-      message: "Variant soft deleted successfully",
+      status: DeleteVariantStatus.HARD_DELETED,
+      message: "Variant deleted successfully",
     };
+
   } catch (error) {
     await t.rollback();
     throw error;
   }
 }
 
-//  count variants per product
+
+
+
+//  old count variants per product
+
+// public async countByProduct(productId: number): Promise<number> {
+//   return await Variant.count({ where: { productId } });
+// }
+
 public async countByProduct(productId: number): Promise<number> {
-  return await Variant.count({ where: { productId } });
+
+  return await Variant.count({
+    where: {
+      productId,
+      isDeleted: false,
+    },
+  });
+
 }
 
 
@@ -137,20 +258,74 @@ public async isVariantUsed(variantId: number): Promise<boolean> {
   }
 }
 
+
+// old convertProductToSimple
+// public async convertProductToSimple(productId: number): Promise<any> {
+
+//   const product = await Product.findByPk(productId);
+
+//   if (!product) {
+//     throw new Error("Product not found");
+//   }
+
+//   await product.update({
+//     type: "SIMPLE"
+//   });
+
+//   return product;
+// }
+
+
 public async convertProductToSimple(productId: number): Promise<any> {
 
-  const product = await Product.findByPk(productId);
+  const t = await sequelize.transaction();
 
-  if (!product) {
-    throw new Error("Product not found");
+  try {
+
+    const product = await Product.findByPk(productId, {
+      transaction: t,
+    });
+
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    const variantCount = await Variant.count({
+      where: {
+        productId,
+        isDeleted: false,
+      },
+      transaction: t,
+    });
+
+    if (variantCount > 1) {
+      throw new Error(
+        "Cannot convert to SIMPLE while product has multiple variants"
+      );
+    }
+
+    await product.update(
+      {
+        type: "SIMPLE",
+      },
+      {
+        transaction: t,
+      }
+    );
+
+    await t.commit();
+
+    return product;
+
+  } catch (error) {
+
+    await t.rollback();
+    throw error;
+
   }
-
-  await product.update({
-    type: "SIMPLE"
-  });
-
-  return product;
 }
+
+
 
 
 //  check duplicate combination
@@ -170,41 +345,126 @@ public async findDuplicateCombination(
   });
 }
 
-    public async addVariantIfExistInProducts(data:any):Promise<any> 
-    {
-      const { productId, sku, color, size, price } = data;
-            try {
-              const product = await Product.findByPk(productId);
-              if (!product) {
-                throw new Error("Product not found");
-              }
-          
-              // 2️ check SKU uniqueness
-              const existingVariant = await this.findBySku(sku);
-          
-              if (existingVariant) {
-                throw new Error("Variant SKU already exists");
-              }
 
-              const variant = await Variant.create({
-                productId,
-                sku,
-                color,
-                size,
-                price,
-              });
+// old addVariantIfExistInProducts  
+
+
+    // public async addVariantIfExistInProducts(data:any):Promise<any> 
+    // {
+    //   const { productId, sku, color, size, price } = data;
+    //         try {
+    //           const product = await Product.findByPk(productId);
+    //           if (!product) {
+    //             throw new Error("Product not found");
+    //           }
           
-              // 4️return with product ( important for frontend)
-              return {
-                ...variant.toJSON(),
-                product: {
-                  id: product.id,
-                  name: product.name,
-                },
-              };
-            } catch (error) {
+    //           // 2️ check SKU uniqueness
+    //           const existingVariant = await this.findBySku(sku);
+          
+    //           if (existingVariant) {
+    //             throw new Error("Variant SKU already exists");
+    //           }
+
+    //           const variant = await Variant.create({
+    //             productId,
+    //             sku,
+    //             color,
+    //             size,
+    //             price,
+    //           });
+          
+    //           // 4️return with product ( important for frontend)
+    //           return {
+    //             ...variant.toJSON(),
+    //             product: {
+    //               id: product.id,
+    //               name: product.name,
+    //             },
+    //           };
+    //         } catch (error) {
                 
+    //         }
+    // }
+
+    public async addVariantIfExistInProducts(data: any): Promise<any> {
+
+      const t = await sequelize.transaction();
+    
+      try {
+    
+        const { productId, sku, color, size, price } = data;
+    
+        const product: any = await Product.findByPk(productId, {
+          transaction: t,
+        });
+    
+        if (!product) {
+          throw new Error("Product not found");
+        }
+    
+        const existingSku = await Variant.findOne({
+          where: { sku },
+          transaction: t,
+        });
+    
+        if (existingSku) {
+          throw new Error("SKU already exists");
+        }
+    
+        const duplicate = await this.findDuplicateCombination(
+          productId,
+          color,
+          size
+        );
+    
+        if (duplicate) {
+          throw new Error("Variant already exists");
+        }
+    
+        const variant = await Variant.create(
+          {
+            productId,
+            sku,
+            color,
+            size,
+            price,
+          },
+          {
+            transaction: t,
+          }
+        );
+    
+        // إذا أصبح عنده أكثر من Variant يتحول إلى VARIABLE
+        const count = await Variant.count({
+          where: {
+            productId,
+            isDeleted: false,
+          },
+          transaction: t,
+        });
+    
+        if (count > 1 && product.type === "SIMPLE") {
+    
+          await product.update(
+            {
+              type: "VARIABLE",
+            },
+            {
+              transaction: t,
             }
+          );
+        }
+    
+        await t.commit();
+    
+        return variant;
+    
+      } catch (error) {
+    
+        await t.rollback();
+        throw error;
+    
+      }
     }
 
     public async findBySku(sku: string): Promise<any> {
@@ -259,11 +519,14 @@ public async findDuplicateCombination(
           include: [{
             model: Product,
             as: "product",
-            attributes: ["id", "name", "type", "companyId"], // ✅ ضيف هاد
+            attributes: ["id", "name", "type", "companyId"], // 
           }],
           transaction,
         });
       }
+
+
+
 
       public async listVariantsWithProduct({ search, page, perPage }: any):Promise<any> {
         const where: any = {};
@@ -304,41 +567,86 @@ public async findDuplicateCombination(
       }
 
 
-      public async convertProductToVariable(productId: number): Promise<any> {
-        try {
-          if (!productId) {
-            throw new Error("productId is required");
-          }
+
+      // old convertProductToVariable
+
+      // public async convertProductToVariable(productId: number): Promise<any> {
+      //   try {
+      //     if (!productId) {
+      //       throw new Error("productId is required");
+      //     }
       
-          // 1. get product
-          const product: any = await Product.findByPk(productId);
+      //     // 1. get product
+      //     const product: any = await Product.findByPk(productId);
+      
+      //     if (!product) {
+      //       throw new Error("Product not found");
+      //     }
+      
+      //     // 2. already VARIABLE
+      //     if (product.type === "VARIABLE") {
+      //       return {
+      //         message: "Product already VARIABLE",
+      //         data: product,
+      //       };
+      //     }
+      
+      //     // 3. convert
+      //     await product.update({ type: "VARIABLE" });
+      
+      //     return {
+      //       message: "Product converted to VARIABLE",
+      //       data: product,
+      //     };
+      
+      //   } catch (error: any) {
+      //     console.error("convertProductToVariable error:", error);
+      //     throw error;
+      //   }
+      // }
+
+      
+
+      public async convertProductToVariable(productId: number): Promise<any> {
+
+        const t = await sequelize.transaction();
+      
+        try {
+      
+          const product = await Product.findByPk(productId, {
+            transaction: t,
+          });
       
           if (!product) {
             throw new Error("Product not found");
           }
       
-          // 2. already VARIABLE
           if (product.type === "VARIABLE") {
-            return {
-              message: "Product already VARIABLE",
-              data: product,
-            };
+            await t.commit();
+      
+            return product;
           }
       
-          // 3. convert
-          await product.update({ type: "VARIABLE" });
+          await product.update(
+            {
+              type: "VARIABLE",
+            },
+            {
+              transaction: t,
+            }
+          );
       
-          return {
-            message: "Product converted to VARIABLE",
-            data: product,
-          };
+          await t.commit();
       
-        } catch (error: any) {
-          console.error("convertProductToVariable error:", error);
+          return product;
+      
+        } catch (error) {
+      
+          await t.rollback();
           throw error;
+      
         }
       }
-
 
       // repo
 public async softDeleteVariant(id: number, t?: any): Promise<void> {

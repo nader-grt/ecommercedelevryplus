@@ -1,3 +1,4 @@
+import { ProductType } from "../../product";
 import VariantDomain from "../VariantDomain/VariantDomain";
 
 export default class ProductDomain {
@@ -16,7 +17,8 @@ export default class ProductDomain {
   private categoryId!: number
   private supplierId!: number | any
   private variants: VariantDomain[] = []
-  private type: "SIMPLE" | "VARIABLE" = "SIMPLE"
+  private companyId!:number 
+private type:ProductType = "SIMPLE"
 
   constructor(props?: {
     name: string
@@ -86,9 +88,13 @@ export default class ProductDomain {
     return this.supplierId
   }
 
-  public getType() {
-    return this.type
-  }
+  public get getType(): ProductType {
+    return this.type;
+}
+
+public get getCompanyId(): number {
+  return this.companyId;
+}
 
   public getVariants() {
     return this.variants

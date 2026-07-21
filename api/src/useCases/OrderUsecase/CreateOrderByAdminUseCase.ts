@@ -2,94 +2,152 @@ import OrderDomain from "../../models/domain/OrderDomain/OrderDomain";
 import { userRepo } from "../../repo/auth/userRepo/userRepo";
 import OrderRepo from "../../repo/OrderRepo/OrderRepo";
 import ProductRepo from "../../repo/productRepo/productRepo";
+import GetCompanyOwnersUseCase from "../companyUseCase/GetCompanyOwnersUseCase";
 
-
+interface OrderItemDTO {
+  productId: number;
+  quantity: number;
+  variantId?: number;
+}
 
 interface CreateOrderDTO {
-    custmerId: number;
-    items: [];
-    actor: {
-      ownerId: number;
-      ownerRole: string;
-      ownerEmail?: string;
-    };
+  custmerId: number;
+  items: OrderItemDTO[];
+  actor: {
+    ownerId: number;
+    ownerRole: string;
+    ownerEmail?: string;
+  };
+}
+
+export default class CreateOrderByAdminUseCase {
+  private _userRepo!: userRepo;
+  private _orderRepo!: OrderRepo;
+  private _productRepo!: ProductRepo;
+  private _userOwnerCompany: GetCompanyOwnersUseCase =
+    new GetCompanyOwnersUseCase(new userRepo());
+  constructor(
+    userrepo: userRepo,
+    orderRepo: OrderRepo,
+    productRepo: ProductRepo,
+    userOwnerCompany: GetCompanyOwnersUseCase
+  ) {
+    this._orderRepo = orderRepo;
+    this._userRepo = userrepo;
+    this._productRepo = productRepo;
+    this._userOwnerCompany = userOwnerCompany;
   }
 
-export default class CreateOrderByAdminUseCase 
-{
-      private _userRepo!:userRepo
-      private _orderRepo!:OrderRepo
-      private _productRepo!:ProductRepo
-       constructor( userrepo  :userRepo,orderRepo:OrderRepo ,productRepo:ProductRepo)
-       {
-           this._orderRepo = orderRepo ;
-           this._userRepo = userrepo ;
-           this._productRepo = productRepo
-       }
+  async execute(dto: CreateOrderDTO): Promise<any> {
+    try {
+      const user = await this._userRepo.FindUserById(dto.custmerId);
 
-       async execute(dto:CreateOrderDTO):Promise<any>
-       {
+      console.log(" user now  ", user);
+      if (!user) {
+        return { success: false, message: "user not found " };
+      }
+      const ownerCompany: any = await this._userOwnerCompany.execute();
 
+      const companyId = ownerCompany[0].company.id;
 
-               try {
+      const productIds = dto.items.map((i) => i["productId"]);
 
+      console.log("productsidss is \t ", productIds);
 
-             //  console.log("dddddddd usecase Admin ",dto)
+      const productsWithVariantIds =
+        await this._productRepo.getProductsMapWithVariantsByIds(productIds);
 
-                    const user =  await this._userRepo.FindUserById(dto.custmerId)  
+      for (const [id, product] of productsWithVariantIds) {
+        console.log("Product ID:", id);
+        console.dir(product, { depth: null });
+      }
 
-                    console.log(" user now  ",user )
-                    if(!user)
-                    {
-                       return {success:false,message:"user not found "}
-                    }
+      const order = new OrderDomain(dto.custmerId, companyId);
 
-       
-                    const productIds = dto.items.map(i => i["productId"]);
+      for (const item of dto.items) {
+        const productMapVariant = productsWithVariantIds.get(item["productId"]);
 
-        // for (let index = 0; index < 3; index++) {
-        //   await this._productRepo.GetProductById  
-          
-        // }    //  promiseall 
+     //   const productMapVariant = productsWithVariantIds.get(item.productId);
 
+        if (!productMapVariant) {
+            throw new Error(`Product ${item.productId} not found`);
+        }
+        
+        let variant;
+        
+        if (item.variantId) {
+            variant = productMapVariant.variants.find(
+                (v: any) => v.id === item.variantId
+            );
+        
+            if (!variant) {
+                throw new Error(
+                    `Variant ${item.variantId} not found for product ${item.productId}`
+                );
+            }
+        } else {
+            // إذا لم يرسل الـ Frontend variantId
+            if (productMapVariant.variants.length === 1) {
+                variant = productMapVariant.variants[0];
+            } else {
+                throw new Error(
+                    `Product ${item.productId} has multiple variants. variantId is required.`
+                );
+            }
+        }
+        
+        order.addItem(
+            productMapVariant.id,
+            productMapVariant.name,
+            item.quantity,
+            Number(variant.price),
+            variant.id
+        );
 
-                      
-            
+        // console.log("productMapVariant is \t ", productMapVariant);
 
-              //  console.log("prrrrrro  ",productIds)
+        // if (!productMapVariant) {
+        //   throw new Error(`Product ${item.productId} not found`);
+        // }
 
-                  const productMap = await ProductRepo.getProductsMapByIds(productIds);
+        // if (productMapVariant.companyId !== companyId) {
+        //   throw new Error("Products must belong to same company");
+        // }
 
- 
+        // if (productMapVariant.companyId !== companyId) {
+        //   throw new Error("Products must belong to the same company");
+        // }
+  
 
-                  console.log("object is  ",productMap)
+        // if (!item.variantId) {
+        //   throw new Error(`Variant required for product ${item.productId}`);
+        // }
 
-                // console.log(" productMap  ",productMap)
+        // const variant = productMapVariant.variants.find(
+        //   (v: any) => v.id === item.variantId
+        // );
+        // if (!variant) {
+        //   throw new Error(`Variant ${item.variantId} not found`);
+        // }
+        // // order.addItem(productMapVariant.id, productMapVariant.name, item["quantity"], productMapVariant?.price);
 
-                  const  order  =  new OrderDomain(dto.custmerId,    user.companyId)  ;
+        // order.addItem(
+        //   productMapVariant.id,
+        //   productMapVariant.name,
+        //   item.quantity,
+        //   Number(variant.price),
+        //   variant.id
+        // );
+      }
 
-                // console.log("oooooooo  ",order  )
-              //  console.log("dto.items  ",dto.items  ,typeof dto.items)
+      const totalAmount = order.getTotalAmount();
+      //   console.log(totalAmount);
 
-                      for (const item of dto.items) {
-
-                        console.log("object",item  ,"***********  end ")
-                        const product = productMap.get(item["productId"]);
-                        console.log("prrrrrrrrrrrrrrrr  *****" ,product)
-                        if (!product) throw new Error(`Product ${item["productId"]} not found`);
-                    //   addItem( productId: number, name: string, quantity: number, price: number )
-                        order.addItem(product.id, product.name, item["quantity"], product?.price);
-                      }
-
-                                    
-                        const totalAmount = order.getTotalAmount();
-                     //   console.log(totalAmount);
-
-  console.log("orderrrrrrrrrrrr  ",order)
-                   await  this._orderRepo.CreateOrderByAdmin(order)
-                     return {success:true,message:"okkkkkkkk"}
-               } catch (error) {
-                console.log(error)
-               }
-       }
+      console.log("orderrrrrrrrrrrr  ", order);
+      await this._orderRepo.CreateOrderByAdmin(order);
+      return { success: true, message: "okkkkkkkk" };
+    } catch (error) {
+      console.log(error);
+    }
+  }
 }

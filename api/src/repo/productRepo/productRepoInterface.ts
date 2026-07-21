@@ -1,4 +1,5 @@
 
+import { Product } from '../../models/product';
 
 
 export default abstract class productRepoInterface
@@ -30,4 +31,11 @@ export default abstract class productRepoInterface
       protected abstract hasOrders(productId: number): Promise<boolean> ;
       protected abstract softDeleteWithVariants(productId: number): Promise<void> ;
       protected abstract getProductCountByCategoryId(categoryId: number): Promise<number> 
+      protected abstract  getProductWithVariants2(
+        productId: number ): Promise<any>
+      protected abstract getProductsWithVariantsByIds(productIds: number[]): Promise<any[]>
+
+      protected abstract getProductsMapWithVariantsByIds(
+        productIds: number[]
+      ): Promise<Map<number, any>> 
 }

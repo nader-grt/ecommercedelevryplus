@@ -1,7 +1,9 @@
 import FileHandler from "../../filesystem/fileHandle";
+import { userRepo } from "../../repo/auth/userRepo/userRepo";
 import CategoryRepo from "../../repo/categoryRepo/categoryRepo";
 import ProductRepo from "../../repo/productRepo/productRepo";
 import SupplierRepo from "../../repo/SupplierRepo/SupplierRepo";
+import GetCompanyOwnersUseCase from "../companyUseCase/GetCompanyOwnersUseCase";
 
 interface CreateVariantDTO {
   sku?: string;
@@ -24,6 +26,9 @@ export default class CreateProductWithVariantUseCase {
   private _fileHandlerUseCase!: FileHandler;
   private _categoryRepoUseCase!: CategoryRepo;
   private _supplierRepoUseCase!: SupplierRepo;
+ // GetCompanyOwnersUseCase {
+    private _userCompany :GetCompanyOwnersUseCase  = new  GetCompanyOwnersUseCase(new userRepo());
+
 
   constructor(
     fileHandlerUseCase: FileHandler,
@@ -47,6 +52,12 @@ export default class CreateProductWithVariantUseCase {
       variants = [],
     } = dto;
 
+    const companyOwners : any  = await this._userCompany.execute() ;
+
+    console.log("companyyyyyyyyyyyyyyyyyyyyyyyyy is  \t ",companyOwners)
+    const companyId = companyOwners[0].company.id;
+
+console.log("companyId =", companyId);
     try {
       // =====================
       // 🔹 VALIDATION
@@ -106,24 +117,52 @@ export default class CreateProductWithVariantUseCase {
       // 🔹 PREPARE DATA
       // =====================
 
+
+
       const productData = {
         name: nameProduct,
         type: isVariable ? "VARIABLE" : "SIMPLE",
-       // price: isVariable ? 0 : Number(priceProduct),
         price: Number(priceProduct),
         nameImage: imageName,
-        categoryId: category.id,
+        categoryId: category.getCategoryId,
         supplierId: supId,
+        companyId: companyId
+
       };
 
+  
       const variantsData = isVariable
-        ? variants.map((v) => ({
-            sku: v.sku || null,
-            color: v.color,
-            size: v.size,
-            price: Number(v.price),
-          }))
-        : [];
+      ? variants.map((v) => ({
+          sku: v.sku,
+          color: v.color,
+          size: v.size,
+          price: Number(v.price),
+        }))
+      : [];
+
+//       let variantsData;
+
+// if (isVariable) {
+
+//   variantsData = variants.map((v) => ({
+//     sku: v.sku ?? null,
+//     color: v.color,
+//     size: v.size,
+//     price: Number(v.price),
+//   }));
+
+// } else {
+
+//   variantsData = [
+//     {
+//       sku: null,
+//       color: "DEFAULT",
+//       size: "DEFAULT",
+//       price: Number(priceProduct),
+//     },
+//   ];
+
+// }
 
       // =====================
       // 🔹 PERSIST

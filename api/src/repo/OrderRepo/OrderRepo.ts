@@ -83,64 +83,143 @@ export default class OrderRepo extends IOrderRepo
     }
 }
 
-   public async CreateOrderByAdmin(order:OrderDomain):Promise<any> 
-   {
 
-           const t = await sequelize.transaction() ;
+//old  create order
+  //  public async CreateOrderByAdmin(order:OrderDomain):Promise<any> 
+  //  {
 
-                     console.log("order rrepooooooooooooo DB ",order)
+  //          const t = await sequelize.transaction() ;
+
+  //                    console.log("order rrepooooooooooooo DB ",order)
 
 
  
 
-                    try {
-                      const orderMapper :any = {
+  //                   try {
+  //                     const orderMapper :any = {
 
-                        customerId: order.GetCustmerId,
+  //                       customerId: order.GetCustmerId,
                     
-                        companyId: order.GetCompanyId,
+  //                       companyId: order.GetCompanyId,
                     
-                        orderDate: order.GetOrderDate,
+  //                       orderDate: order.GetOrderDate,
                     
-                        totalAmount: order.GettotalAmountOrder,
+  //                       totalAmount: order.GettotalAmountOrder,
                     
-                        status: order.GetStatusOrder,
+  //                       status: order.GetStatusOrder,
                     
-                        paymentStatus: order.GetPaymentStatus,
+  //                       paymentStatus: order.GetPaymentStatus,
                     
-                        paidAmount: order.GetPaidAmount
+  //                       paidAmount: order.GetPaidAmount
                     
-                    };
+  //                   };
 
-                    console.log("dbbbbbbbbbbbb  ",orderMapper)
-                      const resultOrder =   await Order.create(orderMapper,{transaction: t })
+  //                   console.log("dbbbbbbbbbbbb  ",orderMapper)
+  //                     const resultOrder =   await Order.create(orderMapper,{transaction: t })
                         
-                      for (let item of order.GetItems ) {
+  //                     for (let item of order.GetItems ) {
                        
-                        console.log("item 11  ",item ,"\n")
+  //                       console.log("item 11  ",item ,"\n")
 
-                        const orderItemMapper :any = {
-                            orderId:resultOrder.id,
-                            productId:item.productId,
-                            quantity:item.quantity,
-                            price:Number(item.unitPrice),
-                            productName:item.productName
+  //                       const orderItemMapper :any = {
+  //                           orderId:resultOrder.id,
+  //                           productId:item.productId,
+  //                           quantity:item.quantity,
+  //                           price:Number(item.unitPrice),
+  //                           productName:item.productName
 
-                        }
+  //                       }
 
-                        console.log("orderItemMapper  ",orderItemMapper)
-                              await    OrderItem.create(orderItemMapper,{transaction: t })
+  //                       console.log("orderItemMapper  ",orderItemMapper)
+  //                             await    OrderItem.create(orderItemMapper,{transaction: t })
 
-                      }
+  //                     }
 
 
-                        await t.commit();
-                    } catch (error) {
-                        console.log(error)
-                        await t.rollback();
-                    }
-   }
+  //                       await t.commit();
+  //                   } catch (error) {
+  //                       console.log(error)
+  //                       await t.rollback();
+  //                   }
+  //  }
 
+
+   //  new fixed 
+
+//    public async CreateOrderByAdmin(order: OrderDomain): Promise<any> {
+//     const t = await sequelize.transaction();
+
+//     try {
+//         const orderMapper: any = {
+//             customerId: order.GetCustmerId,
+//             companyId: order.GetCompanyId,
+//             orderDate: order.GetOrderDate,
+//             totalAmount: order.GettotalAmountOrder,
+//             status: order.GetStatusOrder,
+//             paymentStatus: order.GetPaymentStatus,
+//             paidAmount: order.GetPaidAmount
+//         };
+
+//         const resultOrder = await Order.create(orderMapper, { transaction: t });
+
+//         for (let item of order.GetItems) {
+//             const orderItemMapper: any = {
+//                 orderId: resultOrder.id,
+//                 productId: item.productId,
+//                 variantId: item.getvariantId,        // ← added
+//                 quantity: item.quantity,
+//                 price: Number(item.unitPrice),
+//                 productName: item.productName
+//             };
+
+//             await OrderItem.create(orderItemMapper, { transaction: t });
+//         }
+
+//         await t.commit();
+//         return resultOrder;
+
+//     } catch (error) {
+//         await t.rollback();
+//         throw error;
+//     }
+// }
+
+public async CreateOrderByAdmin(order: OrderDomain, transaction?: any): Promise<any> {
+  const t = transaction || await sequelize.transaction();
+
+  try {
+    const orderMapper = {
+      customerId: order.GetCustmerId,
+      companyId: order.GetCompanyId,
+      orderDate: order.GetOrderDate,
+      totalAmount: order.GettotalAmountOrder,
+      status: order.GetStatusOrder,
+      paymentStatus: order.GetPaymentStatus,
+      paidAmount: order.GetPaidAmount
+    };
+
+    const resultOrder = await Order.create(orderMapper, { transaction: t });
+
+    for (const item of order.GetItems) {
+      const orderItemMapper = {
+        orderId: resultOrder.id,
+        productId: item.productId,
+        variantId: item.variantId ?? null,  // ✅ هنا التعديل
+        quantity: item.quantity,
+        price: Number(item.unitPrice),
+        productName: item.productName
+      };
+      await OrderItem.create(orderItemMapper, { transaction: t });
+    }
+
+    if (!transaction) await t.commit();  // إذا الـ transaction جاية من برّا ما نعملش commit
+    return resultOrder;
+
+  } catch (error) {
+    if (!transaction) await t.rollback();
+    throw error;
+  }
+}
 
    public async FindOrderWithItems(
     orderId:number,

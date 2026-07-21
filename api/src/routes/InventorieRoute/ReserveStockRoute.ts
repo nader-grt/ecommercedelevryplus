@@ -7,29 +7,41 @@ import ReserveStockUseCase from "../../useCases/InventorieUseCase/ReserveStockUs
 import ReserveStockController from "../../controllers/Inventorie/ReserveStockController";
 import InventoryReservationRepo from "../../repo/InventoryReservationRepo/InventoryReservationRepo";
 import ResolveWarehouseForItemService from "../../services/InventoryService/ResolveWarehouseForItemService";
+import InventoryAuditRepo from "../../repo/InventoryAuditRepo/InventoryAuditRepo";
 
+const router = Router();
+const order = new OrderRepo();
+const inventory = new InventorieRepo();
+/**
+    private readonly orderRepo: OrderRepo,
+        private readonly inventoryRepo: InventorieRepo,
+        private readonly movementRepo: InventoryMovementRepo,
+        private readonly reservationRepo: InventoryReservationRepo,
+        private readonly auditRepo: InventoryAuditRepo,
+        private readonly warehouseResolver: ResolveWarehouseForItemService
+ */
+const inventoryMovement = new InventoryMovementRepo();
+const reservationRepo = new InventoryReservationRepo();
+const auditRepo = new InventoryAuditRepo();
+const resolveWarehouseForItemService = new ResolveWarehouseForItemService();
 
+const reserveStockUseCase = new ReserveStockUseCase(
+  order,
+  inventory,
+  inventoryMovement,
+  reservationRepo,
+  auditRepo,
+  resolveWarehouseForItemService
+);
 
-  const router = Router()
-const order = new OrderRepo() ;
-const inventory  = new InventorieRepo()
-   const inventoryMovement       = new InventoryMovementRepo
-   const reservationRepo   = new InventoryReservationRepo()
-   const resolveWarehouseForItemService = new ResolveWarehouseForItemService()
+const reserveStockRoute = new ReserveStockController(reserveStockUseCase);
 
-    const reserveStockUseCase = new ReserveStockUseCase(order,inventory,inventoryMovement,reservationRepo,resolveWarehouseForItemService)
+router.post(
+  "/inventories/reserve-stock",
+  verifyToken,
+  (req: Request, res: Response) => {
+    reserveStockRoute.execute(req, res);
+  }
+);
 
-   const  reserveStockRoute  = new ReserveStockController(reserveStockUseCase)
-
-   router.post(
-    "/inventories/reserve-stock",
-    verifyToken,
-    (req: Request, res: Response) => {
-        reserveStockRoute.execute(req, res);
-    }
-  );
-
-
-
-
-export default router
+export default router;

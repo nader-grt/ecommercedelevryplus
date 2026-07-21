@@ -6,12 +6,13 @@
   "author": "",
   "type": "module",
   "scripts": {
-    "start": "tsx src/index.ts",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'tsx' src/index.ts",
+    "start": "LANG=ar_TN.UTF-8 tsx src/index.ts",
+    "dev": "LANG=ar_TN.UTF-8 nodemon --watch 'src/**/*.ts' --exec 'tsx' src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "chalk": "^5.6.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.2.3",

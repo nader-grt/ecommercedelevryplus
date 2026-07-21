@@ -113,7 +113,7 @@ export default class CategoryDomain {
     };
   }
 
-  // 🔥 typing fix
+  //  typing fix
   public GetAllCategoriesByName(
     data: { id: number; name: string }[]
   ): ICategoryResponseDomain[] {

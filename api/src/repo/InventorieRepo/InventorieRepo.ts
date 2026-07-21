@@ -5,6 +5,72 @@ import QueryBuilder from "../../util/QuiryBuilder";
 
 export default class InventorieRepo implements IInventorieRepo {
 
+  async findWarehousesByPriority(
+    companyId: number,
+    transaction?: Transaction
+): Promise<any[]> {
+    const inventories = await Inventorie.findAll({
+        where: {
+            companyId
+        },
+        include: [
+            {
+                association: "warehouse",
+                attributes: [
+                    "id",
+                    "name",
+                    "priority",
+                    "lat",
+                    "lng"
+                ]
+            }
+        ],
+        order: [
+         //   [{ association: "warehouse" }, "priority", "ASC"]
+        ],
+        transaction
+    });
+
+    const warehouses = new Map<number, any>();
+
+    for (const inventory of inventories as any[]) {
+        const warehouse = inventory.warehouse;
+
+        if (
+            warehouse &&
+            !warehouses.has(warehouse.id)
+        ) {
+            warehouses.set(warehouse.id, warehouse);
+        }
+    }
+
+    return Array.from(warehouses.values());
+}
+
+
+
+async findWarehouseIdsByCompany(
+  companyId: number,
+  transaction?: Transaction
+): Promise<number[]> {
+  const inventories = await Inventorie.findAll({
+      where: {
+          companyId
+      },
+      attributes: ["warehouseId"],
+      group: ["warehouseId"],
+      transaction,
+      raw: true
+  });
+
+  return inventories.map(
+      (inventory: any) => inventory.warehouseId
+  );
+}
+
+
+
+
   async create(data: any, transaction?: Transaction): Promise<any> {
     console.log("CREATE INVENTORY DATA:");
     console.log(data);
@@ -142,4 +208,59 @@ export default class InventorieRepo implements IInventorieRepo {
     inventory.quantity = newQuantity;
     return inventory.save({ transaction: t });
   }
+
+  async findForUpdate(
+    variantId: number,
+    warehouseId: number,
+    companyId: number,
+    transaction: Transaction
+) {
+    return Inventorie.findOne({
+        where: {
+            variantId,
+            warehouseId,
+            companyId
+        },
+        transaction,
+        lock: transaction.LOCK.UPDATE
+    });
+}
+
+  async findWarehousesWithLocation(
+    companyId: number,
+    transaction?: Transaction
+) {
+    const inventories = await Inventorie.findAll({
+        where: {
+            companyId
+        },
+        include: [
+            {
+                association: "warehouse",
+                attributes: [
+                    "id",
+                    "name",
+                    "lat",
+                    "lng"
+                ]
+            }
+        ],
+        transaction
+    });
+
+    const warehouses = new Map<number, any>();
+
+    for (const inventory of inventories as any[]) {
+        const warehouse = inventory.warehouse;
+
+        if (
+            warehouse &&
+            !warehouses.has(warehouse.id)
+        ) {
+            warehouses.set(warehouse.id, warehouse);
+        }
+    }
+
+    return Array.from(warehouses.values());
+}
 }
