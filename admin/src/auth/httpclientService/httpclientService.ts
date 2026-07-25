@@ -5,14 +5,14 @@ let refreshPromise: Promise<string | null> | null = null;
 const API_REFRESH = "http://localhost:4000/api/refresh-token";
 
 // ===============================
-// 🔐 CHECK FORM DATA
+//  CHECK FORM DATA
 // ===============================
 function isFormData(body: any): body is FormData {
   return typeof FormData !== "undefined" && body instanceof FormData;
 }
 
 // ===============================
-// 🔐 BUILD OPTIONS (FIXED)
+//  BUILD OPTIONS (FIXED)
 // ===============================
 function buildOptions(
   options: RequestInit,
@@ -34,7 +34,7 @@ function buildOptions(
 }
 
 // ===============================
-// 🔁 REFRESH TOKEN
+//  REFRESH TOKEN
 // ===============================
 async function refreshAccessToken(): Promise<string | null> {
   if (!refreshPromise) {
@@ -64,7 +64,7 @@ async function refreshAccessToken(): Promise<string | null> {
 }
 
 // ===============================
-// 🚀 HTTP CLIENT (FINAL)
+//  HTTP CLIENT (FINAL)
 // ===============================
 export async function httpclientService(
   url: string,
@@ -74,7 +74,7 @@ export async function httpclientService(
     let res = await fetch(url, buildOptions(options));
 
     // =========================
-    // 🔐 HANDLE TOKEN EXPIRED
+    //  HANDLE TOKEN EXPIRED
     // =========================
     if (res.status === 401) {
       const newToken = await refreshAccessToken();
@@ -89,13 +89,13 @@ export async function httpclientService(
     }
 
     // =========================
-    // 📦 SAFE JSON PARSE
+    //  SAFE JSON PARSE
     // =========================
     const text = await res.text();
     const data = text ? JSON.parse(text) : null;
 
     // =========================
-    // ❌ ERROR HANDLING
+    //  ERROR HANDLING
     // =========================
     if (!res.ok) {
       throw new Error(data?.message || "Request failed");

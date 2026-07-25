@@ -21,7 +21,7 @@ import ListWareHouses from "./modules/WareHouses/ListWareHouses";
 import CreateWareHouse from "./modules/WareHouses/CreateWareHouse";
 import EditWareHouse from "./modules/WareHouses/EditWareHouse";
 import ShowWareHouse from "./modules/WareHouses/ShowWareHouse";
-import { ListInventorie } from "./modules/Inventory/ListInventorie";
+import { ListInventorie } from "./modules/Inventory/list/ListInventorie";
 import { ShowInventorie } from "./modules/Inventory/ShowInventorie";
 import { EditInventorie } from "./modules/Inventory/EditInventorie";
 import { CreateInventorie } from "./modules/Inventory/CreateInventorie";
@@ -71,7 +71,7 @@ const App = () => {
       name="inventories"
       list={ListInventorie}
       create={CreateInventorie}
-      edit={EditInventorie}
+    //  edit={EditInventorie}
       show={ShowInventorie}
     />
 
