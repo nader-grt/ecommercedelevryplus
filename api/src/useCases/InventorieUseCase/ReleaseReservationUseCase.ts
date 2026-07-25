@@ -1,15 +1,17 @@
 import InventorieDomain from "../../models/domain/InventorieDomain/InventorieDomain";
 import { InventoryPolicy } from "../../Policy/InventoryPolicy";
+import InventorieRepo from '../../repo/InventorieRepo/InventorieRepo';
+import InventoryMovementRepo from '../../repo/MovementRepo/InventoryMovementRepo';
 
 export class ReleaseReservationUseCase {
     constructor(
-        private inventoryRepo: any,
-        private movementRepo: any
+        private InventorieRepo: any,
+        private InventoryMovementRepo: any
     ) {}
 
     async execute(dto: any, user: any, transaction: any) {
         // 1. Load inventory with lock
-        const inventory = await this.inventoryRepo.findById(dto.inventoryId, transaction);
+        const inventory = await this.InventorieRepo.findById(dto.inventoryId, transaction);
 
         // 2. Authorization check
         InventoryPolicy.canAccess(user, inventory.companyId);
@@ -28,7 +30,7 @@ export class ReleaseReservationUseCase {
         domain.release(dto.quantity, user.id);
 
         // 5. Save updated state
-        await this.inventoryRepo.update(
+        await this.InventorieRepo.update(
             domain.id,
             {
                 quantity: domain.quantity,
@@ -38,7 +40,7 @@ export class ReleaseReservationUseCase {
         );
 
         // 6. Record movements
-        await this.movementRepo.bulkCreate(
+        await this.InventoryMovementRepo.bulkCreate(
             domain.pullMovements().map((m: any) => m.toJSON()),
             transaction
         );

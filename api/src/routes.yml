@@ -222,6 +222,12 @@ modules:
     file: "./routes/InventorieRoute/AdjustStockRouter.js"
 
   - path: "/api"
+    file: "./routes/InventorieRoute/ReleaseReservationRoute.js"    
+
+  - path: "/api"
+    file: "./routes/InventorieRoute/confirmSaleRoute.js"  
+
+  - path: "/api"
     file: "./routes/InventorieRoute/TransferStockRouter.js"
 
   - path: "/api"

@@ -285,6 +285,8 @@ npx sequelize-cli migration:generate --name add-softdelete-index-to-categories
 
                                 npx sequelize-cli migration:generate --name add-orderItemId-to-InventoryReservations
 
+                                 npx sequelize-cli migration:generate --name    add-sale-to-inventory-movements-type
+
 sudo /opt/lampp/lampp start
 Starting XAMPP for Linux...
 XAMPP: Starting Apache...
