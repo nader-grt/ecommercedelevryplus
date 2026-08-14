@@ -1,4 +1,4 @@
-import VariantPriceTierRepo from "../repo/VariantPriceTierRepo/VariantPriceTierRepo";
+import VariantPriceTierRepo from "../../repo/VariantPriceTierRepo/VariantPriceTierRepo";
 
 export default class VariantPriceTierService {
 

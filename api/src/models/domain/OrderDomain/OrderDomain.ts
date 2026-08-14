@@ -219,6 +219,9 @@ private status!: STATUS;
                {
                 return this.items ;
                }
+               public getItems(): OrderItemDomain[] {
+                return this.items;
+            }
 
                public get GetPaymentStatus() {
                 return this.paymentStatus;

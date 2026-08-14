@@ -27,6 +27,7 @@ import { DiscountModel } from "./Discount";
 import { InventoryMovementModel } from "./InventoryMovement";
 import { InventoryAuditModel } from "./InventoryAudits";
 import { InventoryReservationModel } from "./InventoryReservation";
+import { InvoiceItemModel } from "./InvoiceItem";
 
 // Initialize models
 export const User = UserModel(sequelize);
@@ -42,7 +43,7 @@ export const DayWork = DayWorkModel(sequelize);
 export const DelivererDayWork = DelivererDayWorkModel(sequelize);
 export const Orderwithdeliverie = OrderWithDeliverieModel(sequelize);
 export const RefreshToken = RefreshTokenModel(sequelize)
-
+export const InvoiceItem = InvoiceItemModel(sequelize)
 export const Variant = VariantModel(sequelize)
 export const Inventorie  = InventorieModel(sequelize)
 export const Warehouse  = WarehouseModel(sequelize) ;
@@ -537,6 +538,53 @@ Warehouse.hasMany(OrderItem, {
 OrderItem.belongsTo(Warehouse, {
   foreignKey: "warehouseId",
   as: "warehouse",
+});
+
+
+/* =========================
+   Invoice - InvoiceItem (1 : N)
+========================= */
+
+Invoice.hasMany(InvoiceItem, {
+  foreignKey: "invoiceId",
+  as: "items",
+  onDelete: "RESTRICT",
+  onUpdate: "CASCADE",
+});
+
+InvoiceItem.belongsTo(Invoice, {
+  foreignKey: "invoiceId",
+  as: "invoice",
+});
+
+
+/* =========================
+   Product - InvoiceItem (1 : N)
+========================= */
+
+Product.hasMany(InvoiceItem, {
+  foreignKey: "productId",
+  as: "invoiceItems",
+});
+
+InvoiceItem.belongsTo(Product, {
+  foreignKey: "productId",
+  as: "product",
+});
+
+
+/* =========================
+   Variant - InvoiceItem (1 : N)
+========================= */
+
+Variant.hasMany(InvoiceItem, {
+  foreignKey: "variantId",
+  as: "invoiceItems",
+});
+
+InvoiceItem.belongsTo(Variant, {
+  foreignKey: "variantId",
+  as: "variant",
 });
 
 

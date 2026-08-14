@@ -1,18 +1,25 @@
 import { DataTypes, Model, Sequelize } from "sequelize";
 
-export default interface IInvoice {
-    id?: number;
-    orderId: number;
-    invoiceNumber: string;
-    issuedAt?: Date;
-    createdAt?: Date;
-    updatedAt?: Date;
-  }
+export type InvoiceStatus =
+  | "DRAFT"
+  | "ISSUED"
+  | "CANCELLED";
 
-export class Invoice extends Model<IInvoice> implements IInvoice {
+export default interface IInvoice {
+  id?: number;
+  orderId: number;
+  invoiceNumber: string;
+  status: InvoiceStatus;
+  issuedAt?: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+export class Invoice extends Model implements IInvoice {
   public id!: number;
   public orderId!: number;
   public invoiceNumber!: string;
+  public status!: InvoiceStatus;
   public issuedAt!: Date;
   public createdAt!: Date;
   public updatedAt!: Date;
@@ -42,6 +49,16 @@ export function InvoiceModel(sequelize: Sequelize) {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+      },
+
+      status: {
+        type: DataTypes.ENUM(
+          "DRAFT",
+          "ISSUED",
+          "CANCELLED"
+        ),
+        allowNull: false,
+        defaultValue: "DRAFT",
       },
 
       issuedAt: {

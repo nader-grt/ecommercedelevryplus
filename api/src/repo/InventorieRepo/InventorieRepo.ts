@@ -47,7 +47,44 @@ export default class InventorieRepo implements IInventorieRepo {
     return Array.from(warehouses.values());
 }
 
+async updateReserved(
+  inventoryId: number,
+  newReserved: number,
+  transaction: Transaction
+): Promise<any> {
 
+  if (!Number.isFinite(newReserved) || newReserved < 0) {
+    throw new Error("Invalid reserved quantity");
+  }
+
+  const inventory = await Inventorie.findByPk(
+    inventoryId,
+    {
+      transaction,
+      lock: transaction.LOCK.UPDATE,
+    }
+  );
+
+  if (!inventory) {
+    throw new Error(
+      `Inventory ${inventoryId} not found`
+    );
+  }
+
+  if (newReserved > inventory.quantity) {
+    throw new Error(
+      `Reserved quantity cannot exceed inventory quantity`
+    );
+  }
+
+  inventory.reserved = newReserved;
+
+  await inventory.save({
+    transaction,
+  });
+
+  return inventory;
+}
 
 async findWarehouseIdsByCompany(
   companyId: number,
@@ -96,6 +133,8 @@ async findWarehouseIdsByCompany(
   async findByVariantAndWarehouse(
     variantId: number,
     warehouseId: number,
+    companyId?: number,
+  
     transaction?: Transaction
   ): Promise<any | null> {
     return await Inventorie.findOne({

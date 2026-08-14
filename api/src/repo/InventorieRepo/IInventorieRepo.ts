@@ -26,7 +26,12 @@ export interface ICreateMovementParams {
 export default interface IInventorieRepo {
   create(data: any, transaction?: Transaction): Promise<any>;
   findWarehousesWithLocation( companyId: number,transaction?: Transaction):Promise<any | null>;
-
+  updateReserved(
+    inventoryId: number,
+    newReserved: number,
+    transaction: Transaction
+  ): Promise<any>;
+  
   findWarehouseIdsByCompany(
     companyId: number,
     transaction?: Transaction
@@ -36,6 +41,7 @@ export default interface IInventorieRepo {
   findByVariantAndWarehouse(
     variantId: number,
     warehouseId: number,
+    companyId?: number,
     transaction?: Transaction
   ): Promise<any | null>;
 
