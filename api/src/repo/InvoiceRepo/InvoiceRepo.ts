@@ -20,52 +20,161 @@ export default class InvoiceRepo implements IInvoiceRepo {
   // CREATE
   // =====================================================
 
-  async create(
-    invoice: InvoiceDomain,
-    transaction?: Transaction
-  ): Promise<InvoiceDomain> {
+  // async create(
+  //   invoice: InvoiceDomain,
+  //   transaction?: Transaction
+  // ): Promise<InvoiceDomain> {
 
-    const invoiceModel = await Invoice.create(
+  //   const invoiceModel = await Invoice.create(
+  //     {
+  //       orderId: invoice.orderId,
+  //       invoiceNumber: invoice.invoiceNumber,
+  //       status: invoice.status,
+  //       issuedAt: invoice.issuedAt,
+  //     },
+  //     {
+  //       transaction,
+  //     }
+  //   );
+
+  //   // Create InvoiceItems
+  //   for (const item of invoice.items) {
+
+  //     await InvoiceItem.create(
+  //       {
+  //         invoiceId: invoiceModel.id,
+
+  //         productId: item.productId,
+  //         variantId: item.variantId,
+
+  //         productName: item.productName,
+  //         sku: item.sku,
+
+  //         quantity: item.quantity,
+
+  //         unitPrice: item.unitPrice,
+  //         discountAmount: item.discountAmount,
+  //         taxAmount: item.taxAmount,
+  //         totalAmount: item.totalAmount,
+  //       },
+  //       {
+  //         transaction,
+  //       }
+  //     );
+  //   }
+
+  //   return invoice;
+  // }
+
+  // =====================================================
+// CREATE
+// =====================================================
+
+async create(
+  invoice: InvoiceDomain,
+  transaction?: Transaction
+): Promise<InvoiceDomain> {
+
+  // ===================================================
+  // 1. Create Invoice
+  // ===================================================
+
+  const invoiceModel =
+    await Invoice.create(
       {
-        orderId: invoice.orderId,
-        invoiceNumber: invoice.invoiceNumber,
-        status: invoice.status,
-        issuedAt: invoice.issuedAt,
+        orderId:
+          invoice.orderId,
+
+        invoiceNumber:
+          invoice.invoiceNumber,
+
+        status:
+          invoice.status,
+
+        issuedAt:
+          invoice.issuedAt,
       },
       {
         transaction,
       }
     );
 
-    // Create InvoiceItems
-    for (const item of invoice.items) {
 
-      await InvoiceItem.create(
-        {
-          invoiceId: invoiceModel.id,
+  // ===================================================
+  // 2. Create InvoiceItems
+  // ===================================================
 
-          productId: item.productId,
-          variantId: item.variantId,
+  for (
+    const item
+    of invoice.items
+  ) {
 
-          productName: item.productName,
-          sku: item.sku,
+    await InvoiceItem.create(
+      {
+        invoiceId:
+          invoiceModel.id,
 
-          quantity: item.quantity,
+        productId:
+          item.productId,
 
-          unitPrice: item.unitPrice,
-          discountAmount: item.discountAmount,
-          taxAmount: item.taxAmount,
-          totalAmount: item.totalAmount,
-        },
-        {
-          transaction,
-        }
-      );
-    }
+        variantId:
+          item.variantId,
 
-    return invoice;
+        productName:
+          item.productName,
+
+        sku:
+          item.sku,
+
+        quantity:
+          item.quantity,
+
+        unitPrice:
+          item.unitPrice,
+
+        discountAmount:
+          item.discountAmount,
+
+        taxAmount:
+          item.taxAmount,
+
+        totalAmount:
+          item.totalAmount,
+      },
+      {
+        transaction,
+      }
+    );
   }
 
+
+  // ===================================================
+  // 3. Rebuild Domain with DB ID
+  // ===================================================
+
+  return new InvoiceDomain({
+
+    id:
+      invoiceModel.id,
+
+    orderId:
+      invoiceModel.orderId,
+
+    invoiceNumber:
+      invoiceModel.invoiceNumber,
+
+    status:
+      invoiceModel.status,
+
+    issuedAt:
+      invoiceModel.issuedAt,
+
+    items:
+      invoice.items.map(
+        item => item.toJSON()
+      ),
+  });
+}
 
   // =====================================================
   // FIND BY ID

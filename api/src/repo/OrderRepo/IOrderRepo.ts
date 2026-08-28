@@ -5,11 +5,18 @@ import OrderDomain from "../../models/domain/OrderDomain/OrderDomain";
 
 export default abstract class IOrderRepo {
 
+  protected abstract getOrderItems( orderId: number,transaction?: Transaction): Promise<any[]> 
+
    protected abstract     updateStatus(
     orderId: number,
     status: string,
     transaction?: Transaction
 ): Promise<any>
+
+protected abstract  FindOrderById(
+    id: number,
+    transaction?: Transaction
+  ): Promise<any> ; 
 
     protected abstract     updateOrderItem(
         orderItemId: number,
@@ -21,7 +28,7 @@ export default abstract class IOrderRepo {
     ): Promise<void> 
     protected abstract CreateOrderByAdmin(order:OrderDomain):Promise<any> ;
     protected abstract DeleteOrderByIdAdmin(orderId:number):Promise<any> ;
-    protected abstract FindOrderById(orderId:number) :Promise<any> ;
+  //  protected abstract FindOrderById(orderId:number) :Promise<any> ;
     protected abstract FindOrderWithItems(orderId:number) :Promise<any> ;
     protected abstract GetOrderById(orderId:number) :Promise<any> ;
 

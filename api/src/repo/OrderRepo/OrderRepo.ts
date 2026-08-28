@@ -14,6 +14,21 @@ import { STATUS } from "../../models/Order";
 export default class OrderRepo extends IOrderRepo
 {
 
+  public async getOrderItems(
+    orderId: number,
+    transaction?: Transaction
+  ): Promise<any[]> {
+  
+    const orderItems = await OrderItem.findAll({
+      where: {
+        orderId
+      },
+      transaction
+    });
+  
+    return orderItems;
+  }
+
   public async updateStatus(
     orderId: number,
     status: string,
@@ -54,6 +69,31 @@ export default class OrderRepo extends IOrderRepo
   );
 
     return order;
+}
+
+public async FindOrderById(
+  id: number,
+  transaction?: Transaction
+): Promise<any> {
+
+  try {
+
+    const order = await Order.findByPk(
+      id,
+      {
+        raw: true,
+        transaction
+      }
+    );
+
+    return order;
+
+  } catch (error) {
+
+    console.log(error);
+
+    throw error;
+  }
 }
 
 
@@ -264,33 +304,33 @@ public async CreateOrderByAdmin(order: OrderDomain, transaction?: any): Promise<
 
 }
 
-public async FindOrderById(
-  id:number,
-  transaction?:any
- ):Promise<any> 
- {  
+// public async FindOrderById(
+//   id:number,
+//   transaction?:any
+//  ):Promise<any> 
+//  {  
  
-  const t = await sequelize.transaction();
+//   const t = await sequelize.transaction();
  
-  try {
+//   try {
  
-    const order = await Order.findByPk(
-       id,
-       { 
-         raw:true,
-         transaction:t 
-       }
-    );
+//     const order = await Order.findByPk(
+//        id,
+//        { 
+//          raw:true,
+//          transaction:t 
+//        }
+//     );
  
-    return order;  
+//     return order;  
  
-  } catch(error) {
+//   } catch(error) {
  
-    console.log(error);
-    return null; 
-  }
+//     console.log(error);
+//     return null; 
+//   }
  
- }
+//  }
 
    public async CancelOrderByOrderIdWithUser(orderId:number,status:string):Promise<any> 
    {

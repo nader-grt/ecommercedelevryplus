@@ -45,12 +45,13 @@ export default class CreateInventorieUseCase {
       // ================================
       // 3. CREATE CASE
       // ================================
+      console.log(inventory, "********  ",variant)
       if (!inventory) {
         const created = await this._InventorieRepo.create(
           {
             variantId,
             warehouseId,
-            companyId: variant.companyId,
+            companyId: variant.product.companyId,
             quantity: 0,
             reserved: 0,
           },

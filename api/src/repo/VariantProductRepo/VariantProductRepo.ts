@@ -512,6 +512,38 @@ public async findDuplicateCombination(
         }
       }
 
+      /**
+       * 
+       * @param variantId
+       * @param transaction 
+       * @returns 
+       * 
+      public async getVariantById(
+  variantId: number
+): Promise<VariantWithProduct> {
+  if (!variantId) {
+    throw new Error("variantId is required");
+  }
+
+  const variant = await Variant.findByPk(variantId, {
+    attributes: ["id", "sku", "price", "productId"],
+    include: [
+      {
+        model: Product,
+        as: "product",
+        attributes: ["id", "name", "type", "companyId"],
+      },
+    ],
+  });
+
+  if (!variant) {
+    throw new Error(`Variant with id ${variantId} not found`);
+  }
+
+  return variant as unknown as VariantWithProduct;
+}
+       */
+
       async getVariantById2(variantId: string | number, transaction?: any) {
         return Variant.findOne({
           where: { id: variantId },

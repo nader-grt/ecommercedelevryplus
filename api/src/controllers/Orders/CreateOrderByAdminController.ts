@@ -31,22 +31,38 @@ export  default class CreateOrderByAdminController  extends BaseController
                      ? userId
                      : actor.ownerId;
                  try {
+
+                  console.log("##########  is \t ",customerId ,"\t actor is \t ",actor )
                   const dto = {
-                     custmerId:Number(customerId),
+                     customerId:Number(customerId),
                      items,
                      actor
                 }
 
                 console.log("dto  order  where put companyId ",user)
              //   await this._createOrderByAdminUseCase.execute(dto)
+
+             /**
+                customerId: number;
+
+  items: OrderItemDTO[];
+
+  actor: {
+    ownerId: number;
+    ownerRole: string;
+    ownerEmail?: string;
+  };
+              */
+             console.log("dto is \t  ",dto )
                     const result =        await this._createOrderByAdminUseCase.execute(dto)
 
+                    console.log("resultttttttt  orderrrrrrrr is  ",result)
                     if(!result.success)
                     {
                        return this.fail(res,result.message)
                     }
 
-                    return this.ok(res,result.message)
+                    return this.ok(res,result)
 
               //    return this.ok(res,"message ok")
                  } catch (error) {
