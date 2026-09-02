@@ -18,7 +18,11 @@ export default class AddStockInventorieController  extends BaseController
       console.log("ADDSTCK IN  : ")
         const user = req.user
         const { variantId, warehouseId, quantity } = req.body;
+//  validation 
+//  expected Error  
+// policy 
 
+//  domain 
         const dto = {
           variantId,
           warehouseId,

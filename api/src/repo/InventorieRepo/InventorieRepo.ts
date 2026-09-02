@@ -279,6 +279,10 @@ export default class InventorieRepo implements IInventorieRepo {
       warehouseId
     };
 
+
+    console.log("repo find inventory is \t ",{    variantId ,
+      warehouseId,
+      companyId})
     /*
      * IMPORTANT:
      *
