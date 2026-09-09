@@ -27,6 +27,11 @@ export default class AdjustStockController extends BaseController {
         reason,
       } = req.body;
 
+
+      console.log("is adjust controller \t\t  ",    variantId,
+        warehouseId,
+        actualQuantity,
+        reason)
       const result = await this._useCase.execute({
         variantId,
         warehouseId,

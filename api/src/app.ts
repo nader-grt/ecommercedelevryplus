@@ -8,6 +8,7 @@ import { fileURLToPath } from "url";
 
 import { corsOptions } from "./corsConfig/corsConfig.js";
 import { folderPath } from "./filesystem/fileHandle.js";
+import { setupGateway } from "./gateway/index.js";
 
 const app = express();
 
@@ -21,6 +22,15 @@ app.use(cookieParser());
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+  
+/*
+========================================
+API GATEWAY LAYER
+========================================
+*/
+
+setupGateway(app);
 
 
 // =========================
@@ -93,5 +103,10 @@ for (const module of config.modules) {
 // =========================
 // EXPORT APP
 // =========================
+
+
+
+
+
 
 export default app;

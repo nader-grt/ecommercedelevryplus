@@ -23,20 +23,34 @@ export default class AdjustStockUseCase {
       userId,
     } = dto;
 
+
+
+    console.log("USECASE IS  \t\t ",dto )
     return await sequelize.transaction(async (transaction) => {
 
       // 1. Check Variant
       const variant = await this.variantRepo.getVariantById(variantId);
 
+      console.log(" variant is \t\t\t\t   \n\n ",variant  , " \n\n\n\n   ### ")
       if (!variant) {
         throw new Error("Variant not found");
       }
+      const companyId: number | any =
+      variant.product?.companyId;
 
+
+      console.log("companyId  \t\t\t\t   "  ,companyId  , "\t\t \n ")
+    if (!companyId) {
+      throw new Error(
+        "Product is missing company association"
+      );
+    }
       // 2. Lock Inventory
       const inventory =
         await this.inventorieRepo.findByVariantAndWarehouse(
           variantId,
           warehouseId,
+          companyId,
           transaction
         );
 
@@ -103,6 +117,7 @@ export default class AdjustStockUseCase {
         await this.inventorieRepo.findByVariantAndWarehouse(
           variantId,
           warehouseId,
+          companyId,
           transaction
         );
 

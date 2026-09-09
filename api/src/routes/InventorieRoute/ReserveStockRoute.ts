@@ -23,7 +23,7 @@ const inventory = new InventorieRepo();
 const inventoryMovement = new InventoryMovementRepo();
 const reservationRepo = new InventoryReservationRepo();
 const auditRepo = new InventoryAuditRepo();
-const resolveWarehouseForItemService = new ResolveWarehouseForItemService();
+const resolveWarehouseForItemService = new ResolveWarehouseForItemService(inventory);
 
 const reserveStockUseCase = new ReserveStockUseCase(
   order,

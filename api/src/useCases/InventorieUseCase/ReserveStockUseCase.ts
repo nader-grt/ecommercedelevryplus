@@ -1,18 +1,5 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import { Transaction } from "sequelize";
+
 import { sequelize } from "../../models/main";
 
 import OrderRepo from "../../repo/OrderRepo/OrderRepo";
@@ -24,6 +11,7 @@ import InventoryAuditRepo from "../../repo/InventoryAuditRepo/InventoryAuditRepo
 import ResolveWarehouseForItemService
     from "../../services/InventoryService/ResolveWarehouseForItemService";
 
+
 // ======================================================
 // DTO
 // ======================================================
@@ -34,9 +22,8 @@ export interface ReserveStockDTO {
 
     userId: number;
 
-    companyId: number;
-
     transaction?: Transaction;
+
 }
 
 
@@ -51,6 +38,7 @@ export interface ReserveStockResult {
     orderId: number;
 
     message: string;
+
 }
 
 
@@ -83,6 +71,7 @@ export default class ReserveStockUseCase {
     ) {}
 
 
+
     // ====================================================
     // EXECUTE
     // ====================================================
@@ -103,9 +92,13 @@ export default class ReserveStockUseCase {
         if (dto.transaction) {
 
             return await this.executeWithTransaction(
+
                 dto,
+
                 dto.transaction
+
             );
+
         }
 
 
@@ -118,7 +111,9 @@ export default class ReserveStockUseCase {
         return await this.executeWithOwnTransaction(
             dto
         );
+
     }
+
 
 
     // ====================================================
@@ -126,8 +121,11 @@ export default class ReserveStockUseCase {
     // ====================================================
 
     private async executeWithTransaction(
+
         dto: ReserveStockDTO,
+
         transaction: Transaction
+
     ): Promise<ReserveStockResult> {
 
         /*
@@ -140,10 +138,15 @@ export default class ReserveStockUseCase {
          */
 
         return await this.tryExecute(
+
             dto,
+
             transaction
+
         );
+
     }
+
 
 
     // ====================================================
@@ -151,7 +154,9 @@ export default class ReserveStockUseCase {
     // ====================================================
 
     private async executeWithOwnTransaction(
+
         dto: ReserveStockDTO
+
     ): Promise<ReserveStockResult> {
 
         const transaction =
@@ -161,8 +166,11 @@ export default class ReserveStockUseCase {
 
             const result =
                 await this.tryExecute(
+
                     dto,
+
                     transaction
+
                 );
 
             await transaction.commit();
@@ -174,8 +182,11 @@ export default class ReserveStockUseCase {
             await transaction.rollback();
 
             throw error;
+
         }
+
     }
+
 
 
     // ====================================================
@@ -183,8 +194,11 @@ export default class ReserveStockUseCase {
     // ====================================================
 
     private async tryExecute(
+
         dto: ReserveStockDTO,
+
         transaction: Transaction
+
     ): Promise<ReserveStockResult> {
 
 
@@ -194,48 +208,80 @@ export default class ReserveStockUseCase {
 
         const order =
             await this.orderRepo.FindOrderById(
+
                 dto.orderId,
+
                 transaction
+
             );
 
 
         if (!order) {
 
             throw new Error(
+
                 `Order ${dto.orderId} not found`
+
             );
+
         }
 
 
+
         // ==================================================
-        // 2. COMPANY VALIDATION
+        // 2. GET COMPANY ID FROM ORDER
+        //
+        // IMPORTANT:
+        //
+        // Never trust companyId from the request DTO.
+        //
+        // The Order is the source of truth.
         // ==================================================
 
+        const companyId =
+            Number(order.companyId);
+
+
         if (
-            Number(order.companyId) !==
-            Number(dto.companyId)
+
+            !Number.isInteger(companyId) ||
+
+            companyId <= 0
+
         ) {
 
             throw new Error(
-                `Order ${dto.orderId} does not belong to company ${dto.companyId}`
+
+                `Order ${dto.orderId} has an invalid company`
+
             );
+
         }
+
 
 
         // ==================================================
         // 3. IDEMPOTENCY CHECK
+        //
+        // Prevent reserving the same order twice.
         // ==================================================
 
         const existingReservation =
             await this.reservationRepo.findByOrder(
+
                 dto.orderId,
+
                 transaction
+
             );
 
 
         if (
+
             existingReservation &&
+
             existingReservation.length > 0
+
         ) {
 
             return {
@@ -247,8 +293,11 @@ export default class ReserveStockUseCase {
 
                 message:
                     "Stock already reserved for this order"
+
             };
+
         }
+
 
 
         // ==================================================
@@ -257,20 +306,30 @@ export default class ReserveStockUseCase {
 
         const orderItems =
             await this.orderRepo.getOrderItems(
+
                 dto.orderId,
+
                 transaction
+
             );
 
 
         if (
+
             !orderItems ||
+
             orderItems.length === 0
+
         ) {
 
             throw new Error(
+
                 `Order ${dto.orderId} has no items`
+
             );
+
         }
+
 
 
         // ==================================================
@@ -278,89 +337,150 @@ export default class ReserveStockUseCase {
         // ==================================================
 
         for (
+
             const orderItem
+
             of orderItems
+
         ) {
 
 
-            // ==================================================
-            // 5.1 VALIDATE QUANTITY
-            // ==================================================
+            // ==============================================
+            // 5.1 VALIDATE VARIANT
+            // ==============================================
+
+            const variantId =
+                Number(orderItem.variantId);
+
+
+            if (
+
+                !Number.isInteger(variantId) ||
+
+                variantId <= 0
+
+            ) {
+
+                throw new Error(
+
+                    `Invalid variantId for OrderItem ${orderItem.id}`
+
+                );
+
+            }
+
+
+
+            // ==============================================
+            // 5.2 VALIDATE QUANTITY
+            // ==============================================
 
             const requestedQuantity =
                 Number(orderItem.quantity);
 
 
             if (
-                !Number.isFinite(
-                    requestedQuantity
-                ) ||
+
+                !Number.isFinite(requestedQuantity) ||
+
                 requestedQuantity <= 0
+
             ) {
 
                 throw new Error(
+
                     `Invalid quantity for OrderItem ${orderItem.id}`
+
                 );
+
             }
 
 
-            // ==================================================
-            // 5.2 RESOLVE WAREHOUSE
+
+            // ==============================================
+            // 5.3 RESOLVE WAREHOUSE + LOCK INVENTORY
             //
-            // Resolver:
+            // IMPORTANT:
+            //
+            // The resolver should:
             //
             // Warehouse
             //      ↓
             // Inventory
             //      ↓
-            // FOR UPDATE 🔒
+            // SELECT FOR UPDATE
             //
-            // IMPORTANT:
+            // Therefore:
             //
-            // We use allocation.inventory directly.
-            // Do NOT query inventory again.
-            // ==================================================
+            // Do NOT query inventory again here.
+            // ==============================================
 
             const allocation =
                 await this.warehouseResolver
                     .resolveAllocation(
+
                         {
+
                             orderItemId:
                                 orderItem.id,
 
                             companyId:
-                                dto.companyId,
+                                companyId,
 
                             variantId:
-                                orderItem.variantId,
+                                variantId,
 
                             quantity:
                                 requestedQuantity
+
                         },
 
                         transaction
+
                     );
 
 
             if (!allocation) {
 
                 throw new Error(
-                    `No warehouse available for variant ${orderItem.variantId}`
+
+                    `No warehouse available for variant ${variantId}`
+
                 );
+
             }
 
 
-            // ==================================================
-            // 5.3 WAREHOUSE
-            // ==================================================
+
+            // ==============================================
+            // 5.4 WAREHOUSE
+            // ==============================================
 
             const warehouseId =
-                allocation.warehouseId;
+                Number(allocation.warehouseId);
 
 
-            // ==================================================
-            // 5.4 LOCKED INVENTORY
-            // ==================================================
+            if (
+
+                !Number.isInteger(warehouseId) ||
+
+                warehouseId <= 0
+
+            ) {
+
+                throw new Error(
+
+                    `Invalid warehouse allocation for variant ${variantId}`
+
+                );
+
+            }
+
+
+
+            // ==============================================
+            // 5.5 LOCKED INVENTORY
+            // ==============================================
 
             const lockedInventory =
                 allocation.inventory;
@@ -369,33 +489,40 @@ export default class ReserveStockUseCase {
             if (!lockedInventory) {
 
                 throw new Error(
-                    `Locked inventory not found for variant ${orderItem.variantId} in warehouse ${warehouseId}`
+
+                    `Locked inventory not found for variant ${variantId} in warehouse ${warehouseId}`
+
                 );
+
             }
 
 
-            // ==================================================
-            // 5.5 COMPANY SAFETY CHECK
-            // ==================================================
+
+            // ==============================================
+            // 5.6 COMPANY SAFETY CHECK
+            // ==============================================
 
             if (
+
                 Number(
                     lockedInventory.companyId
-                ) !==
-                Number(
-                    dto.companyId
-                )
+                ) !== companyId
+
             ) {
 
                 throw new Error(
-                    `Inventory ${lockedInventory.id} does not belong to company ${dto.companyId}`
+
+                    `Inventory ${lockedInventory.id} does not belong to company ${companyId}`
+
                 );
+
             }
 
 
-            // ==================================================
-            // 5.6 CURRENT INVENTORY
-            // ==================================================
+
+            // ==============================================
+            // 5.7 CURRENT INVENTORY
+            // ==============================================
 
             const systemQuantity =
                 Number(
@@ -409,63 +536,116 @@ export default class ReserveStockUseCase {
                 );
 
 
+            if (
+
+                !Number.isFinite(systemQuantity) ||
+
+                systemQuantity < 0
+
+            ) {
+
+                throw new Error(
+
+                    `Invalid system quantity for inventory ${lockedInventory.id}`
+
+                );
+
+            }
+
+
+            if (
+
+                !Number.isFinite(oldReserved) ||
+
+                oldReserved < 0
+
+            ) {
+
+                throw new Error(
+
+                    `Invalid reserved quantity for inventory ${lockedInventory.id}`
+
+                );
+
+            }
+
+
+
+            // ==============================================
+            // 5.8 AVAILABLE STOCK
+            // ==============================================
+
             const available =
                 systemQuantity -
                 oldReserved;
 
 
-            // ==================================================
-            // 5.7 STOCK CHECK
-            // ==================================================
+
+            // ==============================================
+            // 5.9 STOCK CHECK
+            // ==============================================
 
             if (
-                available <
-                requestedQuantity
+
+                available < requestedQuantity
+
             ) {
 
                 throw new Error(
-                    `Insufficient stock for variant ${orderItem.variantId}. Available: ${available}, requested: ${requestedQuantity}`
+
+                    `Insufficient stock for variant ${variantId}. ` +
+                    `Available: ${available}, ` +
+                    `requested: ${requestedQuantity}`
+
                 );
+
             }
 
 
-            // ==================================================
-            // 5.8 NEW RESERVED
-            // ==================================================
+
+            // ==============================================
+            // 5.10 NEW RESERVED QUANTITY
+            // ==============================================
 
             const newReserved =
                 oldReserved +
                 requestedQuantity;
 
 
-            // ==================================================
-            // 5.9 NEW AVAILABLE
-            // ==================================================
+
+            // ==============================================
+            // 5.11 NEW AVAILABLE QUANTITY
+            // ==============================================
 
             const newAvailable =
                 systemQuantity -
                 newReserved;
 
 
-            // ==================================================
-            // 5.10 UPDATE INVENTORY
-            // ==================================================
+
+            // ==============================================
+            // 5.12 UPDATE INVENTORY
+            // ==============================================
 
             await this.inventoryRepo
                 .updateReserved(
+
                     lockedInventory.id,
 
                     newReserved,
 
                     transaction
+
                 );
 
 
-            // ==================================================
-            // 5.11 CREATE RESERVATION
-            // ==================================================
+
+            // ==============================================
+            // 5.13 CREATE RESERVATION
+            // ==============================================
 
             await this.reservationRepo.create(
+
                 {
 
                     orderId:
@@ -478,7 +658,7 @@ export default class ReserveStockUseCase {
                         lockedInventory.id,
 
                     variantId:
-                        orderItem.variantId,
+                        variantId,
 
                     warehouseId:
                         warehouseId,
@@ -487,7 +667,7 @@ export default class ReserveStockUseCase {
                         requestedQuantity,
 
                     companyId:
-                        dto.companyId,
+                        companyId,
 
                     status:
                         "confirmed"
@@ -495,21 +675,24 @@ export default class ReserveStockUseCase {
                 },
 
                 transaction
+
             );
 
 
-            // ==================================================
-            // 5.12 INVENTORY MOVEMENT
-            // ==================================================
+
+            // ==============================================
+            // 5.14 INVENTORY MOVEMENT
+            // ==============================================
 
             await this.movementRepo.create(
+
                 {
 
                     inventoryId:
                         lockedInventory.id,
 
                     variantId:
-                        orderItem.variantId,
+                        variantId,
 
                     warehouseId:
                         warehouseId,
@@ -524,7 +707,7 @@ export default class ReserveStockUseCase {
                         "RESERVE",
 
                     companyId:
-                        dto.companyId,
+                        companyId,
 
                     userId:
                         dto.userId
@@ -532,48 +715,38 @@ export default class ReserveStockUseCase {
                 },
 
                 transaction
+
             );
 
 
-            // ==================================================
-            // 5.13 INVENTORY AUDIT
-            // ==================================================
+
+            // ==============================================
+            // 5.15 INVENTORY AUDIT
             //
-            // IMPORTANT:
+            // Reservation does NOT change physical quantity.
             //
-            // RESERVE does NOT change physical/system quantity.
+            // System quantity:
             //
-            // quantity:
+            // 100 → 100
             //
-            //     100 → 100
+            // Reserved:
             //
-            // reserved:
+            // 3 → 11
             //
-            //     3 → 11
+            // Difference:
             //
-            // Therefore:
-            //
-            // systemQuantity = 100
-            // actualQuantity = 100
-            // difference     = 0
-            //
-            // The reservation itself is already tracked by:
-            //
-            // InventoryReservation
-            // InventoryMovement
-            //
-            // Audit records that there was no quantity
-            // discrepancy during the reservation operation.
-            // ==================================================
+            // 0
+            // ==============================================
 
             await this.auditRepo.create(
+
                 {
 
                     inventoryId:
                         lockedInventory.id,
 
                     variantId:
-                        orderItem.variantId,
+                        variantId,
 
                     warehouseId:
                         warehouseId,
@@ -591,19 +764,24 @@ export default class ReserveStockUseCase {
                         0,
 
                     reason:
-                        `Stock reservation: ${requestedQuantity} unit(s) reserved. Available stock changed from ${available} to ${newAvailable}. Reserved quantity changed from ${oldReserved} to ${newReserved}.`,
+                        `Stock reservation: ${requestedQuantity} unit(s) reserved. ` +
+                        `Available stock changed from ${available} to ${newAvailable}. ` +
+                        `Reserved quantity changed from ${oldReserved} to ${newReserved}.`,
 
                     userId:
                         dto.userId,
 
                     companyId:
-                        dto.companyId
+                        companyId
 
                 },
 
                 transaction
+
             );
+
         }
+
 
 
         // ==================================================
@@ -619,8 +797,11 @@ export default class ReserveStockUseCase {
 
             message:
                 "Stock reserved successfully"
+
         };
+
     }
+
 
 
     // ====================================================
@@ -628,15 +809,21 @@ export default class ReserveStockUseCase {
     // ====================================================
 
     private validate(
+
         dto: ReserveStockDTO
+
     ): void {
 
         if (!dto) {
 
             throw new Error(
+
                 "ReserveStock request is required"
+
             );
+
         }
+
 
 
         // ==================================================
@@ -644,16 +831,23 @@ export default class ReserveStockUseCase {
         // ==================================================
 
         if (
+
             !Number.isInteger(
                 dto.orderId
             ) ||
+
             dto.orderId <= 0
+
         ) {
 
             throw new Error(
+
                 "Valid orderId is required"
+
             );
+
         }
+
 
 
         // ==================================================
@@ -661,35 +855,36 @@ export default class ReserveStockUseCase {
         // ==================================================
 
         if (
+
             !Number.isInteger(
                 dto.userId
             ) ||
+
             dto.userId <= 0
+
         ) {
 
             throw new Error(
+
                 "Valid userId is required"
+
             );
+
         }
 
-
-        // ==================================================
-        // COMPANY ID
-        // ==================================================
-
-        if (
-            !Number.isInteger(
-                dto.companyId
-            ) ||
-            dto.companyId <= 0
-        ) {
-
-            throw new Error(
-                "Valid companyId is required"
-            );
-        }
     }
+
 }
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -727,14 +922,14 @@ export default class ReserveStockUseCase {
 
 //     userId: number;
 
-//     companyId: number;
+//     companyId?: number | any;
 
 //     transaction?: Transaction;
 // }
 
 
 // // ======================================================
-// // Result
+// // RESULT
 // // ======================================================
 
 // export interface ReserveStockResult {
@@ -748,16 +943,18 @@ export default class ReserveStockUseCase {
 
 
 // // ======================================================
-// // UseCase
+// // USE CASE
 // // ======================================================
 
 // export default class ReserveStockUseCase {
 
 //     constructor(
 
-//         private readonly orderRepo: OrderRepo,
+//         private readonly orderRepo:
+//             OrderRepo,
 
-//         private readonly inventoryRepo: InventorieRepo,
+//         private readonly inventoryRepo:
+//             InventorieRepo,
 
 //         private readonly movementRepo:
 //             InventoryMovementRepo,
@@ -788,9 +985,7 @@ export default class ReserveStockUseCase {
 //         // ==================================================
 //         // CASE 1
 //         //
-//         // Transaction comes from parent UseCase
-//         //
-//         // CreateOrderByAdminUseCase owns transaction
+//         // Parent UseCase owns transaction
 //         // ==================================================
 
 //         if (dto.transaction) {
@@ -805,38 +1000,31 @@ export default class ReserveStockUseCase {
 //         // ==================================================
 //         // CASE 2
 //         //
-//         // No external transaction
-//         //
-//         // ReserveStockUseCase creates its own transaction
+//         // ReserveStockUseCase owns transaction
 //         // ==================================================
 
-//         return await this.executeWithOwnTransaction(dto);
+//         return await this.executeWithOwnTransaction(
+//             dto
+//         );
 //     }
 
 
 //     // ====================================================
-//     // External Transaction
+//     // EXTERNAL TRANSACTION
 //     // ====================================================
 
 //     private async executeWithTransaction(
 //         dto: ReserveStockDTO,
-
 //         transaction: Transaction
-
 //     ): Promise<ReserveStockResult> {
 
 //         /*
 //          * IMPORTANT:
 //          *
-//          * This method DOES NOT:
+//          * Do NOT commit.
+//          * Do NOT rollback.
 //          *
-//          * transaction.commit()
-//          *
-//          * transaction.rollback()
-//          *
-//          *
-//          * because the parent UseCase owns
-//          * the transaction.
+//          * Parent UseCase owns the transaction.
 //          */
 
 //         return await this.tryExecute(
@@ -847,7 +1035,7 @@ export default class ReserveStockUseCase {
 
 
 //     // ====================================================
-//     // Own Transaction
+//     // OWN TRANSACTION
 //     // ====================================================
 
 //     private async executeWithOwnTransaction(
@@ -857,7 +1045,6 @@ export default class ReserveStockUseCase {
 //         const transaction =
 //             await sequelize.transaction();
 
-
 //         try {
 
 //             const result =
@@ -866,9 +1053,7 @@ export default class ReserveStockUseCase {
 //                     transaction
 //                 );
 
-
 //             await transaction.commit();
-
 
 //             return result;
 
@@ -882,19 +1067,17 @@ export default class ReserveStockUseCase {
 
 
 //     // ====================================================
-//     // Business Logic
+//     // BUSINESS LOGIC
 //     // ====================================================
 
 //     private async tryExecute(
 //         dto: ReserveStockDTO,
-
 //         transaction: Transaction
-
 //     ): Promise<ReserveStockResult> {
 
 
 //         // ==================================================
-//         // 1. Find Order
+//         // 1. FIND ORDER
 //         // ==================================================
 
 //         const order =
@@ -913,22 +1096,22 @@ export default class ReserveStockUseCase {
 
 
 //         // ==================================================
-//         // 2. Validate Company
+//         // 2. COMPANY VALIDATION
 //         // ==================================================
 
 //         if (
-//             order.companyId !==
-//             dto.companyId
+//             Number(order.companyId) !==
+//             Number(dto.companyId)
 //         ) {
 
 //             throw new Error(
-//                 "Order does not belong to this company"
+//                 `Order ${dto.orderId} does not belong to company ${dto.companyId}`
 //             );
 //         }
 
 
 //         // ==================================================
-//         // 3. Idempotency Check
+//         // 3. IDEMPOTENCY CHECK
 //         // ==================================================
 
 //         const existingReservation =
@@ -957,7 +1140,7 @@ export default class ReserveStockUseCase {
 
 
 //         // ==================================================
-//         // 4. Get Order Items
+//         // 4. GET ORDER ITEMS
 //         // ==================================================
 
 //         const orderItems =
@@ -979,7 +1162,7 @@ export default class ReserveStockUseCase {
 
 
 //         // ==================================================
-//         // 5. Process Every OrderItem
+//         // 5. PROCESS ORDER ITEMS
 //         // ==================================================
 
 //         for (
@@ -988,13 +1171,19 @@ export default class ReserveStockUseCase {
 //         ) {
 
 
-//             // ----------------------------------------------
-//             // Validate quantity
-//             // ----------------------------------------------
+//             // ==================================================
+//             // 5.1 VALIDATE QUANTITY
+//             // ==================================================
+
+//             const requestedQuantity =
+//                 Number(orderItem.quantity);
+
 
 //             if (
-//                 !orderItem.quantity ||
-//                 orderItem.quantity <= 0
+//                 !Number.isFinite(
+//                     requestedQuantity
+//                 ) ||
+//                 requestedQuantity <= 0
 //             ) {
 
 //                 throw new Error(
@@ -1004,20 +1193,20 @@ export default class ReserveStockUseCase {
 
 
 //             // ==================================================
-//             // Resolve Warehouse + LOCK Inventory
-//             // ==================================================
+//             // 5.2 RESOLVE WAREHOUSE
 //             //
-//             // IMPORTANT:
-//             //
-//             // Resolver now does:
+//             // Resolver:
 //             //
 //             // Warehouse
 //             //      ↓
-//             // InventoryRepo.findForUpdate()
+//             // Inventory
 //             //      ↓
 //             // FOR UPDATE 🔒
 //             //
-//             // Therefore we DO NOT query inventory again.
+//             // IMPORTANT:
+//             //
+//             // We use allocation.inventory directly.
+//             // Do NOT query inventory again.
 //             // ==================================================
 
 //             const allocation =
@@ -1034,7 +1223,7 @@ export default class ReserveStockUseCase {
 //                                 orderItem.variantId,
 
 //                             quantity:
-//                                 orderItem.quantity
+//                                 requestedQuantity
 //                         },
 
 //                         transaction
@@ -1050,7 +1239,7 @@ export default class ReserveStockUseCase {
 
 
 //             // ==================================================
-//             // Warehouse
+//             // 5.3 WAREHOUSE
 //             // ==================================================
 
 //             const warehouseId =
@@ -1058,7 +1247,7 @@ export default class ReserveStockUseCase {
 
 
 //             // ==================================================
-//             // SAME LOCKED INVENTORY
+//             // 5.4 LOCKED INVENTORY
 //             // ==================================================
 
 //             const lockedInventory =
@@ -1074,9 +1263,7 @@ export default class ReserveStockUseCase {
 
 
 //             // ==================================================
-//             // Safety Check
-//             //
-//             // Verify company again at business layer.
+//             // 5.5 COMPANY SAFETY CHECK
 //             // ==================================================
 
 //             if (
@@ -1095,40 +1282,14 @@ export default class ReserveStockUseCase {
 
 
 //             // ==================================================
-//             // Available Stock
+//             // 5.6 CURRENT INVENTORY
 //             // ==================================================
 
-//             const available =
+//             const systemQuantity =
 //                 Number(
 //                     lockedInventory.quantity
-//                 ) -
-//                 Number(
-//                     lockedInventory.reserved
 //                 );
 
-
-//             // ==================================================
-//             // Check Stock
-//             // ==================================================
-
-//             if (
-//                 available <
-//                 Number(
-//                     orderItem.quantity
-//                 )
-//             ) {
-
-//                 throw new Error(
-
-//                     `Insufficient stock for variant ${orderItem.variantId}. Available: ${available}, requested: ${orderItem.quantity}`
-
-//                 );
-//             }
-
-
-//             // ==================================================
-//             // Reserve
-//             // ==================================================
 
 //             const oldReserved =
 //                 Number(
@@ -1136,20 +1297,50 @@ export default class ReserveStockUseCase {
 //                 );
 
 
-//             const newReserved =
-//                 oldReserved +
-//                 Number(
-//                     orderItem.quantity
-//                 );
+//             const available =
+//                 systemQuantity -
+//                 oldReserved;
 
 
 //             // ==================================================
-//             // Update Inventory
+//             // 5.7 STOCK CHECK
+//             // ==================================================
+
+//             if (
+//                 available <
+//                 requestedQuantity
+//             ) {
+
+//                 throw new Error(
+//                     `Insufficient stock for variant ${orderItem.variantId}. Available: ${available}, requested: ${requestedQuantity}`
+//                 );
+//             }
+
+
+//             // ==================================================
+//             // 5.8 NEW RESERVED
+//             // ==================================================
+
+//             const newReserved =
+//                 oldReserved +
+//                 requestedQuantity;
+
+
+//             // ==================================================
+//             // 5.9 NEW AVAILABLE
+//             // ==================================================
+
+//             const newAvailable =
+//                 systemQuantity -
+//                 newReserved;
+
+
+//             // ==================================================
+//             // 5.10 UPDATE INVENTORY
 //             // ==================================================
 
 //             await this.inventoryRepo
 //                 .updateReserved(
-
 //                     lockedInventory.id,
 
 //                     newReserved,
@@ -1159,11 +1350,10 @@ export default class ReserveStockUseCase {
 
 
 //             // ==================================================
-//             // Create Reservation
+//             // 5.11 CREATE RESERVATION
 //             // ==================================================
 
 //             await this.reservationRepo.create(
-
 //                 {
 
 //                     orderId:
@@ -1182,7 +1372,7 @@ export default class ReserveStockUseCase {
 //                         warehouseId,
 
 //                     quantity:
-//                         orderItem.quantity,
+//                         requestedQuantity,
 
 //                     companyId:
 //                         dto.companyId,
@@ -1197,11 +1387,10 @@ export default class ReserveStockUseCase {
 
 
 //             // ==================================================
-//             // Inventory Movement
+//             // 5.12 INVENTORY MOVEMENT
 //             // ==================================================
 
 //             await this.movementRepo.create(
-
 //                 {
 
 //                     inventoryId:
@@ -1217,7 +1406,7 @@ export default class ReserveStockUseCase {
 //                         dto.orderId,
 
 //                     quantity:
-//                         orderItem.quantity,
+//                         requestedQuantity,
 
 //                     type:
 //                         "RESERVE",
@@ -1235,11 +1424,37 @@ export default class ReserveStockUseCase {
 
 
 //             // ==================================================
-//             // Audit
+//             // 5.13 INVENTORY AUDIT
+//             // ==================================================
+//             //
+//             // IMPORTANT:
+//             //
+//             // RESERVE does NOT change physical/system quantity.
+//             //
+//             // quantity:
+//             //
+//             //     100 → 100
+//             //
+//             // reserved:
+//             //
+//             //     3 → 11
+//             //
+//             // Therefore:
+//             //
+//             // systemQuantity = 100
+//             // actualQuantity = 100
+//             // difference     = 0
+//             //
+//             // The reservation itself is already tracked by:
+//             //
+//             // InventoryReservation
+//             // InventoryMovement
+//             //
+//             // Audit records that there was no quantity
+//             // discrepancy during the reservation operation.
 //             // ==================================================
 
 //             await this.auditRepo.create(
-
 //                 {
 
 //                     inventoryId:
@@ -1254,15 +1469,17 @@ export default class ReserveStockUseCase {
 //                     orderId:
 //                         dto.orderId,
 
-//                     oldReserved,
+//                     systemQuantity:
+//                         systemQuantity,
 
-//                     newReserved,
+//                     actualQuantity:
+//                         systemQuantity,
 
-//                     quantity:
-//                         orderItem.quantity,
+//                     difference:
+//                         0,
 
-//                     action:
-//                         "RESERVE",
+//                     reason:
+//                         `Stock reservation: ${requestedQuantity} unit(s) reserved. Available stock changed from ${available} to ${newAvailable}. Reserved quantity changed from ${oldReserved} to ${newReserved}.`,
 
 //                     userId:
 //                         dto.userId,
@@ -1278,7 +1495,7 @@ export default class ReserveStockUseCase {
 
 
 //         // ==================================================
-//         // 6. Success
+//         // 6. SUCCESS
 //         // ==================================================
 
 //         return {
@@ -1295,7 +1512,7 @@ export default class ReserveStockUseCase {
 
 
 //     // ====================================================
-//     // Validation
+//     // VALIDATION
 //     // ====================================================
 
 //     private validate(
@@ -1310,6 +1527,10 @@ export default class ReserveStockUseCase {
 //         }
 
 
+//         // ==================================================
+//         // ORDER ID
+//         // ==================================================
+
 //         if (
 //             !Number.isInteger(
 //                 dto.orderId
@@ -1323,6 +1544,10 @@ export default class ReserveStockUseCase {
 //         }
 
 
+//         // ==================================================
+//         // USER ID
+//         // ==================================================
+
 //         if (
 //             !Number.isInteger(
 //                 dto.userId
@@ -1335,6 +1560,10 @@ export default class ReserveStockUseCase {
 //             );
 //         }
 
+
+//         // ==================================================
+//         // COMPANY ID
+//         // ==================================================
 
 //         if (
 //             !Number.isInteger(
@@ -1353,569 +1582,1228 @@ export default class ReserveStockUseCase {
 
 
 
-// import { Transaction, Op } from "sequelize";
-// import { sequelize } from "../../models/main";
 
-// import OrderRepo from "../../repo/OrderRepo/OrderRepo";
-// import InventorieRepo from "../../repo/InventorieRepo/InventorieRepo";
-// import InventoryMovementRepo from "../../repo/MovementRepo/InventoryMovementRepo";
-// import InventoryReservationRepo from "../../repo/InventoryReservationRepo/InventoryReservationRepo";
-// import InventoryAuditRepo from "../../repo/InventoryAuditRepo/InventoryAuditRepo";
 
-// import ResolveWarehouseForItemService from "../../services/InventoryService/ResolveWarehouseForItemService";
 
-// // ======================================================
-// // DTO
-// // ======================================================
 
-// export interface ReserveStockDTO {
-//   orderId: number;
 
-//   userId: number;
 
-//   companyId: number;
 
-//   transaction?: Transaction;
-// }
 
-// // ======================================================
-// // Result
-// // ======================================================
 
-// export interface ReserveStockResult {
-//   success: boolean;
 
-//   orderId: number;
 
-//   message: string;
-// }
+// // import { Transaction } from "sequelize";
+// // import { sequelize } from "../../models/main";
 
-// // ======================================================
-// // UseCase
-// // ======================================================
+// // import OrderRepo from "../../repo/OrderRepo/OrderRepo";
+// // import InventorieRepo from "../../repo/InventorieRepo/InventorieRepo";
+// // import InventoryMovementRepo from "../../repo/MovementRepo/InventoryMovementRepo";
+// // import InventoryReservationRepo from "../../repo/InventoryReservationRepo/InventoryReservationRepo";
+// // import InventoryAuditRepo from "../../repo/InventoryAuditRepo/InventoryAuditRepo";
 
-// export default class ReserveStockUseCase {
-//   constructor(
-//     private readonly orderRepo: OrderRepo,
+// // import ResolveWarehouseForItemService
+// //     from "../../services/InventoryService/ResolveWarehouseForItemService";
 
-//     private readonly inventoryRepo: InventorieRepo,
+// // // ======================================================
+// // // DTO
+// // // ======================================================
 
-//     private readonly movementRepo: InventoryMovementRepo,
+// // export interface ReserveStockDTO {
 
-//     private readonly reservationRepo: InventoryReservationRepo,
+// //     orderId: number;
 
-//     private readonly auditRepo: InventoryAuditRepo,
+// //     userId: number;
 
-//     private readonly warehouseResolver:
-//       ResolveWarehouseForItemService
-//   ) {}
+// //     companyId: number;
 
-//   // ====================================================
-//   // EXECUTE
-//   // ====================================================
+// //     transaction?: Transaction;
+// // }
 
-//   async execute(
-//     dto: ReserveStockDTO
-//   ): Promise<ReserveStockResult> {
 
-//     this.validate(dto);
+// // // ======================================================
+// // // Result
+// // // ======================================================
 
-//     // ==================================================
-//     // CASE 1
-//     //
-//     // Transaction comes from parent UseCase
-//     //
-//     // CreateOrderByAdminUseCase owns transaction
-//     // ==================================================
+// // export interface ReserveStockResult {
 
-//     if (dto.transaction) {
+// //     success: boolean;
 
-//       return await this.executeWithTransaction(
-//         dto,
-//         dto.transaction
-//       );
-//     }
+// //     orderId: number;
 
-//     // ==================================================
-//     // CASE 2
-//     //
-//     // No external transaction
-//     //
-//     // ReserveStockUseCase creates its own transaction
-//     // ==================================================
+// //     message: string;
+// // }
 
-//     return await this.executeWithOwnTransaction(dto);
-//   }
 
-//   // ====================================================
-//   // External Transaction
-//   // ====================================================
+// // // ======================================================
+// // // UseCase
+// // // ======================================================
 
-//   private async executeWithTransaction(
-//     dto: ReserveStockDTO,
+// // export default class ReserveStockUseCase {
 
-//     transaction: Transaction
-//   ): Promise<ReserveStockResult> {
-
-//     /*
-//      * IMPORTANT:
-//      *
-//      * This method DOES NOT:
-//      *
-//      * transaction.commit()
-//      *
-//      * transaction.rollback()
-//      *
-//      *
-//      * because the parent UseCase owns
-//      * the transaction.
-//      */
-
-//     return await this.tryExecute(
-//       dto,
-//       transaction
-//     );
-//   }
-
-//   // ====================================================
-//   // Own Transaction
-//   // ====================================================
-
-//   private async executeWithOwnTransaction(
-//     dto: ReserveStockDTO
-//   ): Promise<ReserveStockResult> {
-
-//     const transaction =
-//       await sequelize.transaction();
-
-//     try {
-
-//       const result =
-//         await this.tryExecute(
-//           dto,
-//           transaction
-//         );
-
-//       await transaction.commit();
-
-//       return result;
-
-//     } catch (error) {
-
-//       await transaction.rollback();
-
-//       throw error;
-//     }
-//   }
-
-//   // ====================================================
-//   // Business Logic
-//   // ====================================================
-
-//   private async tryExecute(
-//     dto: ReserveStockDTO,
-
-//     transaction: Transaction
-//   ): Promise<ReserveStockResult> {
-
-//     // ==================================================
-//     // 1. Find Order
-//     // ==================================================
-
-//     const order =
-//       await this.orderRepo.FindOrderById(
-//         dto.orderId,
-//         transaction
-//       );
-
-//     if (!order) {
-
-//       throw new Error(
-//         `Order ${dto.orderId} not found`
-//       );
-//     }
-
-//     // ==================================================
-//     // 2. Validate Company
-//     // ==================================================
-
-//     if (
-//       order.companyId !== dto.companyId
-//     ) {
-
-//       throw new Error(
-//         "Order does not belong to this company"
-//       );
-//     }
-
-//     // ==================================================
-//     // 3. Idempotency Check
-//     // ==================================================
-//     //
-//     // Prevent reserving the same order twice.
-//     // ==================================================
-
-//     const existingReservation =
-//       await this.reservationRepo.findByOrder(
-//         dto.orderId,
-//         transaction
-//       );
-
-//     if (
-//       existingReservation &&
-//       existingReservation.length > 0
-//     ) {
+// //     constructor(
 
-//       return {
+// //         private readonly orderRepo: OrderRepo,
 
-//         success: true,
+// //         private readonly inventoryRepo: InventorieRepo,
 
-//         orderId: dto.orderId,
+// //         private readonly movementRepo:
+// //             InventoryMovementRepo,
 
-//         message:
-//           "Stock already reserved for this order"
-//       };
-//     }
+// //         private readonly reservationRepo:
+// //             InventoryReservationRepo,
 
-//     // ==================================================
-//     // 4. Get Order Items
-//     // ==================================================
-
-//     const orderItems =
-//       await this.orderRepo.getOrderItems(
-//         dto.orderId,
-//         transaction
-//       );
-
-//     if (
-//       !orderItems ||
-//       orderItems.length === 0
-//     ) {
-
-//       throw new Error(
-//         `Order ${dto.orderId} has no items`
-//       );
-//     }
-
-//     // ==================================================
-//     // 5. Process Every OrderItem
-//     // ==================================================
-
-//     for (
-//       const orderItem of orderItems
-//     ) {
-
-//       // ----------------------------------------------
-//       // Validate quantity
-//       // ----------------------------------------------
-
-//       if (
-//         !orderItem.quantity ||
-//         orderItem.quantity <= 0
-//       ) {
+// //         private readonly auditRepo:
+// //             InventoryAuditRepo,
 
-//         throw new Error(
-//           `Invalid quantity for OrderItem ${orderItem.id}`
-//         );
-//       }
-
-//       // ----------------------------------------------
-//       // Resolve Warehouse
-//       // ----------------------------------------------
-
-//       const warehouse =
-//         await this.warehouseResolver.resolve(
-//           {
-//             companyId:
-//               dto.companyId,
-
-//             variantId:
-//               orderItem.variantId,
-
-//             quantity:
-//               orderItem.quantity
-//           },
-
-//           transaction
-//         );
-
-//       if (!warehouse) {
-
-//         throw new Error(
-
-//           `No warehouse available for variant ${orderItem.variantId}`
+// //         private readonly warehouseResolver:
+// //             ResolveWarehouseForItemService
 
-//         );
-//       }
-
-//       // ----------------------------------------------
-//       // Find Inventory
-//       // ----------------------------------------------
-
-//       const inventory =
-//         await this.inventoryRepo
-//           .findByVariantAndWarehouse(
-//             orderItem.variantId,
-//             warehouse.id,
-//             dto.companyId,
-//             transaction
-//           );
+// //     ) {}
 
-//       if (!inventory) {
 
-//         throw new Error(
+// //     // ====================================================
+// //     // EXECUTE
+// //     // ====================================================
 
-//           `Inventory not found for variant ${orderItem.variantId} in warehouse ${warehouse.id}`
+// //     async execute(
+// //         dto: ReserveStockDTO
+// //     ): Promise<ReserveStockResult> {
 
-//         );
-//       }
+// //         this.validate(dto);
 
-//       // ----------------------------------------------
-//       // Lock Inventory
-//       // ----------------------------------------------
 
-//       const lockedInventory =
-//         await this.inventoryRepo
-//           .findOneForUpdate(
-//             inventory.id,
-//             transaction
-//           );
+// //         // ==================================================
+// //         // CASE 1
+// //         //
+// //         // Transaction comes from parent UseCase
+// //         //
+// //         // CreateOrderByAdminUseCase owns transaction
+// //         // ==================================================
 
-//       if (!lockedInventory) {
+// //         if (dto.transaction) {
 
-//         throw new Error(
-//           `Inventory ${inventory.id} not found`
-//         );
-//       }
+// //             return await this.executeWithTransaction(
+// //                 dto,
+// //                 dto.transaction
+// //             );
+// //         }
 
-//       // ----------------------------------------------
-//       // Available Stock
-//       // ----------------------------------------------
 
-//       const available =
-//         Number(
-//           lockedInventory.quantity
-//         ) -
-//         Number(
-//           lockedInventory.reserved
-//         );
+// //         // ==================================================
+// //         // CASE 2
+// //         //
+// //         // No external transaction
+// //         //
+// //         // ReserveStockUseCase creates its own transaction
+// //         // ==================================================
 
-//       // ----------------------------------------------
-//       // Check Stock
-//       // ----------------------------------------------
+// //         return await this.executeWithOwnTransaction(dto);
+// //     }
 
-//       if (
-//         available <
-//         orderItem.quantity
-//       ) {
 
-//         throw new Error(
+// //     // ====================================================
+// //     // External Transaction
+// //     // ====================================================
 
-//           `Insufficient stock for variant ${orderItem.variantId}. Available: ${available}, requested: ${orderItem.quantity}`
+// //     private async executeWithTransaction(
+// //         dto: ReserveStockDTO,
 
-//         );
-//       }
+// //         transaction: Transaction
 
-//       // ----------------------------------------------
-//       // Reserve
-//       // ----------------------------------------------
+// //     ): Promise<ReserveStockResult> {
 
-//       const oldReserved =
-//         Number(
-//           lockedInventory.reserved
-//         );
+// //         /*
+// //          * IMPORTANT:
+// //          *
+// //          * This method DOES NOT:
+// //          *
+// //          * transaction.commit()
+// //          *
+// //          * transaction.rollback()
+// //          *
+// //          *
+// //          * because the parent UseCase owns
+// //          * the transaction.
+// //          */
 
-//       const newReserved =
-//         oldReserved +
-//         Number(
-//           orderItem.quantity
-//         );
+// //         return await this.tryExecute(
+// //             dto,
+// //             transaction
+// //         );
+// //     }
 
-//       // ----------------------------------------------
-//       // Update Inventory
-//       // ----------------------------------------------
 
-//       await this.inventoryRepo
-//         .updateReserved(
-//           lockedInventory.id,
+// //     // ====================================================
+// //     // Own Transaction
+// //     // ====================================================
 
-//           newReserved,
+// //     private async executeWithOwnTransaction(
+// //         dto: ReserveStockDTO
+// //     ): Promise<ReserveStockResult> {
 
-//           transaction
-//         );
+// //         const transaction =
+// //             await sequelize.transaction();
 
-//       // ----------------------------------------------
-//       // Create Reservation
-//       // ----------------------------------------------
 
-//       await this.reservationRepo.create(
-//         {
-//           orderId:
-//             dto.orderId,
+// //         try {
 
-//           orderItemId:
-//             orderItem.id,
+// //             const result =
+// //                 await this.tryExecute(
+// //                     dto,
+// //                     transaction
+// //                 );
 
-//           inventoryId:
-//             lockedInventory.id,
 
-//           variantId:
-//             orderItem.variantId,
+// //             await transaction.commit();
 
-//           warehouseId:
-//             warehouse.id,
 
-//           quantity:
-//             orderItem.quantity,
+// //             return result;
 
-//           companyId:
-//             dto.companyId,
+// //         } catch (error) {
 
-//           status:
-//             "RESERVED"
-//         },
+// //             await transaction.rollback();
 
-//         transaction
-//       );
+// //             throw error;
+// //         }
+// //     }
 
-//       // ----------------------------------------------
-//       // Inventory Movement
-//       // ----------------------------------------------
 
-//       await this.movementRepo.create(
-//         {
-//           inventoryId:
-//             lockedInventory.id,
+// //     // ====================================================
+// //     // Business Logic
+// //     // ====================================================
 
-//           variantId:
-//             orderItem.variantId,
+// //     private async tryExecute(
+// //         dto: ReserveStockDTO,
 
-//           warehouseId:
-//             warehouse.id,
+// //         transaction: Transaction
 
-//           orderId:
-//             dto.orderId,
+// //     ): Promise<ReserveStockResult> {
 
-//           quantity:
-//             orderItem.quantity,
 
-//           type:
-//             "RESERVE",
+// //         // ==================================================
+// //         // 1. Find Order
+// //         // ==================================================
 
-//           companyId:
-//             dto.companyId,
+// //         const order =
+// //             await this.orderRepo.FindOrderById(
+// //                 dto.orderId,
+// //                 transaction
+// //             );
 
-//           userId:
-//             dto.userId
-//         },
 
-//         transaction
-//       );
+// //         if (!order) {
 
-//       // ----------------------------------------------
-//       // Audit
-//       // ----------------------------------------------
+// //             throw new Error(
+// //                 `Order ${dto.orderId} not found`
+// //             );
+// //         }
 
-//       await this.auditRepo.create(
-//         {
-//           inventoryId:
-//             lockedInventory.id,
 
-//           variantId:
-//             orderItem.variantId,
+// //         // ==================================================
+// //         // 2. Validate Company
+// //         // ==================================================
 
-//           warehouseId:
-//             warehouse.id,
+// //         if (
+// //             order.companyId !==
+// //             dto.companyId
+// //         ) {
 
-//           orderId:
-//             dto.orderId,
+// //             throw new Error(
+// //                 "Order does not belong to this company"
+// //             );
+// //         }
 
-//           oldReserved,
 
-//           newReserved,
+// //         // ==================================================
+// //         // 3. Idempotency Check
+// //         // ==================================================
 
-//           quantity:
-//             orderItem.quantity,
+// //         const existingReservation =
+// //             await this.reservationRepo.findByOrder(
+// //                 dto.orderId,
+// //                 transaction
+// //             );
 
-//           action:
-//             "RESERVE",
 
-//           userId:
-//             dto.userId,
+// //         if (
+// //             existingReservation &&
+// //             existingReservation.length > 0
+// //         ) {
 
-//           companyId:
-//             dto.companyId
-//         },
+// //             return {
 
-//         transaction
-//       );
-//     }
+// //                 success: true,
 
-//     // ==================================================
-//     // 6. Success
-//     // ==================================================
+// //                 orderId:
+// //                     dto.orderId,
 
-//     return {
+// //                 message:
+// //                     "Stock already reserved for this order"
+// //             };
+// //         }
 
-//       success: true,
 
-//       orderId:
-//         dto.orderId,
+// //         // ==================================================
+// //         // 4. Get Order Items
+// //         // ==================================================
 
-//       message:
-//         "Stock reserved successfully"
-//     };
-//   }
+// //         const orderItems =
+// //             await this.orderRepo.getOrderItems(
+// //                 dto.orderId,
+// //                 transaction
+// //             );
 
-//   // ====================================================
-//   // Validation
-//   // ====================================================
 
-//   private validate(
-//     dto: ReserveStockDTO
-//   ): void {
+// //         if (
+// //             !orderItems ||
+// //             orderItems.length === 0
+// //         ) {
 
-//     if (!dto) {
+// //             throw new Error(
+// //                 `Order ${dto.orderId} has no items`
+// //             );
+// //         }
 
-//       throw new Error(
-//         "ReserveStock request is required"
-//       );
-//     }
 
-//     if (
-//       !Number.isInteger(
-//         dto.orderId
-//       ) ||
-//       dto.orderId <= 0
-//     ) {
+// //         // ==================================================
+// //         // 5. Process Every OrderItem
+// //         // ==================================================
 
-//       throw new Error(
-//         "Valid orderId is required"
-//       );
-//     }
+// //         for (
+// //             const orderItem
+// //             of orderItems
+// //         ) {
 
-//     if (
-//       !Number.isInteger(
-//         dto.userId
-//       ) ||
-//       dto.userId <= 0
-//     ) {
 
-//       throw new Error(
-//         "Valid userId is required"
-//       );
-//     }
+// //             // ----------------------------------------------
+// //             // Validate quantity
+// //             // ----------------------------------------------
 
-//     if (
-//       !Number.isInteger(
-//         dto.companyId
-//       ) ||
-//       dto.companyId <= 0
-//     ) {
+// //             if (
+// //                 !orderItem.quantity ||
+// //                 orderItem.quantity <= 0
+// //             ) {
 
-//       throw new Error(
-//         "Valid companyId is required"
-//       );
-//     }
-//   }
-// }
+// //                 throw new Error(
+// //                     `Invalid quantity for OrderItem ${orderItem.id}`
+// //                 );
+// //             }
+
+
+// //             // ==================================================
+// //             // Resolve Warehouse + LOCK Inventory
+// //             // ==================================================
+// //             //
+// //             // IMPORTANT:
+// //             //
+// //             // Resolver now does:
+// //             //
+// //             // Warehouse
+// //             //      ↓
+// //             // InventoryRepo.findForUpdate()
+// //             //      ↓
+// //             // FOR UPDATE 🔒
+// //             //
+// //             // Therefore we DO NOT query inventory again.
+// //             // ==================================================
+
+// //             const allocation =
+// //                 await this.warehouseResolver
+// //                     .resolveAllocation(
+// //                         {
+// //                             orderItemId:
+// //                                 orderItem.id,
+
+// //                             companyId:
+// //                                 dto.companyId,
+
+// //                             variantId:
+// //                                 orderItem.variantId,
+
+// //                             quantity:
+// //                                 orderItem.quantity
+// //                         },
+
+// //                         transaction
+// //                     );
+
+
+// //             if (!allocation) {
+
+// //                 throw new Error(
+// //                     `No warehouse available for variant ${orderItem.variantId}`
+// //                 );
+// //             }
+
+
+// //             // ==================================================
+// //             // Warehouse
+// //             // ==================================================
+
+// //             const warehouseId =
+// //                 allocation.warehouseId;
+
+
+// //             // ==================================================
+// //             // SAME LOCKED INVENTORY
+// //             // ==================================================
+
+// //             const lockedInventory =
+// //                 allocation.inventory;
+
+
+// //             if (!lockedInventory) {
+
+// //                 throw new Error(
+// //                     `Locked inventory not found for variant ${orderItem.variantId} in warehouse ${warehouseId}`
+// //                 );
+// //             }
+
+
+// //             // ==================================================
+// //             // Safety Check
+// //             //
+// //             // Verify company again at business layer.
+// //             // ==================================================
+
+// //             if (
+// //                 Number(
+// //                     lockedInventory.companyId
+// //                 ) !==
+// //                 Number(
+// //                     dto.companyId
+// //                 )
+// //             ) {
+
+// //                 throw new Error(
+// //                     `Inventory ${lockedInventory.id} does not belong to company ${dto.companyId}`
+// //                 );
+// //             }
+
+
+// //             // ==================================================
+// //             // Available Stock
+// //             // ==================================================
+
+// //             const available =
+// //                 Number(
+// //                     lockedInventory.quantity
+// //                 ) -
+// //                 Number(
+// //                     lockedInventory.reserved
+// //                 );
+
+
+// //             // ==================================================
+// //             // Check Stock
+// //             // ==================================================
+
+// //             if (
+// //                 available <
+// //                 Number(
+// //                     orderItem.quantity
+// //                 )
+// //             ) {
+
+// //                 throw new Error(
+
+// //                     `Insufficient stock for variant ${orderItem.variantId}. Available: ${available}, requested: ${orderItem.quantity}`
+
+// //                 );
+// //             }
+
+
+// //             // ==================================================
+// //             // Reserve
+// //             // ==================================================
+
+// //             const oldReserved =
+// //                 Number(
+// //                     lockedInventory.reserved
+// //                 );
+
+
+// //             const newReserved =
+// //                 oldReserved +
+// //                 Number(
+// //                     orderItem.quantity
+// //                 );
+
+
+// //             // ==================================================
+// //             // Update Inventory
+// //             // ==================================================
+
+// //             await this.inventoryRepo
+// //                 .updateReserved(
+
+// //                     lockedInventory.id,
+
+// //                     newReserved,
+
+// //                     transaction
+// //                 );
+
+
+// //             // ==================================================
+// //             // Create Reservation
+// //             // ==================================================
+
+// //             await this.reservationRepo.create(
+
+// //                 {
+
+// //                     orderId:
+// //                         dto.orderId,
+
+// //                     orderItemId:
+// //                         orderItem.id,
+
+// //                     inventoryId:
+// //                         lockedInventory.id,
+
+// //                     variantId:
+// //                         orderItem.variantId,
+
+// //                     warehouseId:
+// //                         warehouseId,
+
+// //                     quantity:
+// //                         orderItem.quantity,
+
+// //                     companyId:
+// //                         dto.companyId,
+
+// //                     status:
+// //                         "confirmed"
+
+// //                 },
+
+// //                 transaction
+// //             );
+
+
+// //             // ==================================================
+// //             // Inventory Movement
+// //             // ==================================================
+
+// //             await this.movementRepo.create(
+
+// //                 {
+
+// //                     inventoryId:
+// //                         lockedInventory.id,
+
+// //                     variantId:
+// //                         orderItem.variantId,
+
+// //                     warehouseId:
+// //                         warehouseId,
+
+// //                     orderId:
+// //                         dto.orderId,
+
+// //                     quantity:
+// //                         orderItem.quantity,
+
+// //                     type:
+// //                         "RESERVE",
+
+// //                     companyId:
+// //                         dto.companyId,
+
+// //                     userId:
+// //                         dto.userId
+
+// //                 },
+
+// //                 transaction
+// //             );
+
+
+// //             // ==================================================
+// //             // Audit
+// //             // ==================================================
+
+// //             await this.auditRepo.create(
+
+// //                 {
+
+// //                     inventoryId:
+// //                         lockedInventory.id,
+
+// //                     variantId:
+// //                         orderItem.variantId,
+
+// //                     warehouseId:
+// //                         warehouseId,
+
+// //                     orderId:
+// //                         dto.orderId,
+
+// //                     oldReserved,
+
+// //                     newReserved,
+
+// //                     quantity:
+// //                         orderItem.quantity,
+
+// //                     action:
+// //                         "RESERVE",
+
+// //                     userId:
+// //                         dto.userId,
+
+// //                     companyId:
+// //                         dto.companyId
+
+// //                 },
+
+// //                 transaction
+// //             );
+// //         }
+
+
+// //         // ==================================================
+// //         // 6. Success
+// //         // ==================================================
+
+// //         return {
+
+// //             success: true,
+
+// //             orderId:
+// //                 dto.orderId,
+
+// //             message:
+// //                 "Stock reserved successfully"
+// //         };
+// //     }
+
+
+// //     // ====================================================
+// //     // Validation
+// //     // ====================================================
+
+// //     private validate(
+// //         dto: ReserveStockDTO
+// //     ): void {
+
+// //         if (!dto) {
+
+// //             throw new Error(
+// //                 "ReserveStock request is required"
+// //             );
+// //         }
+
+
+// //         if (
+// //             !Number.isInteger(
+// //                 dto.orderId
+// //             ) ||
+// //             dto.orderId <= 0
+// //         ) {
+
+// //             throw new Error(
+// //                 "Valid orderId is required"
+// //             );
+// //         }
+
+
+// //         if (
+// //             !Number.isInteger(
+// //                 dto.userId
+// //             ) ||
+// //             dto.userId <= 0
+// //         ) {
+
+// //             throw new Error(
+// //                 "Valid userId is required"
+// //             );
+// //         }
+
+
+// //         if (
+// //             !Number.isInteger(
+// //                 dto.companyId
+// //             ) ||
+// //             dto.companyId <= 0
+// //         ) {
+
+// //             throw new Error(
+// //                 "Valid companyId is required"
+// //             );
+// //         }
+// //     }
+// // }
+
+
+
+
+// // import { Transaction, Op } from "sequelize";
+// // import { sequelize } from "../../models/main";
+
+// // import OrderRepo from "../../repo/OrderRepo/OrderRepo";
+// // import InventorieRepo from "../../repo/InventorieRepo/InventorieRepo";
+// // import InventoryMovementRepo from "../../repo/MovementRepo/InventoryMovementRepo";
+// // import InventoryReservationRepo from "../../repo/InventoryReservationRepo/InventoryReservationRepo";
+// // import InventoryAuditRepo from "../../repo/InventoryAuditRepo/InventoryAuditRepo";
+
+// // import ResolveWarehouseForItemService from "../../services/InventoryService/ResolveWarehouseForItemService";
+
+// // // ======================================================
+// // // DTO
+// // // ======================================================
+
+// // export interface ReserveStockDTO {
+// //   orderId: number;
+
+// //   userId: number;
+
+// //   companyId: number;
+
+// //   transaction?: Transaction;
+// // }
+
+// // // ======================================================
+// // // Result
+// // // ======================================================
+
+// // export interface ReserveStockResult {
+// //   success: boolean;
+
+// //   orderId: number;
+
+// //   message: string;
+// // }
+
+// // // ======================================================
+// // // UseCase
+// // // ======================================================
+
+// // export default class ReserveStockUseCase {
+// //   constructor(
+// //     private readonly orderRepo: OrderRepo,
+
+// //     private readonly inventoryRepo: InventorieRepo,
+
+// //     private readonly movementRepo: InventoryMovementRepo,
+
+// //     private readonly reservationRepo: InventoryReservationRepo,
+
+// //     private readonly auditRepo: InventoryAuditRepo,
+
+// //     private readonly warehouseResolver:
+// //       ResolveWarehouseForItemService
+// //   ) {}
+
+// //   // ====================================================
+// //   // EXECUTE
+// //   // ====================================================
+
+// //   async execute(
+// //     dto: ReserveStockDTO
+// //   ): Promise<ReserveStockResult> {
+
+// //     this.validate(dto);
+
+// //     // ==================================================
+// //     // CASE 1
+// //     //
+// //     // Transaction comes from parent UseCase
+// //     //
+// //     // CreateOrderByAdminUseCase owns transaction
+// //     // ==================================================
+
+// //     if (dto.transaction) {
+
+// //       return await this.executeWithTransaction(
+// //         dto,
+// //         dto.transaction
+// //       );
+// //     }
+
+// //     // ==================================================
+// //     // CASE 2
+// //     //
+// //     // No external transaction
+// //     //
+// //     // ReserveStockUseCase creates its own transaction
+// //     // ==================================================
+
+// //     return await this.executeWithOwnTransaction(dto);
+// //   }
+
+// //   // ====================================================
+// //   // External Transaction
+// //   // ====================================================
+
+// //   private async executeWithTransaction(
+// //     dto: ReserveStockDTO,
+
+// //     transaction: Transaction
+// //   ): Promise<ReserveStockResult> {
+
+// //     /*
+// //      * IMPORTANT:
+// //      *
+// //      * This method DOES NOT:
+// //      *
+// //      * transaction.commit()
+// //      *
+// //      * transaction.rollback()
+// //      *
+// //      *
+// //      * because the parent UseCase owns
+// //      * the transaction.
+// //      */
+
+// //     return await this.tryExecute(
+// //       dto,
+// //       transaction
+// //     );
+// //   }
+
+// //   // ====================================================
+// //   // Own Transaction
+// //   // ====================================================
+
+// //   private async executeWithOwnTransaction(
+// //     dto: ReserveStockDTO
+// //   ): Promise<ReserveStockResult> {
+
+// //     const transaction =
+// //       await sequelize.transaction();
+
+// //     try {
+
+// //       const result =
+// //         await this.tryExecute(
+// //           dto,
+// //           transaction
+// //         );
+
+// //       await transaction.commit();
+
+// //       return result;
+
+// //     } catch (error) {
+
+// //       await transaction.rollback();
+
+// //       throw error;
+// //     }
+// //   }
+
+// //   // ====================================================
+// //   // Business Logic
+// //   // ====================================================
+
+// //   private async tryExecute(
+// //     dto: ReserveStockDTO,
+
+// //     transaction: Transaction
+// //   ): Promise<ReserveStockResult> {
+
+// //     // ==================================================
+// //     // 1. Find Order
+// //     // ==================================================
+
+// //     const order =
+// //       await this.orderRepo.FindOrderById(
+// //         dto.orderId,
+// //         transaction
+// //       );
+
+// //     if (!order) {
+
+// //       throw new Error(
+// //         `Order ${dto.orderId} not found`
+// //       );
+// //     }
+
+// //     // ==================================================
+// //     // 2. Validate Company
+// //     // ==================================================
+
+// //     if (
+// //       order.companyId !== dto.companyId
+// //     ) {
+
+// //       throw new Error(
+// //         "Order does not belong to this company"
+// //       );
+// //     }
+
+// //     // ==================================================
+// //     // 3. Idempotency Check
+// //     // ==================================================
+// //     //
+// //     // Prevent reserving the same order twice.
+// //     // ==================================================
+
+// //     const existingReservation =
+// //       await this.reservationRepo.findByOrder(
+// //         dto.orderId,
+// //         transaction
+// //       );
+
+// //     if (
+// //       existingReservation &&
+// //       existingReservation.length > 0
+// //     ) {
+
+// //       return {
+
+// //         success: true,
+
+// //         orderId: dto.orderId,
+
+// //         message:
+// //           "Stock already reserved for this order"
+// //       };
+// //     }
+
+// //     // ==================================================
+// //     // 4. Get Order Items
+// //     // ==================================================
+
+// //     const orderItems =
+// //       await this.orderRepo.getOrderItems(
+// //         dto.orderId,
+// //         transaction
+// //       );
+
+// //     if (
+// //       !orderItems ||
+// //       orderItems.length === 0
+// //     ) {
+
+// //       throw new Error(
+// //         `Order ${dto.orderId} has no items`
+// //       );
+// //     }
+
+// //     // ==================================================
+// //     // 5. Process Every OrderItem
+// //     // ==================================================
+
+// //     for (
+// //       const orderItem of orderItems
+// //     ) {
+
+// //       // ----------------------------------------------
+// //       // Validate quantity
+// //       // ----------------------------------------------
+
+// //       if (
+// //         !orderItem.quantity ||
+// //         orderItem.quantity <= 0
+// //       ) {
+
+// //         throw new Error(
+// //           `Invalid quantity for OrderItem ${orderItem.id}`
+// //         );
+// //       }
+
+// //       // ----------------------------------------------
+// //       // Resolve Warehouse
+// //       // ----------------------------------------------
+
+// //       const warehouse =
+// //         await this.warehouseResolver.resolve(
+// //           {
+// //             companyId:
+// //               dto.companyId,
+
+// //             variantId:
+// //               orderItem.variantId,
+
+// //             quantity:
+// //               orderItem.quantity
+// //           },
+
+// //           transaction
+// //         );
+
+// //       if (!warehouse) {
+
+// //         throw new Error(
+
+// //           `No warehouse available for variant ${orderItem.variantId}`
+
+// //         );
+// //       }
+
+// //       // ----------------------------------------------
+// //       // Find Inventory
+// //       // ----------------------------------------------
+
+// //       const inventory =
+// //         await this.inventoryRepo
+// //           .findByVariantAndWarehouse(
+// //             orderItem.variantId,
+// //             warehouse.id,
+// //             dto.companyId,
+// //             transaction
+// //           );
+
+// //       if (!inventory) {
+
+// //         throw new Error(
+
+// //           `Inventory not found for variant ${orderItem.variantId} in warehouse ${warehouse.id}`
+
+// //         );
+// //       }
+
+// //       // ----------------------------------------------
+// //       // Lock Inventory
+// //       // ----------------------------------------------
+
+// //       const lockedInventory =
+// //         await this.inventoryRepo
+// //           .findOneForUpdate(
+// //             inventory.id,
+// //             transaction
+// //           );
+
+// //       if (!lockedInventory) {
+
+// //         throw new Error(
+// //           `Inventory ${inventory.id} not found`
+// //         );
+// //       }
+
+// //       // ----------------------------------------------
+// //       // Available Stock
+// //       // ----------------------------------------------
+
+// //       const available =
+// //         Number(
+// //           lockedInventory.quantity
+// //         ) -
+// //         Number(
+// //           lockedInventory.reserved
+// //         );
+
+// //       // ----------------------------------------------
+// //       // Check Stock
+// //       // ----------------------------------------------
+
+// //       if (
+// //         available <
+// //         orderItem.quantity
+// //       ) {
+
+// //         throw new Error(
+
+// //           `Insufficient stock for variant ${orderItem.variantId}. Available: ${available}, requested: ${orderItem.quantity}`
+
+// //         );
+// //       }
+
+// //       // ----------------------------------------------
+// //       // Reserve
+// //       // ----------------------------------------------
+
+// //       const oldReserved =
+// //         Number(
+// //           lockedInventory.reserved
+// //         );
+
+// //       const newReserved =
+// //         oldReserved +
+// //         Number(
+// //           orderItem.quantity
+// //         );
+
+// //       // ----------------------------------------------
+// //       // Update Inventory
+// //       // ----------------------------------------------
+
+// //       await this.inventoryRepo
+// //         .updateReserved(
+// //           lockedInventory.id,
+
+// //           newReserved,
+
+// //           transaction
+// //         );
+
+// //       // ----------------------------------------------
+// //       // Create Reservation
+// //       // ----------------------------------------------
+
+// //       await this.reservationRepo.create(
+// //         {
+// //           orderId:
+// //             dto.orderId,
+
+// //           orderItemId:
+// //             orderItem.id,
+
+// //           inventoryId:
+// //             lockedInventory.id,
+
+// //           variantId:
+// //             orderItem.variantId,
+
+// //           warehouseId:
+// //             warehouse.id,
+
+// //           quantity:
+// //             orderItem.quantity,
+
+// //           companyId:
+// //             dto.companyId,
+
+// //           status:
+// //             "RESERVED"
+// //         },
+
+// //         transaction
+// //       );
+
+// //       // ----------------------------------------------
+// //       // Inventory Movement
+// //       // ----------------------------------------------
+
+// //       await this.movementRepo.create(
+// //         {
+// //           inventoryId:
+// //             lockedInventory.id,
+
+// //           variantId:
+// //             orderItem.variantId,
+
+// //           warehouseId:
+// //             warehouse.id,
+
+// //           orderId:
+// //             dto.orderId,
+
+// //           quantity:
+// //             orderItem.quantity,
+
+// //           type:
+// //             "RESERVE",
+
+// //           companyId:
+// //             dto.companyId,
+
+// //           userId:
+// //             dto.userId
+// //         },
+
+// //         transaction
+// //       );
+
+// //       // ----------------------------------------------
+// //       // Audit
+// //       // ----------------------------------------------
+
+// //       await this.auditRepo.create(
+// //         {
+// //           inventoryId:
+// //             lockedInventory.id,
+
+// //           variantId:
+// //             orderItem.variantId,
+
+// //           warehouseId:
+// //             warehouse.id,
+
+// //           orderId:
+// //             dto.orderId,
+
+// //           oldReserved,
+
+// //           newReserved,
+
+// //           quantity:
+// //             orderItem.quantity,
+
+// //           action:
+// //             "RESERVE",
+
+// //           userId:
+// //             dto.userId,
+
+// //           companyId:
+// //             dto.companyId
+// //         },
+
+// //         transaction
+// //       );
+// //     }
+
+// //     // ==================================================
+// //     // 6. Success
+// //     // ==================================================
+
+// //     return {
+
+// //       success: true,
+
+// //       orderId:
+// //         dto.orderId,
+
+// //       message:
+// //         "Stock reserved successfully"
+// //     };
+// //   }
+
+// //   // ====================================================
+// //   // Validation
+// //   // ====================================================
+
+// //   private validate(
+// //     dto: ReserveStockDTO
+// //   ): void {
+
+// //     if (!dto) {
+
+// //       throw new Error(
+// //         "ReserveStock request is required"
+// //       );
+// //     }
+
+// //     if (
+// //       !Number.isInteger(
+// //         dto.orderId
+// //       ) ||
+// //       dto.orderId <= 0
+// //     ) {
+
+// //       throw new Error(
+// //         "Valid orderId is required"
+// //       );
+// //     }
+
+// //     if (
+// //       !Number.isInteger(
+// //         dto.userId
+// //       ) ||
+// //       dto.userId <= 0
+// //     ) {
+
+// //       throw new Error(
+// //         "Valid userId is required"
+// //       );
+// //     }
+
+// //     if (
+// //       !Number.isInteger(
+// //         dto.companyId
+// //       ) ||
+// //       dto.companyId <= 0
+// //     ) {
+
+// //       throw new Error(
+// //         "Valid companyId is required"
+// //       );
+// //     }
+// //   }
+// // }
