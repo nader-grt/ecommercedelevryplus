@@ -16,4 +16,10 @@ export default class AdminRolePolicy
        return false;
       }
 
+  
+        static isAdmin(role: Role): boolean {
+          return role === Role.ADMIN;
+        }
+      
+
 }

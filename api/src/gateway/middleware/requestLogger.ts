@@ -6,6 +6,14 @@ export default function requestLogger(
   next: NextFunction
 ): void {
 
+  console.log("REQUEST RECEIVED");
+
+
+  console.log({
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip
+  });
   /*
   ========================================
   REQUEST START TIME

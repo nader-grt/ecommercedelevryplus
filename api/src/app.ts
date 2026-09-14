@@ -32,6 +32,13 @@ API GATEWAY LAYER
 
 setupGateway(app);
 
+// TEST API GATE WAY 
+
+app.get("/testapiGateway", (req, res) => {
+  res.status(200).json({
+    message: "API is working"
+  });
+});
 
 // =========================
 // STATIC FILES
