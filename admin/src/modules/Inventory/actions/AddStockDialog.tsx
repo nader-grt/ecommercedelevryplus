@@ -16,6 +16,8 @@ export const AddStockDialog = ({ record, onClose }: any) => {
 
 const { data: fullRecord } = useGetOne("inventories", { id: record.id });
 
+
+console.log("undifuned ## \t is \t ",{ data: fullRecord } )
 const handleSubmit = async () => {
   
   const { json } = await httpclientService(
