@@ -1,6 +1,7 @@
 import { Sequelize, DataTypes, Model } from "sequelize";
 
 export enum Role {
+  SUPERADMIN = "SUPERADMIN",
   ADMIN = "ADMIN",
   USER = "USER",
   SUPPLIER = "SUPPLIER",
@@ -9,6 +10,11 @@ export enum Role {
   OWNER = "OWNER"
 }
 
+
+export enum Scope {
+  PLATFORM = "PLATFORM",
+  COMPANY = "COMPANY",
+}
 
 //  ERD   DIAGRAM ENTITY RELATIONSHIP 
 
