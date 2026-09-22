@@ -12,21 +12,66 @@
   
 
 // config/config-cli.cjs
-import dotenv from "dotenv";
-import { Category } from '../src/models/main';
-dotenv.config();
+// import dotenv from "dotenv";
+// dotenv.config();
 
 module.exports = {
   development: {
     username: process.env.DB_USER,
-    password: process.env.DB_PASS,
+    password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     port: Number(process.env.DB_PORT),
     dialect: "mysql",
   },
 
+  test: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME + "_test",
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: "mysql",
+  },
+
+  production: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME + "_prod",
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: "mysql",
+  },
 };
+
+
+// module.exports = {
+//   development: {
+//     username: process.env.DB_USER,
+//     password: process.env.DDB_PASSWORD,
+//     database: process.env.DB_NAME,
+//     host: process.env.DB_HOST,
+//     port: Number(process.env.DB_PORT),
+//     dialect: "mysql",
+//   },
+//   test: {
+//     username: process.env.DB_USER,
+//     password: process.env.DB_PASSWORD,
+//     database: process.env.DB_NAME + "_test",
+//     host: process.env.DB_HOST,
+//     port: Number(process.env.DB_PORT),
+//     dialect: "mysql",
+//   },
+
+//   production: {
+//     username: process.env.DB_USER,
+//     password: process.env.DB_PASSWORD,
+//     database: process.env.DB_NAME + "_prod",
+//     host: process.env.DB_HOST,
+//     port: Number(process.env.DB_PORT),
+//     dialect: "mysql",
+//   },
+// };
 
   /**
    * 
@@ -111,7 +156,34 @@ npx sequelize-cli migration:generate --name create-Categories
 npx sequelize-cli migration:generate --name create-Employees
 
 //
-deliverer
+deliverermodule.exports = {
+  development: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: "mysql",
+  },
+
+  test: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME + "_test",
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: "mysql",
+  },
+
+  production: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME + "_prod",
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT),
+    dialect: "mysql",
+  },
+};
 
 npx sequelize-cli migration:generate --name create-deliverers
 

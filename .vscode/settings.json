@@ -1,0 +1,6 @@
+{ 
+ "terminal.integrated.setLocaleVariables": true,
+"terminal.integrated.env.linux": {
+    "LANG": "ar_TN.UTF-8",
+    "LC_ALL": "ar_TN.UTF-8"
+}}
