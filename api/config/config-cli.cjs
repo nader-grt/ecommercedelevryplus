@@ -399,6 +399,42 @@ nmcli connection up "YOUR_WIFI_NAME"
 open  maria db 
 
 
+docker compose exec api npx sequelize-cli migration:generate --name add-chk-superadmin-company
+
+docker compose exec api npx sequelize-cli db:migrate
+
+
+
+إذا هدفك فقط Docker Compose: build → start → check services، احفظ هذه 3 commands:
+
+docker compose build
+docker compose up -d
+docker compose ps
+بالترتيب
+
+1️⃣ Build images
+
+docker compose build
+
+2️⃣ Start containers in background
+
+docker compose up -d
+
+3️⃣ Check running services
+
+docker compose ps
+
+
+docker compose exec api npx sequelize-cli db:migrate:status
+
+
+
+
+
+
+
+
+
 
 
 
