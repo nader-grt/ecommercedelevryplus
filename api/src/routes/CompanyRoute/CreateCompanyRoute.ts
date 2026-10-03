@@ -4,6 +4,7 @@ import CompanyRepo from "../../repo/CompanyRepo/CompanyRepo";
 import CreateCompanyUseCase from "../../useCases/companyUseCase/CreateCompanyUseCase";
 import CreateCompanyController from "../../controllers/company/CreateCompanyController";
 import { userRepo } from "../../repo/auth/userRepo/userRepo";
+import { requireSuperAdmin } from "../../middleware/requireSuperAdmin";
 
 const router = Router();
 
@@ -12,7 +13,7 @@ const user = new userRepo();
 
 const createCompanyuseCase = new CreateCompanyUseCase(company, user);
 const CreateCompanyRoute = new CreateCompanyController(createCompanyuseCase);
-router.post("/companies", verifyToken, (req: Request, res: Response) => {
+router.post("/companies", verifyToken, requireSuperAdmin,(req: Request, res: Response) => {
   console.log("req", req.body);
   CreateCompanyRoute.execute(req, res);
 });

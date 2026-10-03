@@ -47,13 +47,15 @@ export default class LoginUseCase {
       const accessToken = await generateAccessToken(
         user.email,
         user.role,
-        user.id
+        user.id,
+        user.companyId
       );
 
       const refreshToken = await generateRefreshToken(
         user.email,
         user.role,
-        user.id
+        user.id,
+        user.companyId
       );
 
       const hash = crypto

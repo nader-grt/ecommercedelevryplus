@@ -5,7 +5,8 @@ import jwt from "jsonwebtoken";
 export async function generateRefreshToken(
     email: string,
     role: Role,
-    id: number
+    id: number,
+    companyId: number | null
   ): Promise<string> {
     const payload = { email, role, id };
   

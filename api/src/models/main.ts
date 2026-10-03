@@ -20,6 +20,7 @@ import { InventorieModel } from "./Inventorie";
 import { WarehouseModel } from "./Warehouse";
 import { AddressModel } from "./Address";
 import { CompanyModel } from "./Company";
+import { CompanySettingsModel } from "./CompanySettings";
 import { VariantPriceTierModel } from "./VariantPriceTier";
 import { InvoiceModel } from "./Invoice";
 import { PromotionModel } from "./Promotion";
@@ -53,6 +54,7 @@ export const InventoryReservation = InventoryReservationModel(sequelize);
 
 export const Address  = AddressModel(sequelize)
 export const Company = CompanyModel(sequelize);
+export const CompanySettingsModelInstance = CompanySettingsModel(sequelize);
 export const VariantPriceTier = VariantPriceTierModel(sequelize)
 export const Invoice = InvoiceModel(sequelize)
 
@@ -106,6 +108,20 @@ Product.belongsTo(Company, {
   as: "company",
 });
 
+
+/* =========================
+   Company - CompanySettings (1 : 1)
+========================= */
+
+Company.hasOne(CompanySettingsModelInstance, {
+  foreignKey: "companyId",
+  as: "settings",
+});
+
+CompanySettingsModelInstance.belongsTo(Company, {
+  foreignKey: "companyId",
+  as: "company",
+});
  /* =========================
    Company - Warehouse (1 : N)
 

@@ -4,6 +4,7 @@ import { verifyToken } from "../../middleware/verifyToken";
 import GetCompanyOwnerUseCase from "../../useCases/companyUseCase/GetCompanyOwnersUseCase";
 import GetCompanyOwnerController from "../../controllers/company/GetCompanyOwnersController";
 import { userRepo } from "../../repo/auth/userRepo/userRepo";
+import { requireSuperAdmin } from "../../middleware/requireSuperAdmin";
 
 const router = Router();
 
@@ -14,7 +15,7 @@ const companyOwnersUseCase   = new GetCompanyOwnerUseCase(user)
 const companyOwnerRoute = new GetCompanyOwnerController(companyOwnersUseCase)
 
 
-router.get("/owners", verifyToken, (req: Request, res: Response) => {
+router.get("/owners", verifyToken,requireSuperAdmin, (req: Request, res: Response) => {
     companyOwnerRoute.execute(req, res);
 });
 

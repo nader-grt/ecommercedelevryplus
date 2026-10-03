@@ -13,6 +13,25 @@ import {
 
 export const CreateCompany = () => (
   <Create
+    // transform={(data: any) => ({
+    //   company: {
+    //     name: data.name,
+    //     type: data.type,
+    //     status: data.status || "ACTIVE",
+    //     trade_name: data.trade_name,
+    //     tax_number: data.tax_number,
+    //     registration_number: data.registration_number,
+    //   },
+    //   owner: {
+    //     firstName: data.firstName,
+    //     lastName: data.lastName,
+    //     email: data.email,
+    //     phone: data.phone,
+    //     ownerId: data.ownerId,
+    //     addresses: data.addresses || [],
+    //   },
+    // })}
+
     transform={(data: any) => ({
       company: {
         name: data.name,
@@ -22,12 +41,12 @@ export const CreateCompany = () => (
         tax_number: data.tax_number,
         registration_number: data.registration_number,
       },
+    
       owner: {
         firstName: data.firstName,
         lastName: data.lastName,
         email: data.email,
         phone: data.phone,
-        ownerId: data.ownerId,
         addresses: data.addresses || [],
       },
     })}

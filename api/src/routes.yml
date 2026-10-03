@@ -4,6 +4,12 @@ modules:
   # COMPANY
   # =========================
   - path: "/api"
+    file: "./routes/PlateFormRoute/getPlateFormRoute.js"
+
+  # =========================
+  # COMPANY
+  # =========================
+  - path: "/api"
     file: "./routes/CompanyRoute/ListCompanyRoute.js"
 
   - path: "/api"
@@ -17,6 +23,16 @@ modules:
 
   - path: "/api"
     file: "./routes/CompanyRoute/DeleteCompanyRoute.js"
+
+
+  # =========================
+  # COMPANY Settings
+  # =========================
+  - path: "/api"
+    file: "./routes/CompanySettingsRoute/GetCompanySettingsRoute.js"
+
+  - path: "/api"
+    file: "./routes/CompanySettingsRoute/UpdateCompanySettingsRoute.js"
 
 
   # =========================

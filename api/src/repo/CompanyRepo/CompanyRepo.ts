@@ -1,6 +1,6 @@
 import { Op, Transaction } from "sequelize";
 import ICompanyRepo from "./ICompanyRepo";
-import { Address, Company, sequelize, User } from "../../models/main";
+import { Address, Company, CompanySettingsModelInstance, sequelize, User } from "../../models/main";
 import { ICompany, ICompanyCreation } from "../../models/Company";
 import { Role } from "../../models/user";
 
@@ -405,13 +405,151 @@ export default class CompanyRepo implements ICompanyRepo {
   // =========================
   // FULL FLOW (USER + COMPANY + ADDRESS)
   // =========================
+  // async createUserCompanyFullFlow(data: any): Promise<any> {
+  //   const t = await sequelize.transaction();
+
+  //   try {
+  //     const { company, owner } = data;
+
+  //     // ================= USER =================
+  //     const user = await User.create(
+  //       {
+  //         firstName: owner.firstName,
+  //         lastName: owner.lastName,
+  //         email: owner.email,
+  //         phone: owner.phone,
+  //         password: owner.password,
+  //         role: Role.OWNER,
+  //         companyId: null,
+  //       },
+  //       { transaction: t }
+  //     );
+
+  //     // ================= ADDRESSES =================
+  //     let addresses: any[] = [];
+
+  //     if (owner.addresses?.length) {
+  //       const created = await Address.bulkCreate(
+  //         owner.addresses.map((a: any) => ({
+  //           street: a.street,
+  //           city: a.city,
+  //           country: a.country || "Tunisia",
+  //           zipeCode: a.zipCode,
+  //           delegation: a.delegation || "",
+  //           addressSuplementaire: a.addressSuplementaire || "",
+  //           userId: user.id,
+  //         })),
+  //         { transaction: t }
+  //       );
+
+  //       addresses = created.map(a => a.get({ plain: true }));
+  //     }
+
+  //     // ================= COMPANY =================
+  //     const createdCompany = await Company.create(
+  //       {
+  //         name: company.name,
+  //         type: company.type || "SHOP",
+
+  //         trade_name: company.trade_name || null,
+  //         tax_number: company.tax_number || null,
+  //         registration_number: company.registration_number || null,
+
+  //         status: company.status || "ACTIVE",
+
+  //         ownerId: user.id,
+  //       },
+  //       { transaction: t }
+  //     );
+
+  //     // ================= LINK =================
+  //     await user.update(
+  //       { companyId: createdCompany.id },
+  //       { transaction: t }
+  //     );
+
+  //     await t.commit();
+
+  //     return {
+  //       user: user.get({ plain: true }),
+  //       company: createdCompany.get({ plain: true }),
+  //       addresses,
+  //     };
+
+  //   } catch (err: any) {
+  //     await t.rollback();
+  //     throw err;
+  //   }
+  // }
+
+  // async createUserCompanyFullFlow(data: any): Promise<any> {
+  //   const t = await sequelize.transaction();
+  //   try {
+  //     const { company, owner } = data;
+  
+  //     // 1. COMPANY first (ownerId = NULL, allowed by your DESC)
+  //     const newCompany = await Company.create(
+  //       { ...company, ownerId: null },
+  //       { transaction: t }
+  //     );
+  
+  //     // 2. OWNER with the real companyId
+  //     const user = await User.create(
+  //       {
+  //         firstName: owner.firstName,
+  //         lastName: owner.lastName,
+  //         email: owner.email,
+  //         phone: owner.phone,
+  //         password: owner.password,
+  //         role: Role.OWNER,
+  //         companyId: newCompany.id,
+  //       },
+  //       { transaction: t }
+  //     );
+  
+  //     // 3. ADDRESSES (same code as before, userId: user.id)
+  
+  //     // 4. LINK back + ACTIVE
+  //     await newCompany.update(
+  //       { ownerId: user.id, status: "ACTIVE" },
+  //       { transaction: t }
+  //     );
+  
+  //     await t.commit();
+  //     return { company: newCompany.get({ plain: true }), owner: user.get({ plain: true }), Address };
+  //   } catch (e) {
+  //     await t.rollback();
+  //     throw e;
+  //   }
+  // }
+
   async createUserCompanyFullFlow(data: any): Promise<any> {
     const t = await sequelize.transaction();
-
+  
     try {
       const { company, owner } = data;
-
-      // ================= USER =================
+  
+      // =====================================================
+      // 1. CREATE COMPANY
+      // ownerId = NULL initially
+      // =====================================================
+  
+      const newCompany = await Company.create(
+        {
+          ...company,
+          ownerId: null,
+        },
+        {
+          transaction: t,
+        }
+      );
+  
+      // =====================================================
+      // 2. CREATE OWNER
+      // companyId comes from the newly created Company
+      // role is controlled by backend
+      // =====================================================
+  
       const user = await User.create(
         {
           firstName: owner.firstName,
@@ -420,65 +558,100 @@ export default class CompanyRepo implements ICompanyRepo {
           phone: owner.phone,
           password: owner.password,
           role: Role.OWNER,
-          companyId: null,
+          companyId: newCompany.id,
         },
-        { transaction: t }
-      );
-
-      // ================= ADDRESSES =================
-      let addresses: any[] = [];
-
-      if (owner.addresses?.length) {
-        const created = await Address.bulkCreate(
-          owner.addresses.map((a: any) => ({
-            street: a.street,
-            city: a.city,
-            country: a.country || "Tunisia",
-            zipeCode: a.zipCode,
-            delegation: a.delegation || "",
-            addressSuplementaire: a.addressSuplementaire || "",
-            userId: user.id,
-          })),
-          { transaction: t }
-        );
-
-        addresses = created.map(a => a.get({ plain: true }));
-      }
-
-      // ================= COMPANY =================
-      const createdCompany = await Company.create(
         {
-          name: company.name,
-          type: company.type || "SHOP",
-
-          trade_name: company.trade_name || null,
-          tax_number: company.tax_number || null,
-          registration_number: company.registration_number || null,
-
-          status: company.status || "ACTIVE",
-
-          ownerId: user.id,
+          transaction: t,
+        }
+      );
+  
+      // =====================================================
+      // 3. CREATE ADDRESSES
+      // =====================================================
+  
+      const addresses = owner.addresses || [];
+  
+      for (const address of addresses) {
+        await Address.create(
+          {
+            zipeCode: address.zipCode,
+            street: address.street,
+            city: address.city,
+            country: address.country,
+            delegation: address.delegation,
+            addressSuplementaire: address.addressSuplementaire,
+            userId: user.id,
+          },
+          {
+            transaction: t,
+          }
+        );
+      }
+  
+      // =====================================================
+      // 4. CREATE COMPANY SETTINGS
+      // One Company = One CompanySettings
+      // =====================================================
+  
+      const companySettings = await CompanySettingsModelInstance.create(
+        {
+          companyId: newCompany.id,
+  
+          currency: "TND",
+          language: "fr",
+          timezone: "Africa/Tunis",
+          taxRate: 0,
+  
+          isActive: true,
+  
+          createdBy: user.id,
+          updatedBy: user.id,
         },
-        { transaction: t }
+        {
+          transaction: t,
+        }
       );
-
-      // ================= LINK =================
-      await user.update(
-        { companyId: createdCompany.id },
-        { transaction: t }
+  
+      // =====================================================
+      // 5. LINK COMPANY TO OWNER
+      // =====================================================
+  
+      await newCompany.update(
+        {
+          ownerId: user.id,
+          status: "ACTIVE",
+        },
+        {
+          transaction: t,
+        }
       );
-
+  
+      // =====================================================
+      // 6. COMMIT TRANSACTION
+      // =====================================================
+  
       await t.commit();
-
+  
+      // =====================================================
+      // 7. RETURN CREATED DATA
+      // =====================================================
+  
+   //   const resultCompanySettings : any =  CompanySettings.get({ plain: true })
       return {
-        user: user.get({ plain: true }),
-        company: createdCompany.get({ plain: true }),
-        addresses,
+        company: newCompany.get({ plain: true }),
+        owner: user.get({ plain: true }),
+        settings: companySettings.get({ plain: true }),
       };
-
-    } catch (err: any) {
+  
+    } catch (e) {
+      // =====================================================
+      // ROLLBACK EVERYTHING IF ANY STEP FAILS
+      // =====================================================
+  
       await t.rollback();
-      throw err;
+  
+      throw e;
     }
   }
+
 }

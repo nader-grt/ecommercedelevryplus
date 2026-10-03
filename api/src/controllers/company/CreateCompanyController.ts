@@ -16,11 +16,10 @@ export default class CreateCompanyController extends BaseController {
       const actor = req.user;
   
 
-      console.log("actorrrrr  \t ",actor  , !actor  ,   actor?.role !== "ADMIN")
-      if (!actor || actor.role !== "ADMIN") {
-        console.log("###########   ")
-        return this.unauthorized(res, "Only ADMIN");
-      }
+      // if (!actor || actor.role !== "ADMIN") {
+      //   console.log("###########   ")
+      //   return this.unauthorized(res, "Only ADMIN");
+      // }
   
       const dto = {
         company: req.body.company,

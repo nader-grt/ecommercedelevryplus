@@ -6,10 +6,9 @@
 //       database: "ecommercedelevry",
 //       host: "127.0.0.1",
 //       port: 3307,
-//       dialect: "mysql"    
+//       dialect: "mysql"
 //     }
 //   };
-  
 
 // config/config-cli.cjs
 //  import dotenv from "dotenv";
@@ -47,7 +46,6 @@ module.exports = {
   },
 };
 
-
 // module.exports = {
 //   development: {
 //     username: process.env.DB_USER,
@@ -76,7 +74,7 @@ module.exports = {
 //   },
 // };
 
-  /**
+/**
    * 
    
    Undo ONLY the last migration
@@ -398,14 +396,14 @@ nmcli connection up "YOUR_WIFI_NAME"
 
 open  maria db 
 
-
+ docker compose exec api npx sequelize-cli migration:generate --name  create-company-settings
 docker compose exec api npx sequelize-cli migration:generate --name add-chk-superadmin-company
 
 docker compose exec api npx sequelize-cli db:migrate
 
+docker compose exec app npx sequelize-cli migration:generate --name add-chk-companyAdmin-Owner-required
 
-
-إذا هدفك فقط Docker Compose: build → start → check services، احفظ هذه 3 commands:
+   Docker Compose: build → start → check services،  3 commands:
 
 docker compose build
 docker compose up -d
@@ -428,17 +426,181 @@ docker compose ps
 docker compose exec api npx sequelize-cli db:migrate:status
 
 
+docker exec -it ecommerce-mariadb mariadb -u root -prootpassword
+
+
+
+case: تأكد أن الملف ما يتبعثش لـ Git
+bash
+git ls-files | grep env.docker
+
+// $2b$10$XZ68pTsYxgi1BmUAhMIwRuV0XhG8fpvLhL2nReklpbHDsXVyActrq
+
+UPDATE Users
+SET password = '$2b$10$XZ68pTsYxgi1BmUAhMIwRuV0XhG8fpvLhL2nReklpbHDsXVyActrq',
+    updatedAt = NOW()
+WHERE id = 3
+  AND email = 'ownernader@email.com'
+  AND role = 'OWNER';
 
 
 
 
+UPDATE Users
+SET password = '$2b$10$XZ68pTsYxgi1BmUAhMIwRuV0XhG8fpvLhL2nReklpbHDsXVyActrq',
+    updatedAt = NOW()
+WHERE id = 11
+  AND email = 'ownernader2@email.com'
+  AND role = 'OWNER';
 
 
-
-
-
+curl -i \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hZGVyYWRtaW5AdGVzdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpZCI6MiwiY29tcGFueUlkIjoxLCJpYXQiOjE3OTA5ODE1NzksImV4cCI6MTc5MTAwNjc3OX0.tRfn-xZDxSgVK51Agj0MgEpN6W8pP_-zH5c-9I5yZ4s" \
+  http://localhost:4000/api/company/settings
 
 NODE_OPTIONS="--max-old-space-size=4096" npm install --network-timeout=1000000
+
+owner 2 
+curl -i \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXIyQGVtYWlsLmNvbSIsInJvbGUiOiJPV05FUiIsImlkIjoxMSwiY29tcGFueUlkIjoyLCJpYXQiOjE3OTEwMTMzMzcsImV4cCI6MTc5MTAzODUzN30.91h1QvoYe3xcehcZrq5OFwKZ-_aKP9NIUDIRs3_bnFM" \
+  http://localhost:4000/api/company/settings
+
+
+
+token owner 1 
+  curl -i "http://localhost:4000/api/company/settings?companyId=2" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDE0MjcwLCJleHAiOjE3OTEwMzk0NzB9.-tvcvpxeunkFtLXJZFJ8ii03mn6mwznHJemCTaS_TyI"
+
+
+
+  updated 
+
+  curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDE0MjcwLCJleHAiOjE3OTEwMzk0NzB9.-tvcvpxeunkFtLXJZFJ8ii03mn6mwznHJemCTaS_TyI" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "EUR",
+    "language": "en"
+  }'
+
+ YOUR_COMPANY_1_OWNER_TOKEN
+  curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDE0MjcwLCJleHAiOjE3OTEwMzk0NzB9.-tvcvpxeunkFtLXJZFJ8ii03mn6mwznHJemCTaS_TyI" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "companyId": 2,   
+    "currency": "USD",
+    "language": "ar"
+  }'
+
+
+  Then use your Company 2 OWNER token:
+
+curl -s http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXIyQGVtYWlsLmNvbSIsInJvbGUiOiJPV05FUiIsImlkIjoxMSwiY29tcGFueUlkIjoyLCJpYXQiOjE3OTEwMjc2MTcsImV4cCI6MTc5MTA1MjgxN30.WO0zmE3Reo6kLlu6wo6-U9tH51B7X7pKeaMYnBvVHMw"
+
+
+
+  curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDI3OTQ3LCJleHAiOjE3OTEwNTMxNDd9.mqf4zRGLIbClficApX_wbdKnJAWTlO-6s07P0KgRJjg" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "companyId": 2,
+    "currency": "USD",
+    "language": "ar"
+  }'
+
+
+
+  curl -i http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXIyQGVtYWlsLmNvbSIsInJvbGUiOiJPV05FUiIsImlkIjoxMSwiY29tcGFueUlkIjoyLCJpYXQiOjE3OTEwMjc2MTcsImV4cCI6MTc5MTA1MjgxN30.WO0zmE3Reo6kLlu6wo6-U9tH51B7X7pKeaMYnBvVHMw"
+
+
+  owner1 
+curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDE0MjcwLCJleHAiOjE3OTEwMzk0NzB9.-tvcvpxeunkFtLXJZFJ8ii03mn6mwznHJemCTaS_TyI" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "EUR",
+    "language": "en",
+    "taxRate": 19
+  }'
+
+
+
+curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDE0MjcwLCJleHAiOjE3OTEwMzk0NzB9.-tvcvpxeunkFtLXJZFJ8ii03mn6mwznHJemCTaS_TyI" \
+  -H "Content-Type: application/json" \
+  -d '{
+     "currency": "EUR",
+  "language": "en",
+  "taxRate": "19.00"
+  }'
+
+curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDE0MjcwLCJleHAiOjE3OTEwMzk0NzB9.-tvcvpxeunkFtLXJZFJ8ii03mn6mwznHJemCTaS_TyI" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "INVALID"
+  }'
+  
+
+  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDE0MjcwLCJleHAiOjE3OTEwMzk0NzB9.-tvcvpxeunkFtLXJZFJ8ii03mn6mwznHJemCTaS_TyI
+
+curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDE0MjcwLCJleHAiOjE3OTEwMzk0NzB9.-tvcvpxeunkFtLXJZFJ8ii03mn6mwznHJemCTaS_TyI" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "taxRate": 150
+  }'
+
+
+curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im93bmVybmFkZXJAZW1haWwuY29tIiwicm9sZSI6Ik9XTkVSIiwiaWQiOjMsImNvbXBhbnlJZCI6MSwiaWF0IjoxNzkxMDE0MjcwLCJleHAiOjE3OTEwMzk0NzB9.-tvcvpxeunkFtLXJZFJ8ii03mn6mwznHJemCTaS_TyI" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "companyId": 2,
+    "currency": "USD"
+  }'
+
+
+  admin 
+  curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im5hZGVyYWRtaW5AdGVzdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpZCI6MiwiY29tcGFueUlkIjoxLCJpYXQiOjE3OTEwMzQyOTIsImV4cCI6MTc5MTA1OTQ5Mn0.5l7p-Baq02MqOZXLA-sFnaQaiCGWsEGCxN-Bfgwbt34" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "TND",
+    "language": "fr",
+    "taxRate": 19
+  }'
+
+
+
+
+  superadmin token 
+  eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AdGVzdC5jb20iLCJyb2xlIjoiU1VQRVJBRE1JTiIsImlkIjo1LCJjb21wYW55SWQiOm51bGwsImlhdCI6MTc5MTAzNDcxNCwiZXhwIjoxNzkxMDU5OTE0fQ.w8IrghxUrCH9uI_gCKrrAB84GHVcaLYapNR2M1-_gkQ
+
+
+  curl -i -X PUT http://localhost:4000/api/company/settings \
+  -H "Authorization: Bearer   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AdGVzdC5jb20iLCJyb2xlIjoiU1VQRVJBRE1JTiIsImlkIjo1LCJjb21wYW55SWQiOm51bGwsImlhdCI6MTc5MTAzNDcxNCwiZXhwIjoxNzkxMDU5OTE0fQ.w8IrghxUrCH9uI_gCKrrAB84GHVcaLYapNR2M1-_gkQ
+" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currency": "USD"
+  }'
+
+  3. Now test SUPERADMIN
+
+استعمل SUPERADMIN token الذي اختبرناه سابقاً:
+
+  curl -i http://localhost:4000/api/platform/test \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AdGVzdC5jb20iLCJyb2xlIjoiU1VQRVJBRE1JTiIsImlkIjo1LCJjb21wYW55SWQiOm51bGwsImlhdCI6MTc5MTAzNDcxNCwiZXhwIjoxNzkxMDU5OTE0fQ.w8IrghxUrCH9uI_gCKrrAB84GHVcaLYapNR2M1-_gkQ"
+
+
+
+curl -i http://localhost:4000/api/companies \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InN1cGVyYWRtaW5AdGVzdC5jb20iLCJyb2xlIjoiU1VQRVJBRE1JTiIsImlkIjo1LCJjb21wYW55SWQiOm51bGwsImlhdCI6MTc5MTAzNDcxNCwiZXhwIjoxNzkxMDU5OTE0fQ.w8IrghxUrCH9uI_gCKrrAB84GHVcaLYapNR2M1-_gkQ"
+
 
 
 npm install --ignore-scripts
@@ -486,5 +648,33 @@ or
     port: Number(process.env.DB_PORT),
     dialect: "mysql",
   },
+
+
+
+
+
+
+
+
+
+                 Authentication
+                       │
+                       ▼
+                 User Identity
+                       │
+              ┌────────┴────────┐
+              ▼                 ▼
+             Role          companyId
+              │                 │
+              ▼                 ▼
+         Permissions       Tenant Scope
+              │                 │
+              └────────┬────────┘
+                       ▼
+                 Resource Policy
+                       │
+                       ▼
+                    ALLOW/DENY
+
 
    */
