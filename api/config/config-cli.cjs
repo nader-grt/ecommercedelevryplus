@@ -426,7 +426,7 @@ docker compose ps
 docker compose exec api npx sequelize-cli db:migrate:status
 
 
-docker exec -it ecommerce-mariadb mariadb -u root -prootpassword
+docker exec -it ecommerce-mariadb mariadb -u root -p
 
 
 
