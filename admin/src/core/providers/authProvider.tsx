@@ -50,26 +50,53 @@ const authProvider = {
 
   getUser: () => user ?? JSON.parse(sessionStorage.getItem("user") || "null"),
 
+  // checkAuth: async () => {
+  //   const token = authProvider.getAccessToken();
+  //   if (!token) return Promise.reject();
+
+  //   // optional: get fresh user info from backend
+  //   try {
+  //     const res = await fetch("http://localhost:4000/api/me", {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //       credentials: "include",
+  //     });
+  //     if (!res.ok) throw new Error("Unauthorized");
+  //     const userData = await res.json();
+  //     user = userData;
+  //     return Promise.resolve();
+  //   } catch {
+  //     authProvider.clear();
+  //     return Promise.reject();
+  //   }
+  // },
+
   checkAuth: async () => {
     const token = authProvider.getAccessToken();
+  
     if (!token) return Promise.reject();
-
-    // optional: get fresh user info from backend
+  
     try {
       const res = await fetch("http://localhost:4000/api/me", {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       });
+  
       if (!res.ok) throw new Error("Unauthorized");
-      const userData = await res.json();
-      user = userData;
+  
+      const response = await res.json();
+  
+      user = response.data;
+  
+      sessionStorage.setItem("user", JSON.stringify(user));
+  
       return Promise.resolve();
     } catch {
       authProvider.clear();
       return Promise.reject();
     }
   },
-
   checkError: (error: any) => {
     if (error.status === 401 || error.status === 403) {
       authProvider.clear();
@@ -78,9 +105,24 @@ const authProvider = {
     return Promise.resolve();
   },
 
+  // getPermissions: () => {
+  //   const u = authProvider.getUser();
+  //   return Promise.resolve(u?.role);
+  // },
+
   getPermissions: () => {
     const u = authProvider.getUser();
-    return Promise.resolve(u?.role);
+  
+    const scope =
+      u?.role === "SUPERADMIN" && u?.companyId === null
+        ? "PLATFORM"
+        : "COMPANY";
+  
+    return Promise.resolve({
+      role: u?.role,
+      companyId: u?.companyId ?? null,
+      scope,
+    });
   },
 };
 

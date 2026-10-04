@@ -1,21 +1,37 @@
 import { useState, useEffect } from "react";
+
 import { Menu } from "react-admin";
+
 import { useLocation } from "react-router-dom";
 
 import PeopleIcon from "@mui/icons-material/People";
+
 import DashboardIcon from "@mui/icons-material/Dashboard";
+
 import GroupIcon from "@mui/icons-material/Group";
+
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+
 import DeliveryDiningIcon from "@mui/icons-material/DeliveryDining";
+
 import StoreIcon from "@mui/icons-material/Store";
+
 import CategoryIcon from "@mui/icons-material/Category";
+
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+
 import HomeIcon from "@mui/icons-material/Home";
+
 import ViewWeekIcon from "@mui/icons-material/ViewWeek";
+
 import BusinessIcon from "@mui/icons-material/Business";
+
 import WarehouseIcon from "@mui/icons-material/Warehouse";
+
 import Inventory2Icon from "@mui/icons-material/Inventory2";
+
 import ExpandLess from "@mui/icons-material/ExpandLess";
+
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
 import {
@@ -24,10 +40,17 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
+import { isCompanyUser, isPlatformUser } from "../providers/userScope";
+
+
 
 const MyMenu = () => {
   const [open, setOpen] = useState(false);
+
   const location = useLocation();
+
+  const platformUser = isPlatformUser();
+  const companyUser = isCompanyUser();
 
   const handleClick = () => {
     setOpen(!open);
@@ -45,103 +68,164 @@ const MyMenu = () => {
 
   return (
     <Menu>
-      <Menu.Item to="/" primaryText="Dashboard" leftIcon={<DashboardIcon />} />
 
-      <Menu.Item
-        to="/companies"
-        primaryText="Companies"
-        leftIcon={<BusinessIcon />}
-      />
-         <Menu.Item
-        to="/owners"
-        primaryText="Company Owners"
-        leftIcon={<BusinessIcon />}
-      />
+      {/* =========================================
+          PLATFORM SCOPE
+          SUPERADMIN + companyId === null
+         ========================================= */}
 
-      <Menu.Item
-        to="/warehouses"
-        primaryText="WareHouses"
-        leftIcon={<WarehouseIcon />}
-      />
-      <Menu.Item
-        to="/inventories"
-        primaryText="Inventory"
-        leftIcon={<Inventory2Icon />}
-      />
+      {platformUser && (
+        <>
+          <Menu.Item
+            to="/"
+            primaryText="Dashboard"
+            leftIcon={<DashboardIcon />}
+          />
 
-      <Menu.Item to="/users" primaryText="Users" leftIcon={<GroupIcon />} />
+          <Menu.Item
+            to="/companies"
+            primaryText="Companies"
+            leftIcon={<BusinessIcon />}
+          />
 
-      {/* Employees Dropdown */}
-      <ListItemButton
-        onClick={handleClick}
-        sx={{
-          pl: 2,
-          borderRadius: 2,
-          mx: 1,
-          "&:hover": {
-            backgroundColor: "#f5f5f5",
-          },
-        }}
-      >
-        <ListItemIcon>
-          <PeopleIcon />
-        </ListItemIcon>
+          <Menu.Item
+            to="/owners"
+            primaryText="Company Owners"
+            leftIcon={<BusinessIcon />}
+          />
 
-        <ListItemText primary="Employees" />
+          <Menu.Item
+            to="/platform-settings"
+            primaryText="Platform Settings"
+            leftIcon={<BusinessIcon />}
+          />
+        </>
+      )}
 
-        {open ? <ExpandLess /> : <ExpandMore />}
-      </ListItemButton>
+      {/* =========================================
+          COMPANY / TENANT SCOPE
+          OWNER / ADMIN / USER + companyId
+         ========================================= */}
 
-      <Collapse in={open} timeout="auto" unmountOnExit>
-        <Menu.Item
-          to="/shippers"
-          primaryText="Shippers"
-          leftIcon={<LocalShippingIcon />}
-          sx={{ pl: 4 }}
-        />
+      {companyUser && (
+        <>
+          <Menu.Item
+            to="/"
+            primaryText="Dashboard"
+            leftIcon={<DashboardIcon />}
+          />
 
-        <Menu.Item
-          to="/deliverers"
-          primaryText="Deliverers"
-          leftIcon={<DeliveryDiningIcon />}
-          sx={{ pl: 4 }}
-        />
+          <Menu.Item
+            to="/my-company"
+            primaryText="My Company"
+            leftIcon={<BusinessIcon />}
+          />
 
-        <Menu.Item
-          to="/suppliers"
-          primaryText="Suppliers"
-          leftIcon={<StoreIcon />}
-          sx={{ pl: 4 }}
-        />
-      </Collapse>
+          <Menu.Item
+            to="/company-settings"
+            primaryText="Company Settings"
+            leftIcon={<BusinessIcon />}
+          />
 
-      <Menu.Item
-        to="/usersAddress"
-        primaryText="Addresses"
-        leftIcon={<HomeIcon />}
-      />
+          <Menu.Item
+            to="/users"
+            primaryText="Users"
+            leftIcon={<GroupIcon />}
+          />
 
+          <Menu.Item
+            to="/warehouses"
+            primaryText="WareHouses"
+            leftIcon={<WarehouseIcon />}
+          />
 
+          <Menu.Item
+            to="/inventories"
+            primaryText="Inventory"
+            leftIcon={<Inventory2Icon />}
+          />
 
-      <Menu.Item
-        to="/categories"
-        primaryText="Categories"
-        leftIcon={<CategoryIcon />}
-      />
-      <Menu.Item
-        to="/products"
-        primaryText="Products"
-        leftIcon={<StoreIcon />}
-      />
+          {/* Employees Dropdown */}
 
-      <Menu.Item
-        to="/orders"
-        primaryText="Orders"
-        leftIcon={<ShoppingCartIcon />}
-      />
+          <ListItemButton
+            onClick={handleClick}
+            sx={{
+              pl: 2,
+              borderRadius: 2,
+              mx: 1,
+              "&:hover": {
+                backgroundColor: "#f5f5f5",
+              },
+            }}
+          >
+            <ListItemIcon>
+              <PeopleIcon />
+            </ListItemIcon>
 
+            <ListItemText primary="Employees" />
 
-      <Menu.Item to="/days" primaryText="Days" leftIcon={<ViewWeekIcon />} />
+            {open ? <ExpandLess /> : <ExpandMore />}
+          </ListItemButton>
+
+          <Collapse
+            in={open}
+            timeout="auto"
+            unmountOnExit
+          >
+            <Menu.Item
+              to="/shippers"
+              primaryText="Shippers"
+              leftIcon={<LocalShippingIcon />}
+              sx={{ pl: 4 }}
+            />
+
+            <Menu.Item
+              to="/deliverers"
+              primaryText="Deliverers"
+              leftIcon={<DeliveryDiningIcon />}
+              sx={{ pl: 4 }}
+            />
+
+            <Menu.Item
+              to="/suppliers"
+              primaryText="Suppliers"
+              leftIcon={<StoreIcon />}
+              sx={{ pl: 4 }}
+            />
+          </Collapse>
+
+          <Menu.Item
+            to="/usersAddress"
+            primaryText="Addresses"
+            leftIcon={<HomeIcon />}
+          />
+
+          <Menu.Item
+            to="/categories"
+            primaryText="Categories"
+            leftIcon={<CategoryIcon />}
+          />
+
+          <Menu.Item
+            to="/products"
+            primaryText="Products"
+            leftIcon={<StoreIcon />}
+          />
+
+          <Menu.Item
+            to="/orders"
+            primaryText="Orders"
+            leftIcon={<ShoppingCartIcon />}
+          />
+
+          <Menu.Item
+            to="/days"
+            primaryText="Days"
+            leftIcon={<ViewWeekIcon />}
+          />
+        </>
+      )}
+
     </Menu>
   );
 };
