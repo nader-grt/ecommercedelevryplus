@@ -3,7 +3,8 @@ import IUserResponse from "./userRepo";
 
 export default abstract class IUserRepoInterface {
   protected abstract FindUserById(
-    userId: number
+    userId: number,
+    companyId?: number
   ): Promise<IUserResponse | null>;
   //  protected abstract   FindAllUsersByRoleIsUser(role:string):Promise<any> ;
   //  protected abstract CreateUser():Promise<void> ;

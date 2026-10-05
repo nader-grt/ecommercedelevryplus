@@ -28,10 +28,10 @@ export default class RefreshTokenUseCase {
         process.env.REFRESH_TOKEN_SECRET!
       );
 
-      const { email, role, id } = payload;
+      const { email, role, id ,companyId} = payload;
 
-      const newAccessToken = await generateAccessToken(email, role, id);
-      const newRefreshToken = await generateRefreshToken(email, role, id);
+      const newAccessToken = await generateAccessToken(email, role, id,companyId);
+      const newRefreshToken = await generateRefreshToken(email, role, id ,companyId);
 
       const newHash = crypto
         .createHash("sha256")

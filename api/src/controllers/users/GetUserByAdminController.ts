@@ -46,6 +46,7 @@ export default class GetUserByAdminController extends BaseController {
         actorId: Number(req.user!.id),
         actorEmail: req.user!.email,
         actorRole: req.user!.role,
+        companyId: req.user!.companyId
       };
 
       const result = await this._getUserByAdminUseCase.execute({

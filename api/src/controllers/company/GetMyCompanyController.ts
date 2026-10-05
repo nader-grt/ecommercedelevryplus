@@ -10,15 +10,16 @@ export default class GetMyCompanyController  extends BaseController {
 
   async executeImpl(req: RequestAuth, res: Response) {
     try {
-      const companyId = req.user?.companyId;
+      const companyId :any = req.user?.companyId;
 
+      console.log("********  companyId is \t ",companyId)
       if (!companyId) {
         return res.status(403).json({
           message: "User is not associated with a company",
         });
       }
 
-      const company = await this.useCase.execute(companyId);
+      const company = await this.useCase.execute(Number(companyId));
 
     //   return res.status(200).json({
     //     message: "Company fetched successfully",

@@ -21,9 +21,17 @@ export default class GetProfileUserController extends BaseController
        protected async executeImpl(req: RequestAuth, res: Response): Promise<any> {
            
 
-              const userId = Number(req.user!.id);
+              // const userId = Number(req.user!.id);
 
-              const result = await this._getProfileUser.execute(userId);
+              // const result = await this._getProfileUser.execute(userId);
+
+              const userId = Number(req.user!.id);
+const companyId = req.user!.companyId;
+
+const result = await this._getProfileUser.execute({
+  userId,
+  companyId,
+});
           
               try {
               if (!result.success) {
@@ -36,6 +44,8 @@ export default class GetProfileUserController extends BaseController
                 lastName: result.user[0].lastName,
                 email: result.user[0].email,
                 phone: result.user[0].phone,
+                role: result.user[0].role,
+                companyId: result.user[0].companyId,
               });
             } catch (err) {
               return this.fail(res, "unexpected error");

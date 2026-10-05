@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import Joi from "joi";
+import Joi from "joi"; //Validation
 import { BaseController } from "../../infra/BaseCOntroller";
 import generateAccessToken from "../../middleware/generateAccessToken";
 import { generateRefreshToken } from "../../middleware/generateRefreshToken";

@@ -9,7 +9,7 @@ export interface RequestAuth extends Request {
     email: string;
     role: Role;
     id: number;
-    companyId?:number ;
+    companyId:number | null ;
   };
 }
 

@@ -143,14 +143,38 @@ export class userRepo extends IUserRepoInterface {
     }
   }
 
-  public async FindUserById(id: number): Promise<IUserResponse | any> {
+  // public async FindUserById(id: number): Promise<IUserResponse | any> {
+  //   try {
+  //     console.log("iiiiiiiiiiiiiiiidddddd  findd ")
+  //     const resultUser = await User.findByPk(id);
+
+  //     if (!resultUser) return null;
+
+  //     const user = resultUser.get({ plain: true }) as IUserResponse;
+  //     return user ? [user] : null;
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
+
+  public async FindUserById(
+    id: number,
+    companyId: number
+  ): Promise<IUserResponse | any> {
     try {
-      console.log("iiiiiiiiiiiiiiiidddddd  findd ")
-      const resultUser = await User.findByPk(id);
-
+      console.log("iiiiiiiiiiiiiiiidddddd  findd ");
+  
+      const resultUser = await User.findOne({
+        where: {
+          id,
+          companyId,
+        },
+      });
+  
       if (!resultUser) return null;
-
+  
       const user = resultUser.get({ plain: true }) as IUserResponse;
+  
       return user ? [user] : null;
     } catch (error) {
       console.log(error);

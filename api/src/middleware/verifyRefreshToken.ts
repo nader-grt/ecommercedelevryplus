@@ -24,7 +24,8 @@ export function verifyRefreshToken(
     req.user = {
       id: decoded.id,
       email: decoded.email,
-      role: decoded.role
+      role: decoded.role,
+      companyId: decoded.companyId
     };
 
    // console.log("reqqqqqqqq  user ",req.user)

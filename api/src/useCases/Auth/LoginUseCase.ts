@@ -72,7 +72,7 @@ export default class LoginUseCase {
         data: {
           accessToken,
           refreshToken, //
-          user: { id: user.id, email: user.email, role: user.role },
+          user: { id: user.id, email: user.email, role: user.role,companyId:user.companyId },
         },
       };
     } catch (error: any) {

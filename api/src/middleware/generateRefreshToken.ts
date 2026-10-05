@@ -8,7 +8,7 @@ export async function generateRefreshToken(
     id: number,
     companyId: number | null
   ): Promise<string> {
-    const payload = { email, role, id };
+    const payload = { email, role, id ,companyId};
   
     return jwt.sign(payload, process.env.REFRESH_TOKEN_SECRET! as string, {
       expiresIn: "7d",

@@ -16,6 +16,10 @@ export enum Scope {
   COMPANY = "COMPANY",
 }
 
+export enum AccountStatus {
+  INVITED = "INVITED",
+  ACTIVE = "ACTIVE",
+}
 //  ERD   DIAGRAM ENTITY RELATIONSHIP 
 
 //5  STEP 
@@ -51,9 +55,10 @@ export default interface IUser {
   lastName: string;
   phone: string;
   email: string;
-  password?: string;
+  password?: string | null;
   role?: Role;
-  companyId?:number | null
+  companyId?:number | null;
+  accountStatus?: AccountStatus;
   //city?: string;
   //address?: string;
 }
@@ -64,9 +69,10 @@ export class User extends Model<IUser> implements IUser {
   public lastName!: string;
   public phone!: string;
   public email!: string;
-  public password!: string;
+  public password!: string | null;
   public role!: Role;
-  public companyId!:number | null
+  public companyId!:number | null;
+  public accountStatus!: AccountStatus;
   //public city!: string;
  // public address!: string;
 }
@@ -80,6 +86,11 @@ export function UserModel(sequelize: Sequelize) {
       phone: { type: DataTypes.STRING, allowNull: false },
       email: { type: DataTypes.STRING, allowNull: false, unique: true },
       password: { type: DataTypes.STRING, allowNull: false },
+      accountStatus: {
+        type: DataTypes.ENUM(...Object.values(AccountStatus)),
+        allowNull: false,
+        defaultValue: AccountStatus.ACTIVE,
+      },
       role: {
         type: DataTypes.ENUM(...Object.values(Role)),
         allowNull: false,
