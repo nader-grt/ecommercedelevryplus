@@ -5,34 +5,21 @@ import { Menu } from "react-admin";
 import { useLocation } from "react-router-dom";
 
 import PeopleIcon from "@mui/icons-material/People";
-
 import DashboardIcon from "@mui/icons-material/Dashboard";
-
 import GroupIcon from "@mui/icons-material/Group";
-
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-
 import DeliveryDiningIcon from "@mui/icons-material/DeliveryDining";
-
 import StoreIcon from "@mui/icons-material/Store";
-
 import CategoryIcon from "@mui/icons-material/Category";
-
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-
 import HomeIcon from "@mui/icons-material/Home";
-
 import ViewWeekIcon from "@mui/icons-material/ViewWeek";
-
 import BusinessIcon from "@mui/icons-material/Business";
-
 import WarehouseIcon from "@mui/icons-material/Warehouse";
-
 import Inventory2Icon from "@mui/icons-material/Inventory2";
-
 import ExpandLess from "@mui/icons-material/ExpandLess";
-
 import ExpandMore from "@mui/icons-material/ExpandMore";
+
 
 import {
   Collapse,
@@ -40,9 +27,8 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
+
 import { isCompanyUser, isPlatformUser } from "../providers/userScope";
-
-
 
 const MyMenu = () => {
   const [open, setOpen] = useState(false);
@@ -68,7 +54,6 @@ const MyMenu = () => {
 
   return (
     <Menu>
-
       {/* =========================================
           PLATFORM SCOPE
           SUPERADMIN + companyId === null
@@ -93,12 +78,6 @@ const MyMenu = () => {
             primaryText="Company Owners"
             leftIcon={<BusinessIcon />}
           />
-
-          <Menu.Item
-            to="/platform-settings"
-            primaryText="Platform Settings"
-            leftIcon={<BusinessIcon />}
-          />
         </>
       )}
 
@@ -114,28 +93,16 @@ const MyMenu = () => {
             primaryText="Dashboard"
             leftIcon={<DashboardIcon />}
           />
-
-          <Menu.Item
-            to="/my-company"
-            primaryText="My Company"
-            leftIcon={<BusinessIcon />}
-          />
-
           <Menu.Item
             to="/company-settings"
             primaryText="Company Settings"
             leftIcon={<BusinessIcon />}
           />
-
-          <Menu.Item
-            to="/users"
-            primaryText="Users"
-            leftIcon={<GroupIcon />}
-          />
+          <Menu.Item to="/users" primaryText="Users" leftIcon={<GroupIcon />} />
 
           <Menu.Item
             to="/warehouses"
-            primaryText="WareHouses"
+            primaryText="Warehouses"
             leftIcon={<WarehouseIcon />}
           />
 
@@ -167,11 +134,7 @@ const MyMenu = () => {
             {open ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
 
-          <Collapse
-            in={open}
-            timeout="auto"
-            unmountOnExit
-          >
+          <Collapse in={open} timeout="auto" unmountOnExit>
             <Menu.Item
               to="/shippers"
               primaryText="Shippers"
@@ -225,7 +188,6 @@ const MyMenu = () => {
           />
         </>
       )}
-
     </Menu>
   );
 };

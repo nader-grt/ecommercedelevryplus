@@ -1,4 +1,5 @@
 
+
 let accessToken: string | any = null;
 let user: any = null;
 
@@ -17,8 +18,15 @@ const authProvider = {
     }
 
     const data = await res.json();
+    // accessToken = data.data.accessToken;
+    // user = data.data.user;
+
+    console.log("LOGIN response:", data);
+
     accessToken = data.data.accessToken;
     user = data.data.user;
+
+    console.log("LOGIN user:", user);
 
     sessionStorage.setItem("accessToken", accessToken);
     sessionStorage.setItem("user", JSON.stringify(user));
@@ -46,9 +54,26 @@ const authProvider = {
     if (userData) sessionStorage.setItem("user", JSON.stringify(userData));
   },
 
-  getAccessToken: () => accessToken ?? sessionStorage.getItem("accessToken"),
+  // getAccessToken: () => accessToken ?? sessionStorage.getItem("accessToken"),
 
-  getUser: () => user ?? JSON.parse(sessionStorage.getItem("user") || "null"),
+  // getUser: () => user ?? JSON.parse(sessionStorage.getItem("user") || "null"),
+
+  getAccessToken: () => {
+    const token = accessToken ?? sessionStorage.getItem("accessToken");
+
+    console.log("authProvider.getAccessToken():", token);
+
+    return token;
+  },
+
+  // getUser: () => {
+  //   const currentUser =
+  //     user ?? JSON.parse(sessionStorage.getItem("user") || "null");
+
+  //   console.log("authProvider.getUser():", currentUser);
+
+  //   return currentUser;
+  // },
 
   // checkAuth: async () => {
   //   const token = authProvider.getAccessToken();
@@ -70,10 +95,86 @@ const authProvider = {
   //   }
   // },
 
+  // checkAuth: async () => {
+  //   const token = authProvider.getAccessToken();
+
+  //   if (!token) return Promise.reject();
+
+  //   try {
+  //     const res = await fetch("http://localhost:4000/api/me", {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       credentials: "include",
+  //     });
+
+  //     if (!res.ok) throw new Error("Unauthorized");
+
+  //     const response = await res.json();
+
+  //     user = response.data;
+
+  //     sessionStorage.setItem("user", JSON.stringify(user));
+
+  //     return Promise.resolve();
+  //   } catch {
+  //     authProvider.clear();
+  //     return Promise.reject();
+  //   }
+  // },
+
+  getUser: () => {
+    const currentUser =
+      user ?? JSON.parse(sessionStorage.getItem("user") || "null");
+
+    console.log("authProvider.getUser():", currentUser);
+
+    return currentUser;
+  },
+
+  // checkAuth: async () => {
+  //   const token = authProvider.getAccessToken();
+
+  //   if (!token) {
+  //     return Promise.reject();
+  //   }
+
+  //   try {
+  //     const res = await fetch("http://localhost:4000/api/me", {
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //       },
+  //       credentials: "include",
+  //     });
+
+  //     if (!res.ok) {
+  //       throw new Error("Unauthorized");
+  //     }
+
+  //     const response = await res.json();
+
+  //     console.log("checkAuth /api/me response:", response);
+
+  //     user = response.data;
+
+  //     console.log("checkAuth user:", user);
+
+  //     sessionStorage.setItem("user", JSON.stringify(user));
+
+  //     return Promise.resolve();
+  //   } catch {
+  //     authProvider.clear();
+  //     return Promise.reject();
+  //   }
+  // },
+
+
   checkAuth: async () => {
     const token = authProvider.getAccessToken();
   
-    if (!token) return Promise.reject();
+    if (!token) {
+      return Promise.reject();
+    }
   
     try {
       const res = await fetch("http://localhost:4000/api/me", {
@@ -83,11 +184,17 @@ const authProvider = {
         credentials: "include",
       });
   
-      if (!res.ok) throw new Error("Unauthorized");
+      if (!res.ok) {
+        throw new Error("Unauthorized");
+      }
   
       const response = await res.json();
   
+      console.log("checkAuth /api/me response:", response);
+  
       user = response.data;
+  
+      console.log("checkAuth user:", user);
   
       sessionStorage.setItem("user", JSON.stringify(user));
   
@@ -110,20 +217,132 @@ const authProvider = {
   //   return Promise.resolve(u?.role);
   // },
 
+  // getPermissions: () => {
+  //   const u = authProvider.getUser();
+
+  //   const scope =
+  //     u?.role === "SUPERADMIN" && u?.companyId === null
+  //       ? "PLATFORM"
+  //       : "COMPANY";
+
+  //       console.log("React Admin permissions:", {
+  //         role: u?.role,
+  //         companyId: u?.companyId ?? null,
+  //         scope,
+  //       });
+
+  //   return Promise.resolve({
+  //     role: u?.role,
+  //     companyId: u?.companyId ?? null,
+  //     scope,
+  //   });
+  // },
+
   getPermissions: () => {
     const u = authProvider.getUser();
-  
+
     const scope =
-      u?.role === "SUPERADMIN" && u?.companyId === null
-        ? "PLATFORM"
-        : "COMPANY";
-  
-    return Promise.resolve({
+      u?.role === "SUPERADMIN" && u?.companyId == null ? "PLATFORM" : "COMPANY";
+
+    const permissions = {
       role: u?.role,
       companyId: u?.companyId ?? null,
       scope,
-    });
+    };
+
+    console.log("React Admin permissions:", permissions);
+
+    return Promise.resolve(permissions);
   },
+
+  // canAccess: async ({
+  //   action,
+  //   resource,
+  // }: CanAccessProps): Promise<boolean> => {
+  //   const u = authProvider.getUser();
+  
+  //   console.log("React Admin canAccess:", {
+  //     role: u?.role,
+  //     companyId: u?.companyId ?? null,
+  //     action,
+  //     resource,
+  //   });
+  
+  //   // SUPERADMIN / PLATFORM
+  //   if (u?.role === "SUPERADMIN" && u?.companyId == null) {
+  //     if (resource === "companies") {
+  //       console.log(
+  //         "canAccess companies → SUPERADMIN → ALLOWED ✅"
+  //       );
+  
+  //       return true;
+  //     }
+  //   }
+  
+  //   // COMPANY USER
+  //   if (u?.companyId != null) {
+  //     if (resource === "companies") {
+  //       console.log(
+  //         "canAccess companies → COMPANY USER → DENIED ❌"
+  //       );
+  
+  //       return false;
+  //     }
+  //   }
+  
+  //   // Temporary: allow other resources
+  //   return true;
+  // },
+
+  canAccess: async <
+  RecordType extends Record<string, any> = Record<string, any>
+>({
+  action,
+  resource,
+  record,
+}: {
+  action: string;
+  resource: string;
+  record?: RecordType;
+}): Promise<boolean> => {
+  const u = authProvider.getUser();
+
+  console.log("React Admin canAccess:", {
+    role: u?.role,
+    companyId: u?.companyId ?? null,
+    action,
+    resource,
+    record,
+  });
+
+  // SUPERADMIN = PLATFORM
+  if (
+    u?.role === "SUPERADMIN" &&
+    u?.companyId == null
+  ) {
+    if (resource === "companies") {
+      console.log(
+        "canAccess companies → SUPERADMIN → ALLOWED ✅"
+      );
+
+      return true;
+    }
+  }
+
+  // COMPANY USERS
+  if (u?.companyId != null) {
+    if (resource === "companies") {
+      console.log(
+        "canAccess companies → COMPANY USER → DENIED ❌"
+      );
+
+      return false;
+    }
+  }
+
+  // TEMPORARY: allow other resources
+  return true;
+},
 };
 
 export default authProvider;

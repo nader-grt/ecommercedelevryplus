@@ -57,6 +57,29 @@ const dataProvider: any = {
     };
   }
 
+  //  =========================
+  //  ADD COMPANY SETTING
+  //  =========================
+  if (resource === "company-settings") {
+    const { json } = await httpclientService(
+      `${apiUrl}/company/settings`
+    );
+  
+    console.log("Company Settings response:", json);
+  
+    const settings = json?.message?.data;
+  
+    if (!settings?.id) {
+      throw new Error("Company settings data not found");
+    }
+  
+    return {
+      data: [settings],
+      total: 1,
+    };
+  }
+
+
   if (resource === "categories") {
     const query = {
       page,
@@ -357,6 +380,32 @@ const dataProvider: any = {
     
       return adaptUpdateUserAddress(json);
     }
+
+          // =========================
+  // COMPANY SETTINGS
+  // =========================
+  if (resource === "company-settings") {
+    const { json } = await httpclientService(
+      `${apiUrl}/company/settings`,
+      {
+        method: "PUT",
+        body: JSON.stringify(params.data),
+        credentials: "include",
+      }
+    );
+
+    console.log("Company Settings updated:", json);
+
+    const settings = json?.message?.data;
+
+    if (!settings?.id) {
+      throw new Error("Company settings update failed");
+    }
+
+    return {
+      data: settings,
+    };
+  }
 
     // =========================
     //  Category 
