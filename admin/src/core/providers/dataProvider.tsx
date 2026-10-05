@@ -1,116 +1,118 @@
-import { adaptCreateUserAddress, adaptGetManyUserAddresses, adaptList, adaptListCategories, adaptListCompanies, adaptListProductByCategory, adaptListProducts, adaptObject,adaptOneCompany,adaptOneWarehouse,adaptUpdateProductWithVariant,adaptUpdateUserAddress,adaptUserAddresses, buildProductFormData } from "../../apiAdapter";
+import {
+  adaptCreateUserAddress,
+  adaptGetManyUserAddresses,
+  adaptList,
+  adaptListCategories,
+  adaptListCompanies,
+  adaptListProductByCategory,
+  adaptListProducts,
+  adaptObject,
+  adaptOneCompany,
+  adaptOneWarehouse,
+  adaptUpdateProductWithVariant,
+  adaptUpdateUserAddress,
+  adaptUserAddresses,
+  buildProductFormData,
+} from "../../apiAdapter";
 import { httpclientService } from "../../auth/httpclientService/httpclientService";
 import { buildProductFormDataProvider } from "../../shared/utils/buildFormData";
-
 
 const apiUrl = "http://localhost:4000/api";
 
 const dataProvider: any = {
-  getList: async (resource:any, params:any) => {
+  getList: async (resource: any, params: any) => {
+    console.log(resource, "params", params);
 
-    console.log(resource,"params",params)
-    
     const { page = 1, perPage = 10 } = params.pagination || {};
-  const { field = "id", order = "ASC" } = params.sort || {};
-  const filter = params.filter || {};
+    const { field = "id", order = "ASC" } = params.sort || {};
+    const filter = params.filter || {};
 
-  let url = "";
-  const categoryId = filter.categoryId;
-  if (resource === "products") {
-
-
-    if (categoryId) {
-      url = `${apiUrl}/products/${categoryId}/categories`;
-    } else {
-      url = `${apiUrl}/products`;
-    }
-  } else {
-    const query = {
-      page,
-      perPage,
-      sort: field,
-      order,
-      filter: JSON.stringify(filter),
-    };
-    url = `${apiUrl}/${resource}?${new URLSearchParams(query).toString()}`;
-  }
-
-  const { json } = await httpclientService(url);
-
-
-  if (resource === "companies") {
-    return adaptListCompanies(json);
-  }
-
-  //  =========================
-  //  ADD THIS BLOCK HERE
-  //  =========================
-  if (resource === "owners") {
-    const records = json?.data || [];
-
-    return {
-      data: records.map((item: any) => ({
-        ...item,
-        id: item.id,
-      })),
-      total: records.length,
-    };
-  }
-
-  if (resource === "categories") {
-    const query = {
-      page,
-      perPage,
-      sort: field,
-      order,
-      filter: JSON.stringify(filter),
-    };
-  
-    const url = `${apiUrl}/categories?${new URLSearchParams(query).toString()}`;
-  
-    const { json } = await httpclientService(url);
-  
-    return adaptListCategories(json);
-  }
-
-  if (resource === "products") {
-
-    if (categoryId) {
-
-     // console.log("******** by category")
-    return adaptListProductByCategory(json);
-    } else {
-      return adaptListProducts(json);
-    }
-    
-  }
-   
-      if(resource === "usersAddress")
-      {
-        const { json } = await httpclientService(
-          `${apiUrl}/${resource}`
-        );
-
-        console.log("jsssssson ",json)
-        return adaptUserAddresses(json)
-
+    let url = "";
+    const categoryId = filter.categoryId;
+    if (resource === "products") {
+      if (categoryId) {
+        url = `${apiUrl}/products/${categoryId}/categories`;
+      } else {
+        url = `${apiUrl}/products`;
       }
-  return adaptList(json);
-    },
+    } else {
+      const query = {
+        page,
+        perPage,
+        sort: field,
+        order,
+        filter: JSON.stringify(filter),
+      };
+      url = `${apiUrl}/${resource}?${new URLSearchParams(query).toString()}`;
+    }
+
+    const { json } = await httpclientService(url);
+
+    if (resource === "companies") {
+      return adaptListCompanies(json);
+    }
+
+    //  =========================
+    //  ADD THIS BLOCK HERE
+    //  =========================
+    if (resource === "owners") {
+      const records = json?.data || [];
+
+      return {
+        data: records.map((item: any) => ({
+          ...item,
+          id: item.id,
+        })),
+        total: records.length,
+      };
+    }
+
+    if (resource === "categories") {
+      const query = {
+        page,
+        perPage,
+        sort: field,
+        order,
+        filter: JSON.stringify(filter),
+      };
+
+      const url = `${apiUrl}/categories?${new URLSearchParams(query).toString()}`;
+
+      const { json } = await httpclientService(url);
+
+      return adaptListCategories(json);
+    }
+
+    if (resource === "products") {
+      if (categoryId) {
+        // console.log("******** by category")
+        return adaptListProductByCategory(json);
+      } else {
+        return adaptListProducts(json);
+      }
+    }
+
+    if (resource === "usersAddress") {
+      const { json } = await httpclientService(`${apiUrl}/${resource}`);
+
+      console.log("jsssssson ", json);
+      return adaptUserAddresses(json);
+    }
+    return adaptList(json);
+  },
 
   getOne: async (resource: any, params: any) => {
-   
     if (resource === "categories") {
       const { json } = await httpclientService(
         `${apiUrl}/categories/${params.id}`,
         {
           credentials: "include",
-        }
+        },
       );
-    
+
       return {
         data: {
-          id: json.data.categoryId,  //  FIX
+          id: json.data.categoryId, //  FIX
           name: json.data.name,
         },
       };
@@ -121,56 +123,50 @@ const dataProvider: any = {
     // =========================
     if (resource === "products") {
       const { json } = await httpclientService(
-        `${apiUrl}/products/${params.id}`
+        `${apiUrl}/products/${params.id}`,
       );
-  
+
       return adaptUpdateProductWithVariant(json);
     }
-   
-    //warehouse one 
+
+    //warehouse one
     if (resource === "warehouses") {
       const { json } = await httpclientService(
-        `${apiUrl}/warehouses/${params.id}`
+        `${apiUrl}/warehouses/${params.id}`,
       );
-    
+
       return adaptOneWarehouse(json);
     }
 
     if (resource === "inventories") {
-
       //  HERE
       const urlParams = new URLSearchParams(window.location.search);
-  
+
       const variantId = urlParams.get("variantId");
       const warehouseId = urlParams.get("warehouseId");
-  
+
       const query = new URLSearchParams();
-  
+
       if (variantId) query.append("variantId", variantId);
       if (warehouseId) query.append("warehouseId", warehouseId);
-  
+
       const url = `${apiUrl}/${resource}/${params.id}?${query.toString()}`;
-  
+
       const { json } = await httpclientService(url);
-  
+
       return adaptObject(json.data);
     }
-  
 
-    
-   
     if (resource === "companies") {
-        
-      console.log("*****  ", `${apiUrl}/${resource}/${params.id}`)
+      console.log("*****  ", `${apiUrl}/${resource}/${params.id}`);
       const { json } = await httpclientService(
-        `${apiUrl}/${resource}/${params.id}`
+        `${apiUrl}/${resource}/${params.id}`,
       );
       return adaptOneCompany(json);
     }
 
-               
     const { json } = await httpclientService(
-      `${apiUrl}/${resource}/${params.id}`
+      `${apiUrl}/${resource}/${params.id}`,
     );
     return adaptObject(json);
   },
@@ -178,11 +174,11 @@ const dataProvider: any = {
   getMany: async (resource: string, params: { ids: number[] }) => {
     try {
       const { json } = await httpclientService(
-        `${apiUrl}/${resource}?ids=${params.ids.join(",")}`
+        `${apiUrl}/${resource}?ids=${params.ids.join(",")}`,
       );
-  
+
       let dataArray: any[] = [];
-  
+
       // =========================
       // normalize response
       // =========================
@@ -191,7 +187,7 @@ const dataProvider: any = {
       } else if (json.data && typeof json.data === "object") {
         dataArray = [json.data];
       }
-  
+
       // =========================
       // FIX: ensure id exists
       // =========================
@@ -205,19 +201,19 @@ const dataProvider: any = {
           item.email ??
           null,
       }));
-  
+
       // =========================
       // validate safely (no crash)
       // =========================
       const valid = normalized.filter((item) => item.id !== null);
-  
+
       if (valid.length !== normalized.length) {
         console.warn(
           `getMany warning: some ${resource} items missing id`,
-          normalized
+          normalized,
         );
       }
-  
+
       return { data: valid };
     } catch (error) {
       console.error("getMany error:", error);
@@ -226,22 +222,21 @@ const dataProvider: any = {
   },
 
   getManyReference: async (resource: any, params: any) => {
-
     if (resource === "usersAddress") {
       //addresses
       const url = `${apiUrl}/usersAddress/${params.id}`;
-  
+
       const { json } = await httpclientService(url);
-  
+
       // return {
       //   data: json.data || json,
       //   total: (json.data || json).length,
       // };
 
-      return adaptGetManyUserAddresses(json)
+      return adaptGetManyUserAddresses(json);
     }
     const { json } = await httpclientService(
-      `${apiUrl}/${resource}?${params.target}=${params.id}`
+      `${apiUrl}/${resource}?${params.target}=${params.id}`,
     );
     return { data: json.data, total: json.total };
   },
@@ -253,15 +248,15 @@ const dataProvider: any = {
         body: JSON.stringify(params.data),
         credentials: "include",
       });
-    
+
       //  FIX: correct deep structure
       const record = json?.data?.data;
-    
+
       if (!record?.id) {
         console.error(" BAD CATEGORY RESPONSE:", json);
         throw new Error("Missing category id in response");
       }
-    
+
       return {
         data: {
           id: record.id,
@@ -269,97 +264,104 @@ const dataProvider: any = {
         },
       };
     }
-   
+
     if (resource === "products") {
       const url = `${apiUrl}/products`;
-  
+
       const { variants = [], imageName, ...productData } = params.data;
-  
+
       const formData = new FormData();
-  
+
       Object.entries(productData).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && typeof value !== "object") {
+        if (
+          value !== undefined &&
+          value !== null &&
+          typeof value !== "object"
+        ) {
           formData.append(key, String(value));
         }
       });
-  
+
       // variants
       formData.append("variants", JSON.stringify(variants));
-  
+
       // image (IMPORTANT FIX)
       if (imageName instanceof File) {
         formData.append("imageName", imageName);
       }
-  
+
       const { json } = await httpclientService(url, {
         method: "POST",
         body: formData,
       });
-  
+
       return adaptObject(json);
     }
-  
 
     if (resource.toLowerCase().includes("useraddress")) {
       const url = `${apiUrl}/usersAddress`;
-  
-     
-  
+
       const { json } = await httpclientService(url, {
         method: "POST",
         body: JSON.stringify(params.data),
       });
-  
-    
 
       const adapted = adaptCreateUserAddress(json);
-  
-     
+
       const addr = json?.data?.addresses?.[0];
 
-    return {
-      data: {
-        id: addr?.id, 
-        userId: addr?.userId,
-        street: addr?.street,
-        city: addr?.city,
-        country: addr?.country,
-        zipCode: addr?.zipCode,
-      },
-    };
+      return {
+        data: {
+          id: addr?.id,
+          userId: addr?.userId,
+          street: addr?.street,
+          city: addr?.city,
+          country: addr?.country,
+          zipCode: addr?.zipCode,
+        },
+      };
       //return adapted; //
     }
-  
+    // DataProvider Company Create
+    if (resource === "companies") {
+      const { json } = await httpclientService(`${apiUrl}/companies`, {
+        method: "POST",
+        body: JSON.stringify(params.data),
+      });
+
+      return {
+        data: json.company,
+      };
+    }
+
     // default
     const { json } = await httpclientService(`${apiUrl}/${resource}`, {
       method: "POST",
       body: JSON.stringify(params.data),
     });
-  
+
     return adaptObject(json);
     //return { data: json };
   },
 
   update: async (resource: any, params: any) => {
-    console.log("updatedd product variant ")
+    console.log("updatedd product variant ");
     const url = `${apiUrl}/${resource}/${params.id}`;
     if (resource === "userAddresses") {
-      console.log("fffffffffff ",params.data)
+      console.log("fffffffffff ", params.data);
       const url = `${apiUrl}/usersAddress/${params.id}`;
-  
-     
+
       const { json } = await httpclientService(url, {
         method: "PUT",
         body: JSON.stringify(params.data),
-        credentials: "include"
+        credentials: "include",
       });
-  
-    
+
       return adaptUpdateUserAddress(json);
     }
 
     // =========================
-    //  Category 
+    //  Category
     // =========================
     if (resource === "categories") {
       const { json } = await httpclientService(
@@ -368,9 +370,9 @@ const dataProvider: any = {
           method: "PUT",
           body: JSON.stringify(params.data),
           credentials: "include",
-        }
+        },
       );
-    
+
       return {
         data: {
           id: params.id,
@@ -381,30 +383,28 @@ const dataProvider: any = {
     // =========================
     //  PRODUCTS (IMAGE + VARIANTS)
     // =========================
-  
-  
+
     if (resource === "products") {
       const formData = buildProductFormDataProvider(params.data);
-    
+
       const { json } = await httpclientService(
         `${apiUrl}/products/${params.id}`,
         {
           method: "PUT",
           body: formData,
-        }
+        },
       );
-    
+
       return adaptObject(json);
     }
 
-
     // if (resource === "products") {
     //   const data = params.data;
-    
+
     //   console.log("🔥 REAL DATA:", data);
-    
+
     //   const formData = new FormData();
-    
+
     //   // ===============================
     //   // 🔹 SAFE FIELDS
     //   // ===============================
@@ -413,7 +413,7 @@ const dataProvider: any = {
     //   formData.append("categoryId", String(data.categoryId ?? ""));
     //   formData.append("supplierId", String(data.supplierId ?? ""));
     //   formData.append("type", data.type ?? "VARIABLE");
-    
+
     //   // ===============================
     //   // 🔥 VARIANTS (FIX IMPORTANT)
     //   // ===============================
@@ -421,18 +421,18 @@ const dataProvider: any = {
     //     typeof data.variants === "string"
     //       ? data.variants
     //       : JSON.stringify(data.variants ?? []);
-    
+
     //   formData.append("variants", variants);
-    
+
     //   // ===============================
     //   // 🔥 IMAGE FIX (react-admin format)
     //   // ===============================
     //   const file = data?.image?.rawFile;
-    
+
     //   if (file instanceof File) {
     //     formData.append("imageName", file);
     //   }
-    
+
     //   const { json } = await httpclientService(
     //     `${apiUrl}/products/${params.id}`,
     //     {
@@ -440,9 +440,9 @@ const dataProvider: any = {
     //       body: formData,
     //     }
     //   );
-    
+
     //   console.log(" SERVER RESPONSE:", json);
-    
+
     //   return adaptObject(json);
     // }
 
@@ -451,7 +451,7 @@ const dataProvider: any = {
       {
         method: "PUT",
         body: JSON.stringify(params.data),
-      }
+      },
     );
 
     return adaptObject(json);
@@ -467,16 +467,15 @@ const dataProvider: any = {
   },
 
   delete: async (resource: any, params: any) => {
-
     if (resource === "categories") {
-      console.log(" pppppppppppp  " ,params)
+      console.log(" pppppppppppp  ", params);
       const { json } = await httpclientService(
         `${apiUrl}/${resource}/${params.id}`,
         {
           method: "DELETE",
-        }
+        },
       );
-    
+
       return {
         data: {
           id: params.id,
@@ -487,12 +486,11 @@ const dataProvider: any = {
       };
     }
 
-
     const { json } = await httpclientService(
       `${apiUrl}/${resource}/${params.id}`,
       {
         method: "DELETE",
-      }
+      },
     );
     return adaptObject(json);
   },
@@ -504,7 +502,6 @@ const dataProvider: any = {
     });
     return { data: json };
   },
-
 };
 
 export default dataProvider;
