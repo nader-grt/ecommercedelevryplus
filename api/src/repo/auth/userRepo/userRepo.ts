@@ -157,6 +157,14 @@ export class userRepo extends IUserRepoInterface {
   //   }
   // }
 
+  async findByIdSuperAdmin(id: number) {
+    return await User.findOne({
+      where: {
+        id,
+      },
+    });
+  }
+
   public async FindUserById(
     id: number,
     companyId: number

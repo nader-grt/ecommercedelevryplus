@@ -6,3 +6,5 @@
 node_modules/
 dist/
 npm-debug.log*
+# Local database backups
+backups/
